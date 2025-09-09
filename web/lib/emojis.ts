@@ -30,3 +30,5 @@ export const EMOJI_CATEGORIES = {
   "Objects": ["💯", "🔥", "🚀", "🎉"],
   "Hearts": ["❤️", "💙", "💚"]
 };
+
+export const POPULAR_EMOJIS = ["😀", "😂", "😍", "👍", "🔥", "🎉", "❤️"];
