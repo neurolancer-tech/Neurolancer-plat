@@ -122,10 +122,9 @@ function AuthContent() {
       
       toast.success('Successfully signed in with Google!');
       
-      // Check if user needs to select user type (new users or users without user_type)
-      if (is_new_user || !profile.user_type) {
-        console.log('User needs to select type - is_new_user:', is_new_user, 'user_type:', profile.user_type);
-        // For new Google users, redirect to onboarding page instead of showing modal
+      // Only redirect to onboarding for truly new users during registration
+      if (is_new_user) {
+        console.log('New Google user, redirecting to onboarding');
         router.push('/onboarding');
       } else {
         console.log('Existing user with user_type, checking onboarding status');
