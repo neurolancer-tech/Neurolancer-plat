@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thank you for contacting Neurolancer</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 20px; background-color: #f4f4f4; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .header { background: #0D9E86; color: white; padding: 20px; text-align: center; border-radius: 5px; margin-bottom: 20px; }
+        .content { padding: 20px 0; }
+        .message-box { background: #f8f9fa; padding: 15px; border-radius: 5px; border-left: 4px solid #0D9E86; margin: 15px 0; }
+        .footer { text-align: center; padding: 20px; color: #666; border-top: 1px solid #eee; margin-top: 20px; }
+        .btn { display: inline-block; background: #0D9E86; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✅ Message Received!</h1>
+            <p>Thank you for contacting Neurolancer</p>
+        </div>
+        
+        <div class="content">
+            <p>Hi {{ name }},</p>
+            
+            <p>Thank you for reaching out to us. We have received your message and will get back to you within 24 hours.</p>
+            
+            <div class="message-box">
+                <strong>Your message:</strong><br>
+                <strong>Subject:</strong> {{ subject }}<br>
+                <strong>Message:</strong> {{ message }}
+            </div>
+            
+            <p>In the meantime, you can:</p>
+            <ul>
+                <li>Browse our <a href="http://localhost:3000/gigs">AI Services</a></li>
+                <li>Check our <a href="http://localhost:3000/faq">FAQ</a> for quick answers</li>
+                <li>Explore <a href="http://localhost:3000/freelancers">AI Experts</a></li>
+            </ul>
+        </div>
+        
+        <div class="footer">
+            <p>Best regards,<br><strong>The Neurolancer Team</strong></p>
+            <p>AI Freelance Marketplace</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,180 @@
+export interface User {
+  id: number;
+  username: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  profile_picture?: string;
+  date_joined: string;
+}
+
+export interface UserProfile {
+  id: number;
+  user: User;
+  user_type: 'client' | 'freelancer' | 'both';
+  bio: string;
+  skills: string;
+  hourly_rate?: number;
+  total_earnings: number;
+  rating: number;
+  total_reviews: number;
+  likes_count: number;
+  dislikes_count: number;
+  profile_picture?: string;
+  avatar_type?: string;
+  selected_avatar?: string;
+  google_photo_url?: string;
+}
+
+export interface Category {
+  id: number;
+  name: string;
+  description: string;
+  icon: string;
+}
+
+export interface Gig {
+  id: number;
+  freelancer: User;
+  freelancer_profile?: {
+    rating: number;
+    total_reviews: number;
+    completed_gigs: number;
+    profile_picture?: string;
+  };
+  category: Category;
+  title: string;
+  description: string;
+  image?: string;
+  basic_title: string;
+  basic_description: string;
+  basic_price: number;
+  basic_delivery_time: number;
+  standard_title?: string;
+  standard_description?: string;
+  standard_price?: number;
+  standard_delivery_time?: number;
+  premium_title?: string;
+  premium_description?: string;
+  premium_price?: number;
+  premium_delivery_time?: number;
+  tags: string;
+  is_active: boolean;
+  total_orders: number;
+  rating: number;
+  total_reviews: number;
+  likes_count: number;
+  dislikes_count: number;
+  created_at: string;
+}
+
+export interface Order {
+  id: number;
+  client: User;
+  freelancer: User;
+  gig?: Gig;
+  package_type: 'basic' | 'standard' | 'premium' | 'custom';
+  title: string;
+  description: string;
+  price: number;
+  delivery_time: number;
+  status: 'pending' | 'accepted' | 'in_progress' | 'delivered' | 'completed' | 'cancelled' | 'disputed';
+  requirements?: string;
+  progress_notes?: string;
+  is_paid: boolean;
+  escrow_released?: boolean;
+  payment_reference?: string;
+  created_at: string;
+  accepted_at?: string;
+  delivered_at?: string;
+  completed_at?: string;
+}
+
+export interface Job {
+  id: number;
+  client: User;
+  title: string;
+  description: string;
+  category: Category;
+  budget_min: number;
+  budget_max: number;
+  deadline: string;
+  skills_required: string;
+  experience_level: 'entry' | 'intermediate' | 'expert';
+  job_type: 'fixed' | 'hourly';
+  status: 'open' | 'in_progress' | 'completed' | 'cancelled' | 'closed';
+  location?: string;
+  proposal_count: number;
+  attachments?: string;
+  is_paid?: boolean;
+  likes_count: number;
+  dislikes_count: number;
+  created_at: string;
+}
+
+export interface Proposal {
+  id: number;
+  job: Job;
+  freelancer: User;
+  cover_letter: string;
+  proposed_price: number;
+  delivery_time: number;
+  questions?: string;
+  attachments?: string;
+  status: 'pending' | 'accepted' | 'rejected' | 'withdrawn';
+  created_at: string;
+}
+
+export interface Course {
+  id: number;
+  title: string;
+  description: string;
+  category: Category;
+  instructor: User;
+  difficulty_level: 'beginner' | 'intermediate' | 'advanced' | 'expert';
+  duration_hours: number;
+  price: number;
+  thumbnail?: string;
+  prerequisites?: string;
+  learning_outcomes: string;
+  status: 'draft' | 'published' | 'archived';
+  enrollment_count: number;
+  rating: number;
+  total_reviews: number;
+  is_enrolled?: boolean;
+  created_at: string;
+}
+
+export interface Enrollment {
+  id: number;
+  student: User;
+  course: Course;
+  status: 'active' | 'completed' | 'dropped' | 'suspended';
+  progress_percentage: number;
+  enrolled_at: string;
+  completed_at?: string;
+}
+
+export interface SkillAssessment {
+  id: number;
+  title: string;
+  description: string;
+  skill_name: string;
+  category: Category;
+  difficulty_level: 'beginner' | 'intermediate' | 'advanced' | 'expert';
+  time_limit_minutes: number;
+  passing_score: number;
+  questions_count: number;
+  user_attempts: number;
+  best_score?: number;
+}
+
+export interface Notification {
+  id: number;
+  title: string;
+  message: string;
+  notification_type: string;
+  is_read: boolean;
+  action_url?: string;
+  created_at: string;
+}

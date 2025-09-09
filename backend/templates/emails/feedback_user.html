@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thank you for your feedback</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 20px; background-color: #f4f4f4; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .header { background: #0D9E86; color: white; padding: 20px; text-align: center; border-radius: 5px; margin-bottom: 20px; }
+        .content { padding: 20px 0; }
+        .feedback-box { background: #f8f9fa; padding: 15px; border-radius: 5px; border-left: 4px solid #0D9E86; margin: 15px 0; }
+        .rating { color: #ffc107; font-size: 18px; }
+        .footer { text-align: center; padding: 20px; color: #666; border-top: 1px solid #eee; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🙏 Thank You!</h1>
+            <p>Your feedback helps us improve</p>
+        </div>
+        
+        <div class="content">
+            <p>Hi {{ name }},</p>
+            
+            <p>Thank you for taking the time to provide feedback about Neurolancer. Your input helps us improve our platform and better serve the AI community.</p>
+            
+            <div class="feedback-box">
+                <strong>Your feedback:</strong><br>
+                <strong>Type:</strong> {{ feedback_type }}<br>
+                <strong>Rating:</strong> <span class="rating">{{ rating }}/5 ⭐</span><br>
+                <strong>Message:</strong> {{ message }}
+            </div>
+            
+            <p>We appreciate your contribution to making Neurolancer better! Your feedback will be reviewed by our team and considered for future improvements.</p>
+            
+            <p>Continue exploring:</p>
+            <ul>
+                <li><a href="http://localhost:3000/gigs">Browse AI Services</a></li>
+                <li><a href="http://localhost:3000/jobs">Find AI Projects</a></li>
+                <li><a href="http://localhost:3000/courses">Learn New Skills</a></li>
+            </ul>
+        </div>
+        
+        <div class="footer">
+            <p>Best regards,<br><strong>The Neurolancer Team</strong></p>
+            <p>AI Freelance Marketplace</p>
+        </div>
+    </div>
+</body>
+</html>
