@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   title: 'Neurolancer - AI Freelance Marketplace',
   description: 'Connect with AI experts and freelancers',
   icons: {
-    icon: '/assets/Neurolancer-logo/vector/Neurolancer-icon.svg',
+    icon: '/assets/Neurolancer-logo/vector/neurolancer-favicon.svg',
   },
 }
 
