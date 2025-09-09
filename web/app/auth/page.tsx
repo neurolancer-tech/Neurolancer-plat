@@ -120,14 +120,14 @@ function AuthContent() {
       setUser(backendUser);
       setProfile(profile);
       
-      toast.success('Successfully signed in with Google!');
-      
-      // Only redirect to onboarding for truly new users during registration
+      // Show success message based on user type
       if (is_new_user) {
+        toast.success('Welcome to Neurolancer! Account created successfully.');
         console.log('New Google user, redirecting to onboarding');
         router.push('/onboarding');
       } else {
-        console.log('Existing user with user_type, checking onboarding status');
+        toast.success('Successfully signed in with Google!');
+        console.log('Existing user, checking onboarding status');
         // Check if existing user needs onboarding
         try {
           const onboardingResponse = await api.get('/onboarding/status/');
