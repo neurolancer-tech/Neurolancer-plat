@@ -40,6 +40,10 @@ interface Order {
   };
 }
 
+export async function generateStaticParams() {
+  return [];
+}
+
 export default function OrderDetailsPage() {
   const params = useParams();
   const router = useRouter();

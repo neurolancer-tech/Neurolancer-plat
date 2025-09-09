@@ -10,6 +10,10 @@ import { isAuthenticated, getProfile } from '@/lib/auth';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
 
+export async function generateStaticParams() {
+  return [];
+}
+
 export default function JobDetailPage() {
   const router = useRouter();
   const params = useParams();

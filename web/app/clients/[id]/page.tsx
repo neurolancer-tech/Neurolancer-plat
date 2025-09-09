@@ -24,6 +24,14 @@ interface ClientStats {
   total_spent?: number;
 }
 
+export async function generateStaticParams() {
+  return [];
+}
+
+export async function generateStaticParams() {
+  return [];
+}
+
 export default function ClientDetailsPage() {
   const params = useParams();
   const userId = Number(params.id);

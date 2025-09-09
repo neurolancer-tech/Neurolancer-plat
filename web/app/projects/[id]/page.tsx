@@ -49,6 +49,10 @@ interface Project {
   };
 }
 
+export async function generateStaticParams() {
+  return [];
+}
+
 export default function ProjectDetailPage() {
   const params = useParams();
   const router = useRouter();

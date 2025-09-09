@@ -25,6 +25,10 @@ interface Assessment {
   has_paid: boolean;
 }
 
+export async function generateStaticParams() {
+  return [];
+}
+
 export default function AssessmentDetailPage() {
   const router = useRouter();
   const params = useParams();

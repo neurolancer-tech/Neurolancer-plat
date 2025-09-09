@@ -47,6 +47,10 @@ interface Gig {
   };
 }
 
+export async function generateStaticParams() {
+  return [];
+}
+
 export default function GigDetailPage() {
   const params = useParams();
   const [gig, setGig] = useState<Gig | null>(null);
