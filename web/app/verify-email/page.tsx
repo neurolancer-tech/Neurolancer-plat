@@ -53,19 +53,23 @@ function VerifyEmailContent() {
   const resendVerification = async () => {
     setIsResending(true);
     try {
-      // Backend expects an authenticated POST without payload, same as onboarding
+      console.log('Attempting to resend verification email...');
       const res = await api.post('/auth/resend-verification/');
+      console.log('Resend verification response:', res);
 
       if (res?.status && res.status >= 200 && res.status < 300) {
-        setMessage('New verification email sent! Please check your inbox.');
-        toast.success('Verification email sent');
+        setMessage('New verification email sent! Please check your inbox and spam folder.');
+        toast.success('Verification email sent successfully!');
       } else {
+        console.error('Unexpected response status:', res?.status);
         setMessage('Failed to resend verification email');
         toast.error('Failed to resend verification email');
       }
     } catch (error: any) {
+      console.error('Resend verification error:', error);
+      console.error('Error response:', error?.response?.data);
       const status = error?.response?.status;
-      const backendMsg = error?.response?.data?.error;
+      const backendMsg = error?.response?.data?.error || error?.response?.data?.message;
       const msg = status === 401
         ? 'Please log in to resend the verification email.'
         : backendMsg || error?.message || 'Failed to resend verification email';
