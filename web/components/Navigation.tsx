@@ -49,7 +49,7 @@ export default function Navigation() {
               <Link href="/" className="flex items-center">
                 <div className="px-2 py-1 sm:px-3 sm:py-2 rounded-lg" style={{backgroundColor: '#0D9E86'}}>
                   <Image
-                    src="/default-monochrome-white.svg"
+                    src="/assets/Neurolancer-logo/vector/default-monochrome-white.svg"
                     alt="Neurolancer"
                     width={120}
                     height={32}
@@ -264,7 +264,7 @@ export default function Navigation() {
                 <Link href="/" onClick={() => setShowMobileMenu(false)}>
                   <div className="px-3 py-2 rounded-lg" style={{backgroundColor: '#0D9E86'}}>
                     <Image
-                      src="/default-monochrome-white.svg"
+                      src="/assets/Neurolancer-logo/vector/default-monochrome-white.svg"
                       alt="Neurolancer"
                       width={120}
                       height={32}
