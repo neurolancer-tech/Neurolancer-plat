@@ -66,7 +66,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+        <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto custom-scrollbar">
           {adminNavItems.map((item) => {
             const isActive = pathname === item.href;
             return (
@@ -137,7 +137,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
               {/* Django Admin Link */}
               <button
-                onClick={() => window.open('http://localhost:8000/admin/', '_blank')}
+                onClick={() => window.open('https://neurolancer.onrender.com/admin/', '_blank')}
                 className="px-3 py-2 text-sm font-medium text-white bg-[#FF8559] hover:bg-[#e6754f] rounded-lg transition-colors"
               >
                 Django Admin
