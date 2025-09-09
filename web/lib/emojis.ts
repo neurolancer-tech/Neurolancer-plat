@@ -31,4 +31,12 @@ export const EMOJI_CATEGORIES = {
   "Hearts": ["❤️", "💙", "💚"]
 };
 
-export const POPULAR_EMOJIS = ["😀", "😂", "😍", "👍", "🔥", "🎉", "❤️"];
+export const POPULAR_EMOJIS = [
+  { unicode: "😀", name: "grinning face" },
+  { unicode: "😂", name: "tears of joy" },
+  { unicode: "😍", name: "heart eyes" },
+  { unicode: "👍", name: "thumbs up" },
+  { unicode: "🔥", name: "fire" },
+  { unicode: "🎉", name: "party" },
+  { unicode: "❤️", name: "heart" }
+];
