@@ -17,9 +17,10 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 
-// Configure Google provider
+// Configure Google provider for better redirect handling
 googleProvider.setCustomParameters({
-  prompt: 'select_account'
+  prompt: 'select_account',
+  hd: undefined // Allow any domain
 });
 
 // Analytics (only on client side)
@@ -30,7 +31,7 @@ if (typeof window !== 'undefined') {
 
 export { analytics };
 
-// Google Sign In with popup (more reliable)
+// Google Sign In with popup and redirect fallback
 export const signInWithGoogle = async () => {
   try {
     console.log('Attempting popup sign-in...');
@@ -38,13 +39,23 @@ export const signInWithGoogle = async () => {
     console.log('Popup sign-in successful:', result);
     return result;
   } catch (error: any) {
-    console.log('Popup failed, trying redirect:', error);
-    // Fallback to redirect if popup fails
-    try {
-      await signInWithRedirect(auth, googleProvider);
-      return null; // Redirect doesn't return immediately
-    } catch (redirectError) {
-      throw redirectError;
+    console.log('Popup failed:', error.code, error.message);
+    
+    // Check if popup was blocked or closed
+    if (error.code === 'auth/popup-blocked' || 
+        error.code === 'auth/popup-closed-by-user' ||
+        error.code === 'auth/cancelled-popup-request') {
+      console.log('Popup blocked/closed, using redirect...');
+      try {
+        await signInWithRedirect(auth, googleProvider);
+        return null; // Redirect doesn't return immediately
+      } catch (redirectError) {
+        console.error('Redirect also failed:', redirectError);
+        throw redirectError;
+      }
+    } else {
+      // For other errors, throw immediately
+      throw error;
     }
   }
 };

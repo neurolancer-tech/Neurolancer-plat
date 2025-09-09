@@ -51,6 +51,7 @@ function AuthContent() {
         console.log('Redirect result:', result);
         
         if (result && result.user) {
+          console.log('Found redirect result, processing user...');
           setLoading(true);
           await processGoogleUser(result.user);
         } else {
@@ -59,14 +60,17 @@ function AuthContent() {
       } catch (error: any) {
         console.error('Google redirect result error:', error);
         setLoading(false);
-        if (error.message && !error.message.includes('No redirect operation')) {
-          toast.error('Failed to sign in with Google');
+        // Only show error if it's not the expected "no redirect" error
+        if (error.code && error.code !== 'auth/no-redirect-operation-pending') {
+          console.error('Actual redirect error:', error);
+          toast.error('Failed to complete Google sign-in');
         }
       }
     };
 
-    // Only run once on mount
-    handleRedirectResult();
+    // Add a small delay to ensure Firebase is fully initialized
+    const timer = setTimeout(handleRedirectResult, 100);
+    return () => clearTimeout(timer);
   }, []);
 
   const handleGoogleSignIn = async () => {
