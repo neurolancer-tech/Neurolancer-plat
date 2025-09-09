@@ -328,7 +328,7 @@ function AuthContent() {
             <Link href="/" className="flex justify-center mb-8">
               <div className="px-3 py-2 rounded-lg" style={{backgroundColor: '#0D9E86'}}>
                 <Image
-                  src="/assets/Neurolancer-logo/vector/default-monochrome-white.svg"
+                  src="/default-monochrome-white.svg"
                   alt="Neurolancer"
                   width={120}
                   height={32}
