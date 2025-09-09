@@ -1,0 +1,14 @@
+
+Hope you enjoy your new logo, here are the people that
+made your beautiful logo happen :)
+font name: MarkoOne-Regular
+font link: https://fonts.google.com/specimen/Marko+One
+font author: Cyreal
+font author site: http://www.cyreal.org/
+
+
+icon designer: Nithinan Tatah
+icon designer link: /creator/noomtah/
+        
+{"bg":"#0D9E86","icon":"#FBE1D5","font":"#FFFFFF","slogan":"#ffffff"}
+      
