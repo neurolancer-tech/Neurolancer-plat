@@ -233,17 +233,16 @@ export default function MessagesPage() {
     }
   }, [lastMetaConversationId, selectedConversation, isAtBottom]);
 
-  // Fallback polling when WebSocket is not connected
+  // Use polling instead of WebSocket for better reliability
   useEffect(() => {
     let pollingInterval: NodeJS.Timeout;
     
-    if (connectionStatus === 'error' && selectedConversation && selectedConversation.id !== -1) {
-      console.log('WebSocket failed, falling back to polling for conversation', selectedConversation.id);
+    if (selectedConversation && selectedConversation.id !== -1) {
+      console.log('Starting polling for conversation', selectedConversation.id);
       pollingInterval = setInterval(() => {
-        console.log('Polling for new messages...');
         loadMessages(selectedConversation.id);
         loadConversations();
-      }, 3000); // Poll every 3 seconds
+      }, 5000); // Poll every 5 seconds
     }
     
     return () => {
@@ -251,7 +250,7 @@ export default function MessagesPage() {
         clearInterval(pollingInterval);
       }
     };
-  }, [connectionStatus, selectedConversation]);
+  }, [selectedConversation]);
 
   // Auto-refresh messages periodically for group chats to catch any missed messages
   useEffect(() => {
