@@ -1385,19 +1385,7 @@ ${aiResponse}`;
                                         className="w-8 h-8 hover:bg-gray-100 dark:hover:bg-gray-600 rounded p-1 transition-colors flex items-center justify-center"
                                         title={emoji.name}
                                       >
-                                        <img
-                                          src={`/openmoji-svg-color/${emoji.code}.svg`}
-                                          alt={emoji.unicode}
-                                          className="w-6 h-6"
-                                          loading="lazy"
-                                          onError={(e) => {
-                                            e.currentTarget.style.display = 'none';
-                                            const parent = e.currentTarget.parentElement;
-                                            if (parent) {
-                                              parent.textContent = emoji.unicode;
-                                            }
-                                          }}
-                                        />
+                                        {emoji.unicode}
                                       </button>
                                     ))}
                                   </div>
