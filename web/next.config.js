@@ -1,6 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  allowedDevOrigins: ['192.168.56.1'],
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -11,8 +10,8 @@ const nextConfig = {
         hostname: 'localhost',
       },
       {
-        protocol: 'http',
-        hostname: '127.0.0.1',
+        protocol: 'https',
+        hostname: 'neurolancer.onrender.com',
       },
       {
         protocol: 'https',
@@ -20,25 +19,9 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'via.placeholder.com',
-      },
-      {
-        protocol: 'https',
         hostname: 'lh3.googleusercontent.com',
       },
-      {
-        protocol: 'https',
-        hostname: '**',
-      },
     ],
-  },
-  async rewrites() {
-    return [
-      {
-        source: '/api/:path*',
-        destination: 'http://localhost:8000/api/:path*',
-      },
-    ];
   },
 };
 
