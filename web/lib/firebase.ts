@@ -19,8 +19,7 @@ export const googleProvider = new GoogleAuthProvider();
 
 // Configure Google provider for better redirect handling
 googleProvider.setCustomParameters({
-  prompt: 'select_account',
-  hd: undefined // Allow any domain
+  prompt: 'select_account'
 });
 
 // Analytics (only on client side)
