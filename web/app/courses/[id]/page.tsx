@@ -37,10 +37,6 @@ interface Course {
   is_enrolled?: boolean;
 }
 
-export async function generateStaticParams() {
-  return [];
-}
-
 export default function CourseDetailPage() {
   const router = useRouter();
   const params = useParams();
