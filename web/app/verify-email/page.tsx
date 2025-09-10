@@ -99,6 +99,14 @@ function VerifyEmailContent() {
       console.error('Error response:', error?.response?.data);
       const status = error?.response?.status;
       const backendMsg = error?.response?.data?.error || error?.response?.data?.message;
+      
+      // If email is already verified, redirect to onboarding
+      if (backendMsg === 'Email is already verified') {
+        toast.success('Email already verified!');
+        router.push('/onboarding');
+        return;
+      }
+      
       const msg = status === 401
         ? 'Please log in to resend the verification email.'
         : backendMsg || error?.message || 'Failed to resend verification email';
