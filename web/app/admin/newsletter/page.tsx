@@ -37,6 +37,264 @@ const NewsletterAdminPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const newslettersPerPage = 10;
 
+  const templates = {
+    weekly_digest: `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neurolancer Weekly Digest</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 0; background-color: #FBE1D5;">
+    <!-- Header -->
+    <div style="background: #0D9E86; padding: 40px 30px; text-align: center;">
+        <img src="https://neurolancer-5jxf.vercel.app/assets/Neurolancer-logo/vector/default-monochrome-white.svg" alt="Neurolancer" style="height: 50px; margin-bottom: 15px;">
+        <h1 style="color: #FFFFFF; margin: 0; font-size: 28px; font-weight: 300;">Weekly Digest</h1>
+        <p style="color: #ffffff; margin: 10px 0 0 0; opacity: 0.9;">Your AI Freelance Update</p>
+    </div>
+    
+    <!-- Content -->
+    <div style="background: white; padding: 40px 30px;">
+        <h2 style="color: #0D9E86; margin-top: 0; font-size: 24px;">This Week's Highlights</h2>
+        
+        <div style="color: #333; font-size: 16px; line-height: 1.7;">
+            <p>Here's what happened this week in the AI freelance world. Stay updated with the latest opportunities and insights.</p>
+            <p>• Featured gigs and projects</p>
+            <p>• Success stories from our community</p>
+            <p>• Platform updates and improvements</p>
+        </div>
+        
+        <!-- CTA Button -->
+        <div style="text-align: center; margin: 40px 0;">
+            <a href="https://neurolancer-5jxf.vercel.app" style="background: #0D9E86; color: #FFFFFF; padding: 15px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold; font-size: 16px;">
+                Explore Opportunities
+            </a>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <div style="background: #FBE1D5; padding: 30px; text-align: center; color: #666; font-size: 14px;">
+        <p style="margin: 0 0 15px 0;">You received this email because you subscribed to Neurolancer updates.</p>
+        <p style="margin: 0;">
+            <a href="#" style="color: #0D9E86; text-decoration: underline;">Unsubscribe</a> | 
+            <a href="https://neurolancer-5jxf.vercel.app" style="color: #0D9E86; text-decoration: underline;">Visit Neurolancer</a>
+        </p>
+    </div>
+</body>
+</html>`,
+    platform_updates: `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neurolancer Platform Updates</title>
+</head>
+<body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 0; background-color: #FBE1D5;">
+    <!-- Header with Side Logo -->
+    <div style="background: #0D9E86; padding: 30px; display: flex; align-items: center; justify-content: space-between;">
+        <div style="flex: 1;">
+            <img src="https://neurolancer-5jxf.vercel.app/assets/Neurolancer-logo/vector/default-monochrome-white.svg" alt="Neurolancer" style="height: 40px;">
+        </div>
+        <div style="flex: 2; text-align: right;">
+            <h1 style="color: #FFFFFF; margin: 0; font-size: 24px; font-weight: 600;">Platform Updates</h1>
+            <p style="color: #ffffff; margin: 5px 0 0 0; font-size: 14px; opacity: 0.9;">What's New</p>
+        </div>
+    </div>
+    
+    <!-- Content Card -->
+    <div style="background: white; margin: 20px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); overflow: hidden;">
+        <div style="padding: 40px 30px;">
+            <div style="border-left: 4px solid #0D9E86; padding-left: 20px; margin-bottom: 30px;">
+                <h2 style="color: #333; margin: 0; font-size: 22px;">Latest Platform Improvements</h2>
+            </div>
+            
+            <div style="color: #333; font-size: 16px; line-height: 1.8;">
+                <p>We're constantly improving Neurolancer to provide you with the best AI freelance experience. Here are our latest updates and new features.</p>
+            </div>
+            
+            <!-- Feature Box -->
+            <div style="background: #FBE1D5; padding: 25px; border-radius: 8px; margin: 30px 0; border: 1px solid #FBE1D5;">
+                <h3 style="color: #0D9E86; margin: 0 0 15px 0; font-size: 18px;">🚀 New Features</h3>
+                <p style="color: #333; margin: 0; font-size: 15px;">Enhanced search filters, improved messaging system, and better project management tools.</p>
+            </div>
+            
+            <!-- CTA Button -->
+            <div style="text-align: center; margin: 35px 0;">
+                <a href="https://neurolancer-5jxf.vercel.app" style="background: #0D9E86; color: #FFFFFF; padding: 14px 28px; text-decoration: none; border-radius: 25px; display: inline-block; font-weight: 600; font-size: 15px;">
+                    Explore Updates →
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <div style="text-align: center; padding: 30px 20px; color: #666; font-size: 13px;">
+        <p style="margin: 0 0 10px 0;">© 2024 Neurolancer. All rights reserved.</p>
+        <p style="margin: 0;">
+            <a href="#" style="color: #0D9E86; text-decoration: underline;">Unsubscribe</a> | 
+            <a href="https://neurolancer-5jxf.vercel.app" style="color: #0D9E86; text-decoration: underline;">Visit Website</a>
+        </p>
+    </div>
+</body>
+</html>`,
+    featured_gigs: `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neurolancer Featured Gigs</title>
+</head>
+<body style="font-family: 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 0; background-color: #ffffff;">
+    <!-- Minimal Header -->
+    <div style="background: white; padding: 30px; border-bottom: 3px solid #0D9E86;">
+        <div style="text-align: center;">
+            <img src="https://neurolancer-5jxf.vercel.app/assets/Neurolancer-logo/vector/default-monochrome-white.svg" alt="Neurolancer" style="height: 45px; filter: brightness(0) saturate(100%) invert(48%) sepia(79%) saturate(2476%) hue-rotate(162deg) brightness(118%) contrast(119%);">
+        </div>
+    </div>
+    
+    <!-- Content -->
+    <div style="padding: 40px 30px;">
+        <div style="text-align: center; margin-bottom: 40px;">
+            <h1 style="color: #333; margin: 0; font-size: 32px; font-weight: 300; letter-spacing: -0.5px;">Featured Gigs</h1>
+            <div style="width: 60px; height: 3px; background: #0D9E86; margin: 20px auto;"></div>
+        </div>
+        
+        <div style="color: #333; font-size: 17px; line-height: 1.8; text-align: left;">
+            <p>Discover the most popular AI gigs and opportunities this week. Connect with top talent and exciting projects.</p>
+        </div>
+        
+        <!-- Stats/Numbers Section -->
+        <div style="background: #FBE1D5; padding: 30px; border-radius: 8px; margin: 40px 0; text-align: center;">
+            <div style="display: flex; justify-content: space-around; flex-wrap: wrap;">
+                <div style="margin: 10px;">
+                    <div style="font-size: 28px; font-weight: bold; color: #0D9E86;">50+</div>
+                    <div style="font-size: 14px; color: #666; text-transform: uppercase; letter-spacing: 1px;">New Gigs</div>
+                </div>
+                <div style="margin: 10px;">
+                    <div style="font-size: 28px; font-weight: bold; color: #0D9E86;">200+</div>
+                    <div style="font-size: 14px; color: #666; text-transform: uppercase; letter-spacing: 1px;">Active Projects</div>
+                </div>
+                <div style="margin: 10px;">
+                    <div style="font-size: 28px; font-weight: bold; color: #0D9E86;">98%</div>
+                    <div style="font-size: 14px; color: #666; text-transform: uppercase; letter-spacing: 1px;">Success Rate</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- CTA Button -->
+        <div style="text-align: center; margin: 40px 0;">
+            <a href="https://neurolancer-5jxf.vercel.app/gigs" style="background: #0D9E86; color: #FFFFFF; padding: 16px 32px; text-decoration: none; border-radius: 4px; display: inline-block; font-weight: 500; font-size: 16px; letter-spacing: 0.5px; text-transform: uppercase;">
+                Browse Gigs
+            </a>
+        </div>
+        
+        <!-- Quote Section -->
+        <div style="border-left: 4px solid #FBE1D5; padding-left: 20px; margin: 40px 0; font-style: italic; color: #666;">
+            <p style="margin: 0; font-size: 18px; line-height: 1.6;">"Found my perfect AI project within hours of posting."</p>
+            <p style="margin: 15px 0 0 0; font-size: 14px; font-weight: 600; color: #333;">— Satisfied Client</p>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <div style="background: #FBE1D5; padding: 30px; text-align: center; border-top: 1px solid #FBE1D5;">
+        <div style="color: #666; font-size: 14px;">
+            <p style="margin: 0 0 15px 0;">Neurolancer - Connecting AI Talent with Opportunities</p>
+            <p style="margin: 0;">
+                <a href="#" style="color: #0D9E86; text-decoration: underline;">Unsubscribe</a> | 
+                <a href="https://neurolancer-5jxf.vercel.app" style="color: #0D9E86; text-decoration: underline;">neurolancer.com</a> | 
+                <a href="mailto:support@neurolancer.com" style="color: #0D9E86; text-decoration: underline;">Contact</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>`,
+    learning_spotlight: `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neurolancer Learning Spotlight</title>
+</head>
+<body style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 0; background: #FBE1D5;">
+    <!-- Modern Header -->
+    <div style="background: #0D9E86; padding: 50px 30px; text-align: center; position: relative; overflow: hidden;">
+        <div style="position: absolute; top: -50px; right: -50px; width: 100px; height: 100px; background: rgba(255,255,255,0.1); border-radius: 50%;"></div>
+        <div style="position: absolute; bottom: -30px; left: -30px; width: 60px; height: 60px; background: rgba(255,255,255,0.1); border-radius: 50%;"></div>
+        
+        <img src="https://neurolancer-5jxf.vercel.app/assets/Neurolancer-logo/vector/default-monochrome-white.svg" alt="Neurolancer" style="height: 55px; margin-bottom: 20px; position: relative; z-index: 2;">
+        <h1 style="color: #FFFFFF; margin: 0; font-size: 26px; font-weight: 700; position: relative; z-index: 2;">Learning Spotlight</h1>
+        <p style="color: #ffffff; margin: 10px 0 0 0; font-size: 16px; position: relative; z-index: 2; opacity: 0.9;">AI Skills & Knowledge</p>
+    </div>
+    
+    <!-- Content with Cards -->
+    <div style="padding: 30px 20px;">
+        <!-- Main Content Card -->
+        <div style="background: white; border-radius: 16px; padding: 35px; margin-bottom: 25px; box-shadow: 0 8px 32px rgba(0,0,0,0.08); border: 1px solid rgba(255,255,255,0.2);">
+            <h2 style="color: #333; margin: 0 0 25px 0; font-size: 24px; font-weight: 600;">Featured Learning Content</h2>
+            
+            <div style="color: #333; font-size: 16px; line-height: 1.8;">
+                <p>Enhance your AI skills with our curated learning resources. From beginner tutorials to advanced techniques, we've got you covered.</p>
+            </div>
+        </div>
+        
+        <!-- Feature Cards Grid -->
+        <div style="display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 250px; background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 16px rgba(0,0,0,0.06);">
+                <div style="width: 40px; height: 40px; background: #0D9E86; border-radius: 8px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center;">
+                    <span style="color: #FFFFFF; font-size: 20px;">📚</span>
+                </div>
+                <h3 style="color: #333; margin: 0 0 10px 0; font-size: 18px; font-weight: 600;">New Courses</h3>
+                <p style="color: #666; margin: 0; font-size: 14px; line-height: 1.6;">Explore our latest AI and machine learning courses designed for all skill levels.</p>
+            </div>
+            
+            <div style="flex: 1; min-width: 250px; background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 16px rgba(0,0,0,0.06);">
+                <div style="width: 40px; height: 40px; background: #0D9E86; border-radius: 8px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center;">
+                    <span style="color: #FFFFFF; font-size: 20px;">🏆</span>
+                </div>
+                <h3 style="color: #333; margin: 0 0 10px 0; font-size: 18px; font-weight: 600;">Certifications</h3>
+                <p style="color: #666; margin: 0; font-size: 14px; line-height: 1.6;">Earn industry-recognized certifications to boost your AI career prospects.</p>
+            </div>
+        </div>
+        
+        <!-- CTA Card -->
+        <div style="background: #0D9E86; border-radius: 16px; padding: 35px; text-align: center; color: #FFFFFF; margin-bottom: 25px;">
+            <h3 style="margin: 0 0 15px 0; font-size: 22px; font-weight: 600;">Start Learning Today</h3>
+            <p style="margin: 0 0 25px 0; color: #ffffff; font-size: 16px; opacity: 0.9;">Join thousands of learners advancing their AI skills</p>
+            <a href="https://neurolancer-5jxf.vercel.app/courses" style="background: #FFFFFF; color: #0D9E86; padding: 14px 28px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; font-size: 16px;">
+                Browse Courses
+            </a>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <div style="background: white; padding: 30px; text-align: center; border-top: 1px solid #FBE1D5;">
+        <div style="color: #666; font-size: 14px;">
+            <p style="margin: 0 0 15px 0; font-weight: 500;">Stay connected with Neurolancer</p>
+            <div style="margin: 15px 0;">
+                <a href="#" style="display: inline-block; margin: 0 10px; color: #0D9E86; text-decoration: none;">Twitter</a>
+                <a href="#" style="display: inline-block; margin: 0 10px; color: #0D9E86; text-decoration: none;">LinkedIn</a>
+                <a href="#" style="display: inline-block; margin: 0 10px; color: #0D9E86; text-decoration: none;">GitHub</a>
+            </div>
+            <p style="margin: 15px 0 0 0;">
+                <a href="#" style="color: #0D9E86; text-decoration: underline;">Unsubscribe</a> | 
+                <a href="https://neurolancer-5jxf.vercel.app" style="color: #0D9E86; text-decoration: underline;">Visit Neurolancer</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>`
+  };
+
+  const loadTemplate = (templateKey: keyof typeof templates) => {
+    setNewNewsletter({...newNewsletter, content: templates[templateKey]});
+  };
+
+  const loadTemplateForEdit = (templateKey: keyof typeof templates) => {
+    if (editingNewsletter) {
+      setEditingNewsletter({...editingNewsletter, content: templates[templateKey]});
+    }
+  };
+
   useEffect(() => {
     if (!isAuthenticated()) {
       router.push('/auth');
@@ -68,11 +326,8 @@ const NewsletterAdminPage: React.FC = () => {
         ...newsletter,
         total_recipients: count
       })));
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error loading newsletters:', error);
-      if (error.response?.status === 403) {
-        alert('Access denied. Your account needs admin privileges.\n\nTo fix this, run this command on the server:\npython manage.py make_admin kbrian1237@gmail.com');
-      }
       setNewsletters([]);
     } finally {
       setLoading(false);
@@ -335,12 +590,47 @@ const NewsletterAdminPage: React.FC = () => {
                   />
                 </div>
                 <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email Templates</label>
+                  <div className="grid grid-cols-2 gap-3 mb-4">
+                    <button
+                      type="button"
+                      onClick={() => loadTemplate('weekly_digest')}
+                      className="p-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg hover:border-[#0D9E86] hover:bg-gray-50 dark:hover:bg-gray-700 text-left"
+                    >
+                      <div className="font-medium text-sm text-gray-900 dark:text-gray-100">Weekly Digest</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">Weekly highlights & updates</div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => loadTemplate('platform_updates')}
+                      className="p-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg hover:border-[#0D9E86] hover:bg-gray-50 dark:hover:bg-gray-700 text-left"
+                    >
+                      <div className="font-medium text-sm text-gray-900 dark:text-gray-100">Platform Updates</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">New features & improvements</div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => loadTemplate('featured_gigs')}
+                      className="p-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg hover:border-[#0D9E86] hover:bg-gray-50 dark:hover:bg-gray-700 text-left"
+                    >
+                      <div className="font-medium text-sm text-gray-900 dark:text-gray-100">Featured Gigs</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">Top gigs & opportunities</div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => loadTemplate('learning_spotlight')}
+                      className="p-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg hover:border-[#0D9E86] hover:bg-gray-50 dark:hover:bg-gray-700 text-left"
+                    >
+                      <div className="font-medium text-sm text-gray-900 dark:text-gray-100">Learning Spotlight</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">Courses & certifications</div>
+                    </button>
+                  </div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Content</label>
                   <textarea
                     value={newNewsletter.content}
                     onChange={(e) => setNewNewsletter({...newNewsletter, content: e.target.value})}
-                    rows={8}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#0D9E86] focus:border-transparent dark:bg-gray-700 dark:text-white"
+                    rows={12}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#0D9E86] focus:border-transparent dark:bg-gray-700 dark:text-white font-mono text-sm"
                     placeholder="Newsletter content (HTML supported)"
                   />
                 </div>
@@ -400,6 +690,51 @@ const NewsletterAdminPage: React.FC = () => {
                     value={editingNewsletter.subject}
                     onChange={(e) => setEditingNewsletter({...editingNewsletter, subject: e.target.value})}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#0D9E86] focus:border-transparent dark:bg-gray-700 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email Templates</label>
+                  <div className="grid grid-cols-2 gap-3 mb-4">
+                    <button
+                      type="button"
+                      onClick={() => loadTemplateForEdit('weekly_digest')}
+                      className="p-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg hover:border-[#0D9E86] hover:bg-gray-50 dark:hover:bg-gray-700 text-left"
+                    >
+                      <div className="font-medium text-sm text-gray-900 dark:text-gray-100">Weekly Digest</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">Weekly highlights & updates</div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => loadTemplateForEdit('platform_updates')}
+                      className="p-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg hover:border-[#0D9E86] hover:bg-gray-50 dark:hover:bg-gray-700 text-left"
+                    >
+                      <div className="font-medium text-sm text-gray-900 dark:text-gray-100">Platform Updates</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">New features & improvements</div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => loadTemplateForEdit('featured_gigs')}
+                      className="p-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg hover:border-[#0D9E86] hover:bg-gray-50 dark:hover:bg-gray-700 text-left"
+                    >
+                      <div className="font-medium text-sm text-gray-900 dark:text-gray-100">Featured Gigs</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">Top gigs & opportunities</div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => loadTemplateForEdit('learning_spotlight')}
+                      className="p-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg hover:border-[#0D9E86] hover:bg-gray-50 dark:hover:bg-gray-700 text-left"
+                    >
+                      <div className="font-medium text-sm text-gray-900 dark:text-gray-100">Learning Spotlight</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">Courses & certifications</div>
+                    </button>
+                  </div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Content</label>
+                  <textarea
+                    value={editingNewsletter.content || ''}
+                    onChange={(e) => setEditingNewsletter({...editingNewsletter, content: e.target.value})}
+                    rows={12}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#0D9E86] focus:border-transparent dark:bg-gray-700 dark:text-white font-mono text-sm"
+                    placeholder="Newsletter content (HTML supported)"
                   />
                 </div>
                 <div>
