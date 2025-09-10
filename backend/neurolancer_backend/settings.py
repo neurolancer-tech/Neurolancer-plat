@@ -165,9 +165,9 @@ CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "https://neurolancer-5jxf.vercel.app/",
-    "neurolancer-5jxf-git-main-kbrian1237s-projects.vercel.app",
-    "neurolancer-5jxf-gkvw3kxh2-kbrian1237s-projects.vercel.app",
-    "neurolancer-git-main-kbrian1237s-projects.vercel.app",
+    "https://neurolancer-5jxf-git-main-kbrian1237s-projects.vercel.app",
+    "https://neurolancer-5jxf-gkvw3kxh2-kbrian1237s-projects.vercel.app",
+    "https://neurolancer-git-main-kbrian1237s-projects.vercel.app",
     
 ]
 
@@ -178,9 +178,9 @@ CORS_ALLOW_WEBSOCKETS = True
 # CSRF settings
 CSRF_TRUSTED_ORIGINS = [
     "https://neurolancer-5jxf.vercel.app/",
-    "neurolancer-5jxf-git-main-kbrian1237s-projects.vercel.app",
-    "neurolancer-5jxf-gkvw3kxh2-kbrian1237s-projects.vercel.app",
-    "neurolancer-git-main-kbrian1237s-projects.vercel.app",
+    "https://neurolancer-5jxf-git-main-kbrian1237s-projects.vercel.app",
+    "https://neurolancer-5jxf-gkvw3kxh2-kbrian1237s-projects.vercel.app",
+    "https://neurolancer-git-main-kbrian1237s-projects.vercel.app",
 ]
 
 # REST Framework settings
