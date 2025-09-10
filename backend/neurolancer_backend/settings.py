@@ -168,6 +168,7 @@ CORS_ALLOWED_ORIGINS = [
     "neurolancer-9ojlou01q-kbrian1237s-projects.vercel.app",
     "neurolancer-5jxf-git-main-kbrian1237s-projects.vercel.app",
     "neurolancer-5jxf-gkvw3kxh2-kbrian1237s-projects.vercel.app",
+    "neurolancer-9omq.vercel.app",
   
 ]
 
@@ -181,6 +182,7 @@ CSRF_TRUSTED_ORIGINS = [
     "neurolancer-9ojlou01q-kbrian1237s-projects.vercel.app",
     "neurolancer-5jxf-git-main-kbrian1237s-projects.vercel.app",
     "neurolancer-5jxf-gkvw3kxh2-kbrian1237s-projects.vercel.app",
+    "neurolancer-9omq.vercel.app",
 ]
 
 # REST Framework settings
@@ -199,7 +201,7 @@ REST_FRAMEWORK = {
 # Paystack settings
 PAYSTACK_SECRET_KEY = config('PAYSTACK_SECRET_KEY', default='sk_test_fd47bd1c9a97e30551cc3bb2def6d664d1671246')
 PAYSTACK_PUBLIC_KEY = config('PAYSTACK_PUBLIC_KEY', default='pk_test_ce9730c10c85c796d2382e48d8635c0dcb59dd1a')
-FRONTEND_URL = config('FRONTEND_URL', default='https://neurolancer-5jxf.vercel.app')
+FRONTEND_URL = config('FRONTEND_URL', default='neurolancer-9omq.vercel.app')
 
 # Email settings
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
