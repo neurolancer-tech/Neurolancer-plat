@@ -100,10 +100,10 @@ function VerifyEmailContent() {
       const status = error?.response?.status;
       const backendMsg = error?.response?.data?.error || error?.response?.data?.message;
       
-      // If email is already verified, redirect to onboarding
+      // If email is already verified, redirect to dashboard
       if (backendMsg === 'Email is already verified') {
         toast.success('Email already verified!');
-        router.push('/onboarding');
+        router.push('/dashboard');
         return;
       }
       
