@@ -68,8 +68,11 @@ const NewsletterAdminPage: React.FC = () => {
         ...newsletter,
         total_recipients: count
       })));
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading newsletters:', error);
+      if (error.response?.status === 403) {
+        alert('Access denied. Your account needs admin privileges.\n\nTo fix this, run this command on the server:\npython manage.py make_admin kbrian1237@gmail.com');
+      }
       setNewsletters([]);
     } finally {
       setLoading(false);
