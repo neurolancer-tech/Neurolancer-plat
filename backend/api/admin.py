@@ -625,6 +625,37 @@ class IntegrationSyncAdmin(admin.ModelAdmin):
     search_fields = ['integration__user__username', 'integration__provider']
     readonly_fields = ['started_at', 'completed_at']
 
+# Custom User Admin with staff/superuser actions
+from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.models import User
+
+class CustomUserAdmin(UserAdmin):
+    actions = ['make_staff', 'make_superuser', 'remove_staff', 'remove_superuser']
+    
+    def make_staff(self, request, queryset):
+        queryset.update(is_staff=True)
+        self.message_user(request, f"{queryset.count()} users made staff.")
+    make_staff.short_description = "Make selected users staff"
+    
+    def make_superuser(self, request, queryset):
+        queryset.update(is_staff=True, is_superuser=True)
+        self.message_user(request, f"{queryset.count()} users made superuser.")
+    make_superuser.short_description = "Make selected users superuser"
+    
+    def remove_staff(self, request, queryset):
+        queryset.update(is_staff=False)
+        self.message_user(request, f"{queryset.count()} users removed from staff.")
+    remove_staff.short_description = "Remove staff status from selected users"
+    
+    def remove_superuser(self, request, queryset):
+        queryset.update(is_superuser=False)
+        self.message_user(request, f"{queryset.count()} users removed from superuser.")
+    remove_superuser.short_description = "Remove superuser status from selected users"
+
+# Unregister default User admin and register custom one
+admin.site.unregister(User)
+admin.site.register(User, CustomUserAdmin)
+
 # Customize admin site
 admin.site.site_header = 'Neurolancer Admin Panel'
 admin.site.site_title = 'Neurolancer Admin'
