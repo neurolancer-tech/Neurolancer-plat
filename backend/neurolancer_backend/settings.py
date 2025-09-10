@@ -202,7 +202,7 @@ REST_FRAMEWORK = {
 # Paystack settings
 PAYSTACK_SECRET_KEY = config('PAYSTACK_SECRET_KEY', default='sk_test_fd47bd1c9a97e30551cc3bb2def6d664d1671246')
 PAYSTACK_PUBLIC_KEY = config('PAYSTACK_PUBLIC_KEY', default='pk_test_ce9730c10c85c796d2382e48d8635c0dcb59dd1a')
-FRONTEND_URL = config('FRONTEND_URL', default='http://localhost:3000')
+FRONTEND_URL = config('FRONTEND_URL', default='https://neurolancer-5jxf.vercel.app')
 
 # Email settings
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

@@ -4940,7 +4940,7 @@ def submit_contact_form(request):
         
         # Send HTML confirmation to user
         user_html = render_to_string('emails/contact_user.html', {
-            'name': name, 'subject': subject, 'message': message
+            'name': name, 'subject': subject, 'message': message, 'frontend_url': settings.FRONTEND_URL
         })
         user_text = strip_tags(user_html)
         
@@ -4998,7 +4998,7 @@ def submit_feedback_form(request):
         # Send HTML confirmation to user
         user_html = render_to_string('emails/feedback_user.html', {
             'name': name, 'feedback_type': feedback_type.replace('_', ' ').title(),
-            'rating': rating, 'message': message
+            'rating': rating, 'message': message, 'frontend_url': settings.FRONTEND_URL
         })
         user_text = strip_tags(user_html)
         
