@@ -36,9 +36,9 @@ export default function Avatar({
     
     if (avatarType === 'upload' && src) {
       if (src.startsWith('http')) return src;
-      if (src.startsWith('/media/')) return `http://localhost:8000${src}`;
-      if (src.startsWith('media/')) return `http://localhost:8000/${src}`;
-      return `http://localhost:8000${src}`;
+      if (src.startsWith('/media/')) return `https://neurolancer.onrender.com${src}`;
+      if (src.startsWith('media/')) return `https://neurolancer.onrender.com/${src}`;
+      return `https://neurolancer.onrender.com${src}`;
     }
     
     
