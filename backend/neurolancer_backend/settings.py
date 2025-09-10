@@ -164,12 +164,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://localhost:5173",
-    "http://localhost:5174",
-    "http://127.0.0.1:3000",
-    "http://127.0.0.1:5173",
-    "http://127.0.0.1:5174",
+    "neurolancer.vercel.app",
+    "neurolancer-9ojlou01q-kbrian1237s-projects.vercel.app",
+    "neurolancer-5jxf-git-main-kbrian1237s-projects.vercel.app",
+    "neurolancer-5jxf-gkvw3kxh2-kbrian1237s-projects.vercel.app",
+  
 ]
 
 # WebSocket CORS settings
@@ -178,12 +177,10 @@ CORS_ALLOW_WEBSOCKETS = True
 
 # CSRF settings
 CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:3000",
-    "http://localhost:5173",
-    "http://localhost:5174",
-    "http://127.0.0.1:3000",
-    "http://127.0.0.1:5173",
-    "http://127.0.0.1:5174",
+    "neurolancer.vercel.app",
+    "neurolancer-9ojlou01q-kbrian1237s-projects.vercel.app",
+    "neurolancer-5jxf-git-main-kbrian1237s-projects.vercel.app",
+    "neurolancer-5jxf-gkvw3kxh2-kbrian1237s-projects.vercel.app",
 ]
 
 # REST Framework settings
