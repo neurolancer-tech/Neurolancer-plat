@@ -60,10 +60,6 @@ interface Gig {
   };
 }
 
-export async function generateStaticParams() {
-  return [];
-}
-
 export default function FreelancerDetailsPage() {
   const params = useParams();
   const router = useRouter();
