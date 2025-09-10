@@ -29,7 +29,7 @@ const Footer = () => {
 
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:8000/api/newsletter/subscribe/', {
+      const response = await fetch('https://neurolancer.onrender.com/api/newsletter/subscribe/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
