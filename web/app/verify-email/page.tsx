@@ -19,7 +19,6 @@ function VerifyEmailContent() {
     if (token) {
       verifyEmail(token);
     } else {
-      // No token: show friendly prompt to verify and allow resend
       setStatus('expired');
       setMessage('Please verify your email. A verification email was sent to your inbox.');
     }
@@ -34,7 +33,6 @@ function VerifyEmailContent() {
       setStatus('success');
       setMessage(response.data.message);
       
-      // Redirect to dashboard after 3 seconds
       setTimeout(() => {
         router.push('/dashboard');
       }, 3000);
@@ -50,37 +48,28 @@ function VerifyEmailContent() {
     }
   };
 
-
-
   const resendVerification = async () => {
     setIsResending(true);
     try {
-      console.log('Attempting to resend verification email...');
       const res = await api.post('/auth/resend-verification/');
-      console.log('Resend verification response:', res);
 
       if (res?.status && res.status >= 200 && res.status < 300) {
         setMessage('New verification email sent! Please check your inbox and spam folder.');
         toast.success('Verification email sent successfully!');
       } else {
-        console.error('Unexpected response status:', res?.status);
         setMessage('Failed to resend verification email');
         toast.error('Failed to resend verification email');
       }
     } catch (error: any) {
-      console.error('Resend verification error:', error);
-      console.error('Error response:', error?.response?.data);
-      const status = error?.response?.status;
       const backendMsg = error?.response?.data?.error || error?.response?.data?.message;
       
-      // If email is already verified, redirect to dashboard
       if (backendMsg === 'Email is already verified') {
         toast.success('Email already verified!');
         router.push('/dashboard');
         return;
       }
       
-      const msg = status === 401
+      const msg = error?.response?.status === 401
         ? 'Please log in to resend the verification email.'
         : backendMsg || error?.message || 'Failed to resend verification email';
       setMessage(msg);
@@ -91,10 +80,8 @@ function VerifyEmailContent() {
   };
 
   return (
-    <>
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
-        {/* Header */}
         <div className="text-center">
           <div className="mx-auto h-16 w-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mb-6">
             <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -109,7 +96,6 @@ function VerifyEmailContent() {
           </p>
         </div>
         
-        {/* Content Card */}
         <div className="bg-white dark:bg-gray-800 shadow-xl rounded-2xl p-8 border border-gray-200 dark:border-gray-700">
           {status === 'loading' && (
             <div className="text-center space-y-4">
@@ -185,11 +171,11 @@ function VerifyEmailContent() {
                 </svg>
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-yellow-800 dark:text-yellow-400 mb-2">Link Expired</h3>
+                <h3 className="text-lg font-semibold text-yellow-800 dark:text-yellow-400 mb-2">Verification Needed</h3>
                 <p className="text-gray-600 dark:text-gray-400 mb-4">{message}</p>
                 <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
                   <p className="text-sm text-yellow-700 dark:text-yellow-400">
-                    Verification links expire after 30 days for security reasons. Request a new one below.
+                    Please check your email and click the verification link, or request a new one below.
                   </p>
                 </div>
               </div>
@@ -229,11 +215,8 @@ function VerifyEmailContent() {
             </div>
           )}
         </div>
-
-
       </div>
-      </div>
-    </>
+    </div>
   );
 }
 
