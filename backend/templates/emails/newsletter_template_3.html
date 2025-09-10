@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neurolancer Newsletter</title>
+</head>
+<body style="font-family: 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 0; background-color: #ffffff;">
+    <!-- Minimal Header -->
+    <div style="background: white; padding: 30px; border-bottom: 3px solid #667eea;">
+        <div style="text-align: center;">
+            <img src="https://neurolancer-5jxf.vercel.app/assets/Neurolancer-logo/vector/default-monochrome-white.svg" alt="Neurolancer" style="height: 45px; filter: invert(1) sepia(1) saturate(5) hue-rotate(175deg) brightness(0.8);">
+        </div>
+    </div>
+    
+    <!-- Content -->
+    <div style="padding: 40px 30px;">
+        <div style="text-align: center; margin-bottom: 40px;">
+            <h1 style="color: #1e293b; margin: 0; font-size: 32px; font-weight: 300; letter-spacing: -0.5px;">{{SUBJECT_TITLE}}</h1>
+            <div style="width: 60px; height: 3px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); margin: 20px auto;"></div>
+        </div>
+        
+        <div style="color: #374151; font-size: 17px; line-height: 1.8; text-align: left;">
+            {{CONTENT_AREA}}
+        </div>
+        
+        <!-- Stats/Numbers Section -->
+        <div style="background: #f9fafb; padding: 30px; border-radius: 8px; margin: 40px 0; text-align: center;">
+            <div style="display: flex; justify-content: space-around; flex-wrap: wrap;">
+                <div style="margin: 10px;">
+                    <div style="font-size: 28px; font-weight: bold; color: #667eea;">{{STAT_1_NUMBER}}</div>
+                    <div style="font-size: 14px; color: #6b7280; text-transform: uppercase; letter-spacing: 1px;">{{STAT_1_LABEL}}</div>
+                </div>
+                <div style="margin: 10px;">
+                    <div style="font-size: 28px; font-weight: bold; color: #764ba2;">{{STAT_2_NUMBER}}</div>
+                    <div style="font-size: 14px; color: #6b7280; text-transform: uppercase; letter-spacing: 1px;">{{STAT_2_LABEL}}</div>
+                </div>
+                <div style="margin: 10px;">
+                    <div style="font-size: 28px; font-weight: bold; color: #059669;">{{STAT_3_NUMBER}}</div>
+                    <div style="font-size: 14px; color: #6b7280; text-transform: uppercase; letter-spacing: 1px;">{{STAT_3_LABEL}}</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- CTA Button -->
+        <div style="text-align: center; margin: 40px 0;">
+            <a href="{{CTA_LINK}}" style="background: #1e293b; color: white; padding: 16px 32px; text-decoration: none; border-radius: 4px; display: inline-block; font-weight: 500; font-size: 16px; letter-spacing: 0.5px; text-transform: uppercase;">
+                {{CTA_TEXT}}
+            </a>
+        </div>
+        
+        <!-- Quote Section -->
+        <div style="border-left: 4px solid #e5e7eb; padding-left: 20px; margin: 40px 0; font-style: italic; color: #6b7280;">
+            <p style="margin: 0; font-size: 18px; line-height: 1.6;">"{{QUOTE_TEXT}}"</p>
+            <p style="margin: 15px 0 0 0; font-size: 14px; font-weight: 600; color: #374151;">— {{QUOTE_AUTHOR}}</p>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <div style="background: #f9fafb; padding: 30px; text-align: center; border-top: 1px solid #e5e7eb;">
+        <div style="color: #6b7280; font-size: 14px;">
+            <p style="margin: 0 0 15px 0;">Neurolancer - Connecting AI Talent with Opportunities</p>
+            <p style="margin: 0;">
+                <a href="{{UNSUBSCRIBE_LINK}}" style="color: #6b7280; text-decoration: underline;">Unsubscribe</a> | 
+                <a href="https://neurolancer-5jxf.vercel.app" style="color: #6b7280; text-decoration: underline;">neurolancer.com</a> | 
+                <a href="mailto:support@neurolancer.com" style="color: #6b7280; text-decoration: underline;">Contact</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>
