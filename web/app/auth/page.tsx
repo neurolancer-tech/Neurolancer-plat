@@ -116,9 +116,17 @@ function AuthContent() {
       console.log('Profile:', profile);
       console.log('Profile user_type:', profile?.user_type);
       
+      // Ensure Google users are marked as verified
+      const updatedProfile = {
+        ...profile,
+        auth_provider: 'google',
+        email_verified: true,
+        is_verified: true
+      };
+      
       setAuthToken(token);
       setUser(backendUser);
-      setProfile(profile);
+      setProfile(updatedProfile);
       
       // Show success message based on user type
       if (is_new_user) {
