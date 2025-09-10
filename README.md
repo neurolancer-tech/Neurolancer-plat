@@ -51,7 +51,7 @@ npm run dev
 
 ## 🔗 Live Demo
 
-- **Frontend**: [https://neurolancer-5jxf.vercel.app/](https://neurolancer-5jxf.vercel.app/)
+- **Frontend**: [https://neurolancer-9omq.vercel.app/](https://neurolancer-9omq.vercel.app/)
 - **Backend API**: [https://neurolancer.onrender.com/api](https://neurolancer.onrender.com/api)
 - **Admin Panel**: [https://neurolancer.onrender.com/admin](https://neurolancer.onrender.com/admin)
 
