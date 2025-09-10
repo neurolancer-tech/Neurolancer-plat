@@ -131,24 +131,32 @@ function AuthContent() {
       // Show success message based on user type
       if (is_new_user) {
         toast.success('Welcome to Neurolancer! Account created successfully.');
-        console.log('New Google user, redirecting to onboarding');
-        router.push('/onboarding');
+        console.log('New Google user, showing user type selection');
+        setShowUserTypeSelection(true);
       } else {
         toast.success('Successfully signed in with Google!');
-        console.log('Existing user, checking onboarding status');
-        // Check if existing user needs onboarding
-        try {
-          const onboardingResponse = await api.get('/onboarding/status/');
-          console.log('Onboarding status:', onboardingResponse.data);
-          
-          if (!onboardingResponse.data.completed) {
-            router.push('/onboarding');
-          } else {
+        console.log('Existing user, checking if they have a user type');
+        
+        // Check if existing user has a user_type set
+        if (!updatedProfile.user_type || updatedProfile.user_type === '') {
+          console.log('Existing user has no user_type, showing selection');
+          setShowUserTypeSelection(true);
+        } else {
+          console.log('Existing user has user_type, checking onboarding status');
+          // Check if existing user needs onboarding
+          try {
+            const onboardingResponse = await api.get('/onboarding/status/');
+            console.log('Onboarding status:', onboardingResponse.data);
+            
+            if (!onboardingResponse.data.completed) {
+              router.push('/onboarding');
+            } else {
+              router.push('/dashboard');
+            }
+          } catch (onboardingError) {
+            console.log('No onboarding status found, redirecting to dashboard');
             router.push('/dashboard');
           }
-        } catch (onboardingError) {
-          console.log('No onboarding status found, redirecting to dashboard');
-          router.push('/dashboard');
         }
       }
     } catch (error: any) {

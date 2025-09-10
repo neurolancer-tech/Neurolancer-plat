@@ -255,11 +255,13 @@ def google_auth(request):
             profile.avatar_type = 'avatar'
             profile.selected_avatar = 'user'  # Default neutral avatar
         profile.save()
-    elif photo_url and not profile.google_photo_url:
-        # Update existing user's Google photo if they don't have one
-        profile.google_photo_url = photo_url
-        if profile.avatar_type == 'default':
-            profile.avatar_type = 'google'
+    else:
+        # For existing users, ensure they have email_verified set and update photo if needed
+        profile.email_verified = True  # Google accounts are pre-verified
+        if photo_url and not profile.google_photo_url:
+            profile.google_photo_url = photo_url
+            if profile.avatar_type == 'default':
+                profile.avatar_type = 'google'
         profile.save()
     
 
