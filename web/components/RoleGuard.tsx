@@ -44,7 +44,7 @@ export default function RoleGuard({ children }: RoleGuardProps) {
 
     // Check if user has selected a role
     const profile = getProfile();
-    if (!profile?.user_type || profile.user_type === '') {
+    if (!profile?.user_type) {
       console.log('User has no role selected, redirecting to role selection');
       router.push('/role-selection');
     }
