@@ -243,11 +243,11 @@ export default function MessagesPage() {
     let pollingInterval: NodeJS.Timeout;
     
     if (selectedConversation && selectedConversation.id !== -1) {
-      // Poll every 10 seconds for new messages
+      // Poll every 15 seconds for new messages (non-forced to prevent glitching)
       pollingInterval = setInterval(() => {
-        loadMessages(selectedConversation.id);
+        loadMessages(selectedConversation.id, false);
         loadConversations();
-      }, 10000);
+      }, 15000);
     }
     
     return () => {
@@ -315,38 +315,27 @@ export default function MessagesPage() {
     }
   };
 
-  const loadMessages = async (conversationId: number) => {
+  const loadMessages = async (conversationId: number, force = false) => {
     try {
-      console.log(`Loading messages for conversation ${conversationId}...`);
-      // Add cache-busting parameter to ensure fresh data
-      const timestamp = Date.now();
-      const response = await api.get(`/conversations/${conversationId}/messages/?t=${timestamp}`);
+      const response = await api.get(`/conversations/${conversationId}/messages/`);
       const messageData = response.data.results || response.data;
-      console.log(`Loaded ${messageData.length} messages for conversation ${conversationId}`);
-      
-      // Log the latest few messages for debugging
-      if (messageData.length > 0) {
-        const latestMessages = messageData.slice(-3);
-        console.log('Latest messages:', latestMessages.map((m: any) => ({
-          id: m.id,
-          content: m.content.substring(0, 50) + '...',
-          sender: m.sender.first_name,
-          created_at: m.created_at
-        })));
-      }
       
       // Sort messages by created_at to ensure proper order
       const sortedMessages = messageData.sort((a: any, b: any) => 
         new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
       );
       
-      setMessages(sortedMessages);
-      setNewMessageCount(0);
-      setTimeout(scrollToBottom, 100);
+      // Only update if messages changed or forced
+      if (force || messages.length !== sortedMessages.length || 
+          (sortedMessages.length > 0 && messages.length > 0 && 
+           sortedMessages[sortedMessages.length - 1].id !== messages[messages.length - 1]?.id)) {
+        setMessages(sortedMessages);
+        setNewMessageCount(0);
+        if (force) setTimeout(scrollToBottom, 100);
+      }
     } catch (error) {
       console.error('Error loading messages:', error);
-      console.error('Error details:', (error as any).response?.data);
-      setMessages([]); // Set empty array on error
+      if (force) setMessages([]);
     }
   };
 
@@ -500,13 +489,7 @@ ${messageContent}`;
       setMessages(aiMessages);
       setTimeout(scrollToBottom, 100);
     } else {
-      // Force refresh messages when selecting conversation
-      console.log(`Selecting conversation ${conversation.id}, forcing message refresh...`);
-      setMessages([]); // Clear messages first
-      // Add a small delay to ensure state is updated
-      setTimeout(() => {
-        loadMessages(conversation.id);
-      }, 50);
+      loadMessages(conversation.id, true); // Force load with scroll
     }
   };
 
@@ -988,12 +971,8 @@ ${aiResponse}`;
                       <button 
                         onClick={() => {
                           if (selectedConversation && selectedConversation.id !== -1) {
-                            console.log('Manual refresh triggered - clearing cache and reloading');
-                            setMessages([]); // Clear current messages
-                            setTimeout(() => {
-                              loadMessages(selectedConversation.id);
-                              loadConversations();
-                            }, 100);
+                            loadMessages(selectedConversation.id, true);
+                            loadConversations();
                           }
                         }}
                         className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
