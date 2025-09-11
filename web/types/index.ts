@@ -92,7 +92,7 @@ export interface Order {
 
 export interface Job {
   id: number;
-  client: User;
+  client: User & { profile?: UserProfile };
   title: string;
   description: string;
   category: Category;
