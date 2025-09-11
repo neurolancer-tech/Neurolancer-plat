@@ -64,7 +64,7 @@ export default function EditJobModal({ job, isOpen, onClose, onJobUpdated }: Edi
       
       delete (jobData as any).category;
       
-      await api.put(`/jobs/${job.id}/`, jobData);
+      await api.put(`/jobs/${job.id}/update/`, jobData);
       
       toast.success('Job updated successfully!');
       onJobUpdated();
