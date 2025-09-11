@@ -18,6 +18,7 @@ interface Newsletter {
   total_opened: number;
   open_rate: number;
   created_at: string;
+  content?: string;
 }
 
 interface NewsletterTemplate {
