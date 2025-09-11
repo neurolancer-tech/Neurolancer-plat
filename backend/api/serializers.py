@@ -8,7 +8,8 @@ from .models import (
     Course, Lesson, Enrollment, SkillAssessment, AssessmentQuestion, AssessmentAttempt, SkillBadge, CourseReview,
     Dispute, ContentReport, AdminAction, SystemSettings, NotificationPreference, NotificationTemplate, ErrorLog,
     UserAnalytics, PlatformAnalytics, AnalyticsEvent, ThirdPartyIntegration, IntegrationSync,
-    AIConversation, AIMessage, AssessmentCategory, Assessment, Question, QuestionOption, AssessmentPayment, AssessmentAnswer
+    AIConversation, AIMessage, AssessmentCategory, Assessment, Question, QuestionOption, AssessmentPayment, AssessmentAnswer,
+    Transaction
 )
 
 class UserSerializer(serializers.ModelSerializer):
@@ -1719,4 +1720,11 @@ class AssessmentResultSerializer(serializers.Serializer):
     time_spent = serializers.IntegerField()
     correct_answers = serializers.IntegerField()
     total_questions = serializers.IntegerField()
+
+class TransactionSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    
+    class Meta:
+        model = Transaction
+        fields = '__all__'
 

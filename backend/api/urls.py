@@ -2,6 +2,7 @@ from django.urls import path, include
 from . import views
 from . import views_payments
 from . import assessment_views
+from . import admin_views
 from .payments import (
     initialize_payment, verify_payment, paystack_webhook,
     get_banks, release_escrow,
@@ -251,8 +252,11 @@ urlpatterns = [
     path('admin/gigs/<int:pk>/', views.AdminGigUpdateView.as_view(), name='admin-gig-update'),
     path('admin/orders/', views.AdminOrderListView.as_view(), name='admin-order-list'),
     path('admin/projects/', views.AdminProjectListView.as_view(), name='admin-project-list'),
-    path('admin/transactions/', views.AdminTransactionListView.as_view(), name='admin-transaction-list'),
+    path('admin/transactions/', admin_views.admin_transactions, name='admin-transactions'),
+    path('admin/transactions/<int:transaction_id>/', admin_views.update_transaction_status, name='admin-update-transaction'),
     path('admin/activity/', views.AdminActivityListView.as_view(), name='admin-activity-list'),
+    path('admin/transactions/', admin_views.admin_transactions, name='admin-transactions'),
+    path('admin/transactions/<int:transaction_id>/', admin_views.update_transaction_status, name='admin-update-transaction'),
     
     # Dispute Management URLs
     path('disputes/', views.DisputeListView.as_view(), name='dispute-list'),

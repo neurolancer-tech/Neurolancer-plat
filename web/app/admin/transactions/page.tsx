@@ -47,69 +47,35 @@ export default function AdminTransactionsPage() {
 
   const loadTransactions = async () => {
     try {
-      // Generate mock transaction data
-      const mockTransactions = [
-        {
-          id: 1,
-          type: 'payment' as const,
-          amount: 500.00,
-          status: 'completed' as const,
-          user: { username: 'client_john', first_name: 'John', last_name: 'Doe' },
-          order: { id: 123, gig: { title: 'AI Chatbot Development' } },
-          created_at: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-          processed_at: new Date(Date.now() - 1000 * 60 * 25).toISOString(),
-          payment_method: 'Credit Card',
-          transaction_id: 'TXN_001'
-        },
-        {
-          id: 2,
-          type: 'withdrawal' as const,
-          amount: 450.00,
-          status: 'pending' as const,
-          user: { username: 'freelancer_sarah', first_name: 'Sarah', last_name: 'Smith' },
-          created_at: new Date(Date.now() - 1000 * 60 * 60).toISOString(),
-          payment_method: 'Bank Transfer',
-          transaction_id: 'TXN_002'
-        },
-        {
-          id: 3,
-          type: 'fee' as const,
-          amount: 50.00,
-          status: 'completed' as const,
-          user: { username: 'system', first_name: 'System', last_name: 'Fee' },
-          order: { id: 123, gig: { title: 'AI Chatbot Development' } },
-          created_at: new Date(Date.now() - 1000 * 60 * 90).toISOString(),
-          processed_at: new Date(Date.now() - 1000 * 60 * 85).toISOString(),
-          transaction_id: 'TXN_003'
-        },
-        {
-          id: 4,
-          type: 'refund' as const,
-          amount: 300.00,
-          status: 'completed' as const,
-          user: { username: 'client_mike', first_name: 'Mike', last_name: 'Johnson' },
-          order: { id: 124, gig: { title: 'Data Analysis Project' } },
-          created_at: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
-          processed_at: new Date(Date.now() - 1000 * 60 * 115).toISOString(),
-          payment_method: 'Credit Card',
-          transaction_id: 'TXN_004'
-        },
-        {
-          id: 5,
-          type: 'payment' as const,
-          amount: 750.00,
-          status: 'failed' as const,
-          user: { username: 'client_anna', first_name: 'Anna', last_name: 'Wilson' },
-          order: { id: 125, gig: { title: 'Machine Learning Model' } },
-          created_at: new Date(Date.now() - 1000 * 60 * 180).toISOString(),
-          payment_method: 'Credit Card',
-          transaction_id: 'TXN_005'
-        }
-      ];
+      const response = await api.get('/admin/transactions/');
+      const transactionData = response.data.results || response.data || [];
       
-      setTransactions(mockTransactions);
+      // Transform backend data to match frontend interface
+      const transformedTransactions = transactionData.map((t: any) => ({
+        id: t.id,
+        type: t.transaction_type,
+        amount: parseFloat(t.amount),
+        status: t.status,
+        user: {
+          username: t.user?.username || 'Unknown',
+          first_name: t.user?.first_name || 'Unknown',
+          last_name: t.user?.last_name || 'User'
+        },
+        order: t.order ? {
+          id: t.order.id,
+          gig: { title: t.order.gig?.title || t.description || 'Unknown Order' }
+        } : null,
+        created_at: t.created_at,
+        processed_at: t.created_at, // Use created_at as processed_at for now
+        payment_method: 'Platform Payment',
+        transaction_id: t.reference || `TXN_${t.id}`
+      }));
+      
+      setTransactions(transformedTransactions);
     } catch (error) {
       console.error('Error loading transactions:', error);
+      // Show empty state instead of mock data
+      setTransactions([]);
     } finally {
       setLoading(false);
     }
@@ -117,7 +83,8 @@ export default function AdminTransactionsPage() {
 
   const updateTransactionStatus = async (transactionId: number, newStatus: string) => {
     try {
-      // Mock API call
+      await api.put(`/admin/transactions/${transactionId}/`, { status: newStatus });
+      // Update local state
       setTransactions(prev => 
         prev.map(t => 
           t.id === transactionId 
@@ -127,6 +94,7 @@ export default function AdminTransactionsPage() {
       );
     } catch (error) {
       console.error('Error updating transaction status:', error);
+      alert('Failed to update transaction status');
     }
   };
 
