@@ -6,6 +6,7 @@ import { Toaster } from 'react-hot-toast'
 import Script from 'next/script'
 import { ThemeProvider } from '../contexts/ThemeContext'
 import Footer from '../components/Footer'
+import RoleGuard from '../components/RoleGuard'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -26,12 +27,14 @@ export default function RootLayout({
     <html lang="en" className="">
       <body className={`${inter.className} bg-gray-50 dark:bg-gray-900 transition-colors duration-200`}>
         <ThemeProvider>
-          <div className="min-h-screen flex flex-col">
-            <div className="flex-grow">
-              {children}
+          <RoleGuard>
+            <div className="min-h-screen flex flex-col">
+              <div className="flex-grow">
+                {children}
+              </div>
+              <Footer />
             </div>
-            <Footer />
-          </div>
+          </RoleGuard>
           <Toaster 
             position="top-right"
             toastOptions={{

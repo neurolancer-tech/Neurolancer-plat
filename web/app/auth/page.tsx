@@ -8,16 +8,13 @@ import { toast } from 'react-hot-toast';
 import api from '../../lib/api';
 import { setAuthToken, setUser, setProfile } from '../../lib/auth';
 import { signInWithGoogle, getGoogleRedirectResult } from '../../lib/firebase';
-import OnboardingModal from '../../components/OnboardingModal';
 
 function AuthContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState('signup');
   const [loading, setLoading] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(false);
-  const [showUserTypeSelection, setShowUserTypeSelection] = useState(false);
-  const [userType, setUserType] = useState<'client' | 'freelancer'>('client');
+
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -128,37 +125,22 @@ function AuthContent() {
       setUser(backendUser);
       setProfile(updatedProfile);
       
-      // Show success message based on user type
-      if (is_new_user) {
-        toast.success('Welcome to Neurolancer! Account created successfully.');
-        console.log('New Google user, showing user type selection');
-        setShowUserTypeSelection(true);
-      } else {
-        toast.success('Successfully signed in with Google!');
-        console.log('Existing user, checking if they have a user type');
-        
-        // Check if existing user has a user_type set
-        if (!updatedProfile.user_type || updatedProfile.user_type === '') {
-          console.log('Existing user has no user_type, showing selection');
-          setShowUserTypeSelection(true);
+      // Check if user needs role selection (no user_type set)
+      if (!updatedProfile.user_type || updatedProfile.user_type === '') {
+        console.log('User has no user_type, redirecting to role selection');
+        if (is_new_user) {
+          toast.success('Welcome to Neurolancer! Account created successfully.');
         } else {
-          console.log('Existing user has user_type, checking onboarding status');
-          // Check if existing user needs onboarding
-          try {
-            const onboardingResponse = await api.get('/onboarding/status/');
-            console.log('Onboarding status:', onboardingResponse.data);
-            
-            if (!onboardingResponse.data.completed) {
-              router.push('/onboarding');
-            } else {
-              router.push('/dashboard');
-            }
-          } catch (onboardingError) {
-            console.log('No onboarding status found, redirecting to dashboard');
-            router.push('/dashboard');
-          }
+          toast.success('Successfully signed in with Google!');
         }
+        router.push('/role-selection');
+        return;
       }
+      
+      // User has a role, go to dashboard (onboarding will be handled there if needed)
+      console.log('User has user_type, going to dashboard');
+      toast.success('Successfully signed in with Google!');
+      router.push('/dashboard');
     } catch (error: any) {
       console.error('Backend authentication error:', error);
       if (error.response) {
@@ -189,17 +171,8 @@ function AuthContent() {
       
       toast.success('Login successful!');
       
-      // Check onboarding status
-      try {
-        const onboardingResponse = await api.get('/onboarding/status/');
-        if (!onboardingResponse.data.completed) {
-          router.push('/onboarding');
-        } else {
-          router.push('/dashboard');
-        }
-      } catch {
-        router.push('/dashboard');
-      }
+      // Go directly to dashboard (onboarding will be handled there if needed)
+      router.push('/dashboard');
     } catch (error: any) {
       toast.error((error as any).response?.data?.error || 'Login failed');
     } finally {
@@ -270,7 +243,7 @@ function AuthContent() {
       
       const successMsg = (data as any)?.message || 'Registration successful! Please check your email to verify your account.';
       toast.success(successMsg);
-      // Do NOT send regular registrants to onboarding (role was chosen already)
+      // Regular users go to login page (no onboarding redirect)
       router.push('/auth?tab=login');
     } catch (error: any) {
       const errorMsg = (error as any).response?.data?.username?.[0] || 
@@ -304,33 +277,7 @@ function AuthContent() {
     }
   };
 
-  const handleOnboardingComplete = () => {
-    setShowOnboarding(false);
-    router.push('/dashboard');
-  };
 
-  const handleUserTypeSelection = async (selectedType: 'client' | 'freelancer') => {
-    try {
-      console.log('Updating user type to:', selectedType);
-      
-      // Update user profile with selected type
-      const response = await api.patch('/profile/update/', {
-        user_type: selectedType
-      });
-      
-      console.log('Profile update response:', response.data);
-      
-      setUserType(selectedType);
-      setShowUserTypeSelection(false);
-      
-      // Always show onboarding for new Google users
-      console.log('Showing onboarding modal');
-      setShowOnboarding(true);
-    } catch (error) {
-      console.error('Failed to update user type:', error);
-      toast.error('Failed to update user type');
-    }
-  };
 
   return (
     <>
@@ -657,59 +604,7 @@ function AuthContent() {
         </div>
       </div>
 
-      {/* User Type Selection Modal */}
-      {showUserTypeSelection && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
-            <div className="text-center mb-6">
-              <div className="text-4xl mb-4">🎉</div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome to Neurolancer!</h2>
-              <p className="text-gray-600">How do you plan to use our platform?</p>
-            </div>
-            
-            <div className="space-y-4">
-              <button
-                onClick={() => handleUserTypeSelection('client')}
-                className="w-full p-6 border-2 border-gray-200 rounded-xl hover:border-blue-500 hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 transition-all duration-200 text-left group"
-              >
-                <div className="flex items-center">
-                  <div className="text-4xl mr-4 group-hover:scale-110 transition-transform">🎯</div>
-                  <div>
-                    <div className="font-semibold text-lg text-gray-900">I&apos;m a Client</div>
-                    <div className="text-sm text-gray-600">I want to hire AI experts for my projects</div>
-                  </div>
-                </div>
-              </button>
-              
-              <button
-                onClick={() => handleUserTypeSelection('freelancer')}
-                className="w-full p-6 border-2 border-gray-200 rounded-xl hover:border-green-500 hover:bg-gradient-to-r hover:from-green-50 hover:to-green-100 transition-all duration-200 text-left group"
-              >
-                <div className="flex items-center">
-                  <div className="text-4xl mr-4 group-hover:scale-110 transition-transform">🚀</div>
-                  <div>
-                    <div className="font-semibold text-lg text-gray-900">I&apos;m a Freelancer</div>
-                    <div className="text-sm text-gray-600">I want to offer my AI expertise and services</div>
-                  </div>
-                </div>
-              </button>
-            </div>
-            
-            <div className="mt-6 text-center">
-              <p className="text-xs text-gray-500">
-                Don&apos;t worry, you can change this later in your profile settings
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
 
-      {/* Onboarding Modal */}
-      <OnboardingModal
-        isOpen={showOnboarding}
-        userType={userType}
-        onComplete={handleOnboardingComplete}
-      />
 
 
     </>
