@@ -120,8 +120,10 @@ const NewsletterAdminPage: React.FC = () => {
       setShowCreateModal(false);
       setNewNewsletter({ title: '', subject: '', content: '', newsletter_type: 'weekly_digest' });
       loadNewsletters();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating newsletter:', error);
+      console.error('Error response:', error.response?.data);
+      alert(`Error: ${error.response?.data?.detail || error.response?.data?.message || 'Failed to create newsletter'}`);
     }
   };
 
