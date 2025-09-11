@@ -143,11 +143,71 @@ function AuthContent() {
       router.push('/dashboard');
     } catch (error: any) {
       console.error('Backend authentication error:', error);
+      
+      // Check if this is a network/timeout error but user might have been created
+      const isNetworkError = !error.response || error.code === 'NETWORK_ERROR' || error.message?.includes('timeout');
+      const isServerError = error.response?.status >= 500;
+      
+      if (isNetworkError || isServerError) {
+        console.log('Network/server error detected, attempting retry with same credentials...');
+        
+        // Wait a moment and try again - user might have been created on first attempt
+        setTimeout(async () => {
+          try {
+            const retryResponse = await api.post('/auth/google/', {
+              uid: user.uid,
+              email: user.email,
+              first_name: user.displayName?.split(' ')[0] || '',
+              last_name: user.displayName?.split(' ').slice(1).join(' ') || '',
+              photo_url: user.photoURL
+            });
+            
+            console.log('Retry successful:', retryResponse.data);
+            const { user: backendUser, token, profile, is_new_user } = retryResponse.data;
+            
+            const updatedProfile = {
+              ...profile,
+              auth_provider: 'google',
+              email_verified: true,
+              is_verified: true
+            };
+            
+            setAuthToken(token);
+            setUser(backendUser);
+            setProfile(updatedProfile);
+            
+            if (!updatedProfile.user_type || updatedProfile.user_type === '') {
+              toast.success('Successfully registered with Google!');
+              router.push('/role-selection');
+            } else {
+              toast.success('Successfully signed in with Google!');
+              router.push('/dashboard');
+            }
+            setLoading(false);
+          } catch (retryError: any) {
+            console.error('Retry also failed:', retryError);
+            setLoading(false);
+            
+            // Show more user-friendly error message
+            if (retryError.response?.status === 400 && retryError.response?.data?.error?.includes('already exists')) {
+              toast.error('Account already exists. Please try signing in again.');
+            } else {
+              toast.error('Connection issue. Please check your internet and try again.');
+            }
+          }
+        }, 2000); // Wait 2 seconds before retry
+        
+        return; // Don't set loading to false yet, retry will handle it
+      }
+      
+      // Handle other types of errors normally
       if (error.response) {
         console.error('Error response:', error.response.data);
         console.error('Status:', error.response.status);
       }
-      toast.error('Authentication failed: ' + ((error as any).response?.data?.error || (error as any).message));
+      
+      const errorMessage = error.response?.data?.error || error.message || 'Authentication failed';
+      toast.error('Authentication failed: ' + errorMessage);
     } finally {
       setLoading(false);
     }
