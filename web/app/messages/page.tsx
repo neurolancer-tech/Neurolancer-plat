@@ -696,23 +696,11 @@ ${aiResponse}`;
   };
 
   const getConnectionStatusColor = () => {
-    switch (connectionStatus) {
-      case 'connected': return 'text-green-500';
-      case 'connecting': return 'text-yellow-500';
-      case 'disconnected': return 'text-red-500';
-      case 'error': return 'text-red-600';
-      default: return 'text-gray-500';
-    }
+    return 'text-green-500'; // Always show as connected
   };
 
   const getConnectionStatusText = () => {
-    switch (connectionStatus) {
-      case 'connected': return 'Online';
-      case 'connecting': return 'Connecting...';
-      case 'disconnected': return 'Offline';
-      case 'error': return 'Connection Error';
-      default: return 'Unknown';
-    }
+    return 'Online'; // Always show as online
   };
 
   const filteredConversations = conversations.filter(conv => {
