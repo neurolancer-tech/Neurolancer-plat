@@ -466,7 +466,10 @@ ${messageContent}`;
           },
         });
         
-        // Don't add message here - let WebSocket handle it
+        // Reload messages to show the uploaded file
+        if (selectedConversation.id !== -1) {
+          loadMessages(selectedConversation.id, true);
+        }
         setTimeout(scrollToBottom, 100);
       } catch (error) {
         console.error('Error sending file:', error);
@@ -552,7 +555,11 @@ ${messageContent}`;
         
         // Check if replying to an image
         if (replyTo && replyTo.attachment_url && replyTo.attachment_type === 'image') {
-          const imageUrl = `http://localhost:8000${replyTo.attachment_url}`;
+          const getFileUrl = (url: string) => {
+            if (url.startsWith('http')) return url;
+            return `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${url.startsWith('/') ? url : '/' + url}`;
+          };
+          const imageUrl = getFileUrl(replyTo.attachment_url);
           aiResponse = await chatbot.analyzeImage(imageUrl, aiQuery);
         } else {
           let contextMessage = aiQuery;
@@ -629,7 +636,11 @@ ${aiResponse}`;
   const handleAiImageAnalysis = async (conversationId: number, imageMessage: Message) => {
     setTimeout(async () => {
       try {
-        const imageUrl = `http://localhost:8000${imageMessage.attachment_url}`;
+        const getFileUrl = (url: string) => {
+          if (url.startsWith('http')) return url;
+          return `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${url.startsWith('/') ? url : '/' + url}`;
+        };
+        const imageUrl = getFileUrl(imageMessage.attachment_url!);
         const aiResponse = await chatbot.analyzeImage(imageUrl);
         
         const responseContent = `🤖 **Analyzing image from ${imageMessage.sender.first_name}:**\n\n${aiResponse}`;
@@ -1070,106 +1081,126 @@ ${aiResponse}`;
                                     {/* Show attachment if present */}
                                     {message.attachment_url ? (
                                       <div>
-                                        {message.attachment_type === 'image' ? (
-                                          <div className="relative group">
-                                            <Image
-                                              src={message.attachment_url}
-                                              alt={message.attachment_name || 'Image'}
-                                              width={300}
-                                              height={200}
-                                              className="rounded-lg max-w-xs object-cover cursor-pointer"
-                                              onClick={() => window.open(message.attachment_url, '_blank')}
-                                            />
-                                            <a
-                                              href={message.attachment_url}
-                                              download={message.attachment_name}
-                                              className={`absolute top-2 right-2 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity ${
-                                                isCurrentUser ? 'bg-white bg-opacity-80 text-gray-700' : 'bg-gray-800 bg-opacity-80 text-white'
-                                              }`}
-                                              title="Download"
-                                            >
-                                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                              </svg>
-                                            </a>
-                                            {message.attachment_name && (
-                                              <p className="text-xs opacity-70 mt-1">{message.attachment_name}</p>
-                                            )}
-                                          </div>
-                                        ) : message.attachment_type === 'video' ? (
-                                          <div className="relative group">
-                                            <video controls className="max-w-xs rounded-lg">
-                                              <source src={message.attachment_url} type="video/mp4" />
-                                              Your browser does not support the video element.
-                                            </video>
-                                            <a
-                                              href={message.attachment_url}
-                                              download={message.attachment_name}
-                                              className={`absolute top-2 right-2 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity ${
-                                                isCurrentUser ? 'bg-white bg-opacity-80 text-gray-700' : 'bg-gray-800 bg-opacity-80 text-white'
-                                              }`}
-                                              title="Download"
-                                            >
-                                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                              </svg>
-                                            </a>
-                                            {message.attachment_name && (
-                                              <p className="text-xs opacity-70 mt-1">{message.attachment_name}</p>
-                                            )}
-                                          </div>
-                                        ) : message.attachment_type === 'audio' ? (
-                                          <div className="relative group">
-                                            <audio controls className="max-w-xs">
-                                              <source src={message.attachment_url} type="audio/mpeg" />
-                                              Your browser does not support the audio element.
-                                            </audio>
-                                            <a
-                                              href={message.attachment_url}
-                                              download={message.attachment_name}
-                                              className={`absolute top-2 right-2 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity ${
-                                                isCurrentUser ? 'bg-white bg-opacity-80 text-gray-700' : 'bg-gray-800 bg-opacity-80 text-white'
-                                              }`}
-                                              title="Download"
-                                            >
-                                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                              </svg>
-                                            </a>
-                                            {message.attachment_name && (
-                                              <p className="text-xs opacity-70 mt-1">{message.attachment_name}</p>
-                                            )}
-                                          </div>
-                                        ) : (
-                                          <div className={`flex items-center space-x-2 rounded-lg p-3 max-w-xs ${
-                                            isCurrentUser ? 'bg-white bg-opacity-20' : 'bg-gray-100'
-                                          }`}>
-                                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg ${
-                                              isCurrentUser ? 'bg-white bg-opacity-30' : 'bg-gray-200'
-                                            }`}>
-                                              📎
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                              <p className="text-sm font-medium truncate">{message.attachment_name}</p>
-                                              <div className="flex items-center space-x-2 mt-1">
-                                                <button
-                                                  onClick={() => window.open(message.attachment_url, '_blank')}
-                                                  className="text-xs opacity-70 hover:opacity-100"
-                                                >
-                                                  Open
-                                                </button>
-                                                <span className="text-xs opacity-50">•</span>
+                                        {(() => {
+                                          const getFileUrl = (url: string) => {
+                                            if (url.startsWith('http')) return url;
+                                            return `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${url.startsWith('/') ? url : '/' + url}`;
+                                          };
+                                          const fileUrl = getFileUrl(message.attachment_url!);
+                                          
+                                          if (message.attachment_type === 'image') {
+                                            return (
+                                              <div className="relative group">
+                                                <Image
+                                                  src={fileUrl}
+                                                  alt={message.attachment_name || 'Image'}
+                                                  width={300}
+                                                  height={200}
+                                                  className="rounded-lg max-w-xs object-cover cursor-pointer"
+                                                  onClick={() => window.open(fileUrl, '_blank')}
+                                                  onError={(e) => {
+                                                    console.error('Image load error:', fileUrl);
+                                                    (e.target as HTMLImageElement).style.display = 'none';
+                                                  }}
+                                                />
                                                 <a
-                                                  href={message.attachment_url}
+                                                  href={fileUrl}
                                                   download={message.attachment_name}
-                                                  className="text-xs opacity-70 hover:opacity-100"
+                                                  className={`absolute top-2 right-2 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity ${
+                                                    isCurrentUser ? 'bg-white bg-opacity-80 text-gray-700' : 'bg-gray-800 bg-opacity-80 text-white'
+                                                  }`}
+                                                  title="Download"
                                                 >
-                                                  Download
+                                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                  </svg>
                                                 </a>
+                                                {message.attachment_name && (
+                                                  <p className="text-xs opacity-70 mt-1">{message.attachment_name}</p>
+                                                )}
                                               </div>
-                                            </div>
-                                          </div>
-                                        )}
+                                            );
+                                          } else if (message.attachment_type === 'video') {
+                                            return (
+                                              <div className="relative group">
+                                                <video controls className="max-w-xs rounded-lg">
+                                                  <source src={fileUrl} type="video/mp4" />
+                                                  Your browser does not support the video element.
+                                                </video>
+                                                <a
+                                                  href={fileUrl}
+                                                  download={message.attachment_name}
+                                                  className={`absolute top-2 right-2 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity ${
+                                                    isCurrentUser ? 'bg-white bg-opacity-80 text-gray-700' : 'bg-gray-800 bg-opacity-80 text-white'
+                                                  }`}
+                                                  title="Download"
+                                                >
+                                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                  </svg>
+                                                </a>
+                                                {message.attachment_name && (
+                                                  <p className="text-xs opacity-70 mt-1">{message.attachment_name}</p>
+                                                )}
+                                              </div>
+                                            );
+                                          } else if (message.attachment_type === 'audio') {
+                                            return (
+                                              <div className="relative group">
+                                                <audio controls className="max-w-xs">
+                                                  <source src={fileUrl} type="audio/mpeg" />
+                                                  Your browser does not support the audio element.
+                                                </audio>
+                                                <a
+                                                  href={fileUrl}
+                                                  download={message.attachment_name}
+                                                  className={`absolute top-2 right-2 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity ${
+                                                    isCurrentUser ? 'bg-white bg-opacity-80 text-gray-700' : 'bg-gray-800 bg-opacity-80 text-white'
+                                                  }`}
+                                                  title="Download"
+                                                >
+                                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                  </svg>
+                                                </a>
+                                                {message.attachment_name && (
+                                                  <p className="text-xs opacity-70 mt-1">{message.attachment_name}</p>
+                                                )}
+                                              </div>
+                                            );
+                                          } else {
+                                            return (
+                                              <div className={`flex items-center space-x-2 rounded-lg p-3 max-w-xs ${
+                                                isCurrentUser ? 'bg-white bg-opacity-20' : 'bg-gray-100'
+                                              }`}>
+                                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg ${
+                                                  isCurrentUser ? 'bg-white bg-opacity-30' : 'bg-gray-200'
+                                                }`}>
+                                                  📎
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                  <p className="text-sm font-medium truncate">{message.attachment_name}</p>
+                                                  <div className="flex items-center space-x-2 mt-1">
+                                                    <button
+                                                      onClick={() => window.open(fileUrl, '_blank')}
+                                                      className="text-xs opacity-70 hover:opacity-100"
+                                                    >
+                                                      Open
+                                                    </button>
+                                                    <span className="text-xs opacity-50">•</span>
+                                                    <a
+                                                      href={fileUrl}
+                                                      download={message.attachment_name}
+                                                      className="text-xs opacity-70 hover:opacity-100"
+                                                    >
+                                                      Download
+                                                    </a>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            );
+                                          }
+                                        })()}
                                       </div>
                                     ) : (
                                       /* Show text content if no attachment */

@@ -262,7 +262,7 @@ export default function JobsPage() {
                                   <Avatar
                                     src={(job.client as any)?.profile_picture}
                                     avatarType={((job.client as any)?.avatar_type as "upload" | "avatar" | "google") || 'avatar'}
-                                    selectedAvatar={(job.client as any)?.selected_avatar}
+                                    selectedAvatar={(job.client as any)?.selected_avatar || 'user'}
                                     googlePhotoUrl={(job.client as any)?.google_photo_url}
                                     size="sm"
                                     alt={job.client?.first_name || 'Client'}
