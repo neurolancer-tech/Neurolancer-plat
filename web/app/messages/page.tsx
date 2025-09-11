@@ -15,7 +15,7 @@ import GroupInviteModal from '../../components/GroupInviteModal';
 import MessageContent from '../../components/MessageContent';
 
 import { isAuthenticated, getUser } from '../../lib/auth';
-import { useWebSocket } from '../../lib/websocket';
+// import { useWebSocket } from '../../lib/websocket'; // Disabled for free tier
 import api from '../../lib/api';
 import { ALL_EMOJIS, POPULAR_EMOJIS } from '../../lib/emojis';
 import { searchEmojisWithMapping } from '../../lib/emoji-search-mappings';
@@ -87,7 +87,12 @@ export default function MessagesPage() {
   const emojiPickerRef = useRef<HTMLDivElement>(null);
   const currentUser = getUser();
 
-  const { connectionStatus, lastMessage, sendMessage: wsSend, lastMetaConversationId } = useWebSocket(selectedConversation?.id);
+  // WebSocket disabled for free tier - keeping code for future upgrade
+  // const { connectionStatus, lastMessage, sendMessage: wsSend, lastMetaConversationId } = useWebSocket(selectedConversation?.id);
+  const connectionStatus = 'connected'; // Always show as connected
+  const lastMessage = null;
+  const wsSend = () => {}; // No-op function
+  const lastMetaConversationId = null;
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -161,88 +166,88 @@ export default function MessagesPage() {
     initializeAiMessages();
   }, [router]);
 
-  // Pause/resume live updates with backend when user scrolls away/returns
-  useEffect(() => {
-    if (!selectedConversation || selectedConversation.id === -1) return;
-    try {
-      if (isAtBottom) {
-        wsSend({ type: 'resume_updates', conversation_id: selectedConversation.id });
-      } else {
-        wsSend({ type: 'pause_updates', conversation_id: selectedConversation.id });
-      }
-    } catch {}
-  }, [isAtBottom, selectedConversation, wsSend]);
+  // WebSocket pause/resume disabled for free tier
+  // useEffect(() => {
+  //   if (!selectedConversation || selectedConversation.id === -1) return;
+  //   try {
+  //     if (isAtBottom) {
+  //       wsSend({ type: 'resume_updates', conversation_id: selectedConversation.id });
+  //     } else {
+  //       wsSend({ type: 'pause_updates', conversation_id: selectedConversation.id });
+  //     }
+  //   } catch {}
+  // }, [isAtBottom, selectedConversation, wsSend]);
 
-  // Handle new messages from WebSocket (full payload)
-  useEffect(() => {
-    if (lastMessage && selectedConversation) {
-      if (lastMessage.conversation === selectedConversation.id) {
-        const isOwnMessage = lastMessage.sender.id === currentUser?.id;
-        
-        // Always add own messages immediately
-        if (isOwnMessage) {
-          setMessages(prev => {
-            const exists = prev.find(m => m.id === lastMessage.id);
-            if (exists) return prev;
-            return [...prev, { ...lastMessage, is_read: (lastMessage as any).is_read ?? true }];
-          });
-          setTimeout(scrollToBottom, 50);
-        } else {
-          // For other users' messages, only add if at bottom
-          if (isAtBottom) {
-            setMessages(prev => {
-              const exists = prev.find(m => m.id === lastMessage.id);
-              if (exists) return prev;
-              return [...prev, { ...lastMessage, is_read: (lastMessage as any).is_read ?? true }];
-            });
-            setTimeout(scrollToBottom, 50);
-          } else {
-            // Buffer messages when not at bottom
-            setPendingMessages(prev => {
-              const exists = prev.find(m => m.id === lastMessage.id);
-              if (exists) return prev;
-              return [...prev, { ...lastMessage, is_read: (lastMessage as any).is_read ?? true }];
-            });
-            setNewMessageCount(prev => prev + 1);
-          }
-        }
+  // WebSocket message handling disabled for free tier
+  // useEffect(() => {
+  //   if (lastMessage && selectedConversation) {
+  //     if (lastMessage.conversation === selectedConversation.id) {
+  //       const isOwnMessage = lastMessage.sender.id === currentUser?.id;
+  //       
+  //       // Always add own messages immediately
+  //       if (isOwnMessage) {
+  //         setMessages(prev => {
+  //           const exists = prev.find(m => m.id === lastMessage.id);
+  //           if (exists) return prev;
+  //           return [...prev, { ...lastMessage, is_read: (lastMessage as any).is_read ?? true }];
+  //         });
+  //         setTimeout(scrollToBottom, 50);
+  //       } else {
+  //         // For other users' messages, only add if at bottom
+  //         if (isAtBottom) {
+  //           setMessages(prev => {
+  //             const exists = prev.find(m => m.id === lastMessage.id);
+  //             if (exists) return prev;
+  //             return [...prev, { ...lastMessage, is_read: (lastMessage as any).is_read ?? true }];
+  //           });
+  //           setTimeout(scrollToBottom, 50);
+  //         } else {
+  //           // Buffer messages when not at bottom
+  //           setPendingMessages(prev => {
+  //             const exists = prev.find(m => m.id === lastMessage.id);
+  //             if (exists) return prev;
+  //             return [...prev, { ...lastMessage, is_read: (lastMessage as any).is_read ?? true }];
+  //           });
+  //           setNewMessageCount(prev => prev + 1);
+  //         }
+  //       }
 
-        // AI participation triggers (do not depend on whether buffered or not)
-        if (selectedConversation.conversation_type === 'group' &&
-            !isOwnMessage &&
-            !lastMessage.content.startsWith('🤖')) {
-          if ((lastMessage as any).attachment_url && (lastMessage as any).attachment_type === 'image' && aiModeEnabled) {
-            handleAiImageAnalysis(selectedConversation.id, lastMessage as any);
-          } else {
-            handleRandomAiParticipation(selectedConversation.id, lastMessage.content);
-          }
-        }
-      }
+  //       // AI participation triggers (do not depend on whether buffered or not)
+  //       if (selectedConversation.conversation_type === 'group' &&
+  //           !isOwnMessage &&
+  //           !lastMessage.content.startsWith('🤖')) {
+  //         if ((lastMessage as any).attachment_url && (lastMessage as any).attachment_type === 'image' && aiModeEnabled) {
+  //           handleAiImageAnalysis(selectedConversation.id, lastMessage as any);
+  //         } else {
+  //           handleRandomAiParticipation(selectedConversation.id, lastMessage.content);
+  //         }
+  //       }
+  //     }
 
-      loadConversations();
-    }
-  }, [lastMessage, selectedConversation, isAtBottom, currentUser, aiModeEnabled]);
+  //     loadConversations();
+  //   }
+  // }, [lastMessage, selectedConversation, isAtBottom, currentUser, aiModeEnabled]);
 
-  // Handle meta-only new message notifications when paused
-  useEffect(() => {
-    if (!selectedConversation || selectedConversation.id === -1) return;
-    if (lastMetaConversationId && lastMetaConversationId === selectedConversation.id) {
-      if (!isAtBottom) {
-        setNewMessageCount(prev => prev + 1);
-      }
-    }
-  }, [lastMetaConversationId, selectedConversation, isAtBottom]);
+  // WebSocket meta notifications disabled for free tier
+  // useEffect(() => {
+  //   if (!selectedConversation || selectedConversation.id === -1) return;
+  //   if (lastMetaConversationId && lastMetaConversationId === selectedConversation.id) {
+  //     if (!isAtBottom) {
+  //       setNewMessageCount(prev => prev + 1);
+  //     }
+  //   }
+  // }, [lastMetaConversationId, selectedConversation, isAtBottom]);
 
-  // Use polling instead of WebSocket for better reliability
+  // Simple polling for message updates (no live updates)
   useEffect(() => {
     let pollingInterval: NodeJS.Timeout;
     
     if (selectedConversation && selectedConversation.id !== -1) {
-      console.log('Starting polling for conversation', selectedConversation.id);
+      // Poll every 10 seconds for new messages
       pollingInterval = setInterval(() => {
         loadMessages(selectedConversation.id);
         loadConversations();
-      }, 5000); // Poll every 5 seconds
+      }, 10000);
     }
     
     return () => {
@@ -252,23 +257,7 @@ export default function MessagesPage() {
     };
   }, [selectedConversation]);
 
-  // Auto-refresh messages periodically for group chats to catch any missed messages
-  useEffect(() => {
-    let refreshInterval: NodeJS.Timeout;
-    
-    if (selectedConversation && selectedConversation.conversation_type === 'group' && selectedConversation.id !== -1 && isAtBottom) {
-      refreshInterval = setInterval(() => {
-        console.log('Auto-refreshing group messages...');
-        loadMessages(selectedConversation.id);
-      }, 10000); // Refresh every 10 seconds for groups
-    }
-    
-    return () => {
-      if (refreshInterval) {
-        clearInterval(refreshInterval);
-      }
-    };
-  }, [selectedConversation, isAtBottom]);
+  // Removed auto-refresh for groups - using single polling interval above
 
   // Monitor scroll position
   useEffect(() => {
@@ -1325,7 +1314,7 @@ ${aiResponse}`;
                             }}
                             placeholder={selectedConversation?.conversation_type === 'group' && aiModeEnabled ? 'AI Mode ON - Type a message for AI to respond...' : 'Type a message...'}
                             className="input-field rounded-full pr-10 sm:pr-12"
-                            disabled={selectedConversation?.id !== -1 && connectionStatus !== 'connected'}
+                            disabled={false}
                           />
                           <div className="absolute right-3 top-1/2 transform -translate-y-1/2" ref={emojiPickerRef}>
                             <button 
@@ -1410,7 +1399,7 @@ ${aiResponse}`;
                         </div>
                         <button 
                           type="submit" 
-                          disabled={!newMessage.trim() || (selectedConversation?.id !== -1 && connectionStatus !== 'connected')}
+                          disabled={!newMessage.trim()}
                           className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-3 rounded-full hover:from-blue-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                           onClick={() => setShowEmojiPicker(false)}
                         >
@@ -1420,18 +1409,7 @@ ${aiResponse}`;
                         </button>
                       </div>
                       
-                      {connectionStatus !== 'connected' && selectedConversation?.id !== -1 && (
-                        <div className="mt-2 text-center">
-                          <span className="text-xs text-gray-500">
-                            {connectionStatus === 'connecting' 
-                              ? 'Connecting to real-time chat...' 
-                              : connectionStatus === 'error'
-                              ? 'Using fallback mode - messages will update every 3 seconds'
-                              : 'Chat unavailable - messages will be sent when connection is restored'
-                            }
-                          </span>
-                        </div>
-                      )}
+
                     </form>
                   </div>
 
