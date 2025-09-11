@@ -28,7 +28,7 @@ export default function RoleSelectionPage() {
     setUserProfile(currentProfile);
 
     // If user already has a role, redirect to dashboard
-    if (currentProfile?.user_type && currentProfile.user_type !== '') {
+    if (currentProfile?.user_type) {
       router.push('/dashboard');
       return;
     }
