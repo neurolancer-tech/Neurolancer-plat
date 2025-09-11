@@ -11,8 +11,8 @@ import { getUser, getProfile, isAuthenticated, setProfile } from '../../lib/auth
 export default function RoleSelectionPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [user, setUser] = useState(null);
-  const [profile, setUserProfile] = useState(null);
+  const [user, setUser] = useState<any>(null);
+  const [profile, setUserProfile] = useState<any>(null);
 
   useEffect(() => {
     // Check if user is authenticated
