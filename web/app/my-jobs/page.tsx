@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Navigation from '@/components/Navigation';
 import LikeButton from '@/components/LikeButton';
+import EditJobModal from '@/components/EditJobModal';
 import { Job, Proposal } from '@/types';
 import { isAuthenticated, getProfile, getUser } from '@/lib/auth';
 import api from '@/lib/api';
@@ -24,6 +25,8 @@ export default function MyJobsPage() {
   const [ratingJob, setRatingJob] = useState<Job | null>(null);
   const [rating, setRating] = useState(5);
   const [reviewText, setReviewText] = useState('');
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingJob, setEditingJob] = useState<Job | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -161,6 +164,15 @@ export default function MyJobsPage() {
     setSelectedJob(job);
     loadProposals(job.id);
     setShowProposals(true);
+  };
+
+  const handleEditJob = (job: Job) => {
+    setEditingJob(job);
+    setShowEditModal(true);
+  };
+
+  const handleJobUpdated = () => {
+    loadJobs();
   };
 
   const filteredJobs = jobs.filter(job => {
@@ -354,12 +366,12 @@ export default function MyJobsPage() {
                         >
                           Update Progress
                         </Link>
-                        <Link 
-                          href={`/jobs/${job.id}/edit`}
+                        <button
+                          onClick={() => handleEditJob(job)}
                           className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
                         >
                           Edit
-                        </Link>
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -450,6 +462,19 @@ export default function MyJobsPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Edit Job Modal */}
+      {showEditModal && editingJob && (
+        <EditJobModal
+          job={editingJob}
+          isOpen={showEditModal}
+          onClose={() => {
+            setShowEditModal(false);
+            setEditingJob(null);
+          }}
+          onJobUpdated={handleJobUpdated}
+        />
       )}
 
       {/* Rating Modal */}
