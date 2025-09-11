@@ -109,7 +109,7 @@ export default function JobProgressPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <Navigation />
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -120,11 +120,11 @@ export default function JobProgressPage() {
 
   if (!job) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <Navigation />
         <div className="max-w-4xl mx-auto px-4 py-8">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">Job Not Found</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Job Not Found</h1>
             <Link href="/my-jobs" className="btn-primary">
               Back to My Jobs
             </Link>
@@ -135,34 +135,34 @@ export default function JobProgressPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navigation />
       
       <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="card">
           {/* Header */}
-          <div className="p-6 border-b">
-            <h1 className="text-2xl font-bold text-gray-900">Update Job Progress</h1>
-            <p className="text-gray-600 mt-2">Update the status and progress of this job</p>
+          <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Update Job Progress</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">Update the status and progress of this job</p>
           </div>
 
           {/* Job Details */}
-          <div className="p-6 border-b bg-gray-50">
-            <h3 className="font-semibold text-gray-900 mb-2">{job.title}</h3>
-            <p className="text-sm text-gray-600 mb-2">{job.description.substring(0, 150)}...</p>
+          <div className="p-6 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+            <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">{job.title}</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{job.description.substring(0, 150)}...</p>
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Budget:</span>
-              <span className="font-medium">${job.budget_min} - ${job.budget_max}</span>
+              <span className="text-gray-600 dark:text-gray-400">Budget:</span>
+              <span className="font-medium text-gray-900 dark:text-gray-100">${job.budget_min} - ${job.budget_max}</span>
             </div>
             <div className="flex justify-between text-sm mt-1">
-              <span className="text-gray-600">Current Status:</span>
+              <span className="text-gray-600 dark:text-gray-400">Current Status:</span>
               <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(job.status)}`}>
                 {getStatusLabel(job.status)}
               </span>
             </div>
             <div className="flex justify-between text-sm mt-1">
-              <span className="text-gray-600">Proposals:</span>
-              <span className="font-medium">{job.proposal_count}</span>
+              <span className="text-gray-600 dark:text-gray-400">Proposals:</span>
+              <span className="font-medium text-gray-900 dark:text-gray-100">{job.proposal_count}</span>
             </div>
           </div>
 
@@ -171,7 +171,7 @@ export default function JobProgressPage() {
             <div className="space-y-6">
               {/* Status Selection */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Job Status *
                 </label>
                 <select
@@ -186,7 +186,7 @@ export default function JobProgressPage() {
                   <option value="completed">Completed</option>
                   <option value="cancelled">Cancelled</option>
                 </select>
-                <div className="mt-2 text-sm text-gray-600">
+                <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
                   <ul className="space-y-1">
                     <li><strong>Open:</strong> Job is still accepting proposals</li>
                     <li><strong>In Progress:</strong> Work has started on the job</li>
@@ -198,7 +198,7 @@ export default function JobProgressPage() {
 
               {/* Progress Message */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Progress Update Message
                 </label>
                 <textarea
@@ -209,16 +209,16 @@ export default function JobProgressPage() {
                   className="input-field"
                   placeholder="Describe the current progress, what has been completed, and next steps..."
                 />
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                   This message will be sent to freelancers who have submitted proposals
                 </p>
               </div>
 
               {/* Status Change Effects */}
               {formData.status !== job.status && (
-                <div className="p-4 bg-blue-50 rounded-lg">
-                  <h4 className="font-medium text-blue-900 mb-2">Status Change Effects:</h4>
-                  <div className="text-sm text-blue-800">
+                <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2">Status Change Effects:</h4>
+                  <div className="text-sm text-blue-800 dark:text-blue-200">
                     {formData.status === 'in_progress' && (
                       <p>• Freelancers will be notified that work has started</p>
                     )}
@@ -237,10 +237,10 @@ export default function JobProgressPage() {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex justify-between mt-8 pt-6 border-t">
+            <div className="flex justify-between mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
               <Link
                 href="/my-jobs"
-                className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
               >
                 Cancel
               </Link>
