@@ -1,16 +1,16 @@
 from django.db import migrations
-from django.contrib.auth.models import User
 import os
 
 def populate_newsletter_templates(apps, schema_editor):
     """Populate newsletter templates from HTML files"""
     NewsletterTemplate = apps.get_model('api', 'NewsletterTemplate')
+    User = apps.get_model('auth', 'User')
     
     # Get or create admin user for template creation
     try:
         admin_user = User.objects.get(username='admin')
     except User.DoesNotExist:
-        admin_user = User.objects.create_user(
+        admin_user = User.objects.create(
             username='admin',
             email='admin@neurolancer.com',
             is_staff=True,
