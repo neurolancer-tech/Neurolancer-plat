@@ -96,8 +96,8 @@ export default function JobDetailPage() {
             <div className="card p-6 mb-6">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
-                  <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">{job.title}</h1>
-                  <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400 mb-4">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4 break-words">{job.title}</h1>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-gray-600 dark:text-gray-400 mb-4">
                     <span className="flex items-center">
                       <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -128,7 +128,7 @@ export default function JobDetailPage() {
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center space-x-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <span className={`px-3 py-1 rounded-full text-sm font-medium ${
                       job.experience_level === 'entry' ? 'bg-green-100 text-green-800' :
                       job.experience_level === 'intermediate' ? 'bg-blue-100 text-blue-800' :
@@ -150,7 +150,7 @@ export default function JobDetailPage() {
             {/* Job Description */}
             <div className="card p-6 mb-6">
               <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Project Description</h3>
-              <div className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+              <div className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap break-words overflow-hidden">
                 {job.description}
               </div>
             </div>
@@ -193,7 +193,7 @@ export default function JobDetailPage() {
               <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Budget & Timeline</h3>
               <div className="space-y-4">
                 <div>
-                  <div className="text-2xl font-bold text-primary">
+                  <div className="text-xl sm:text-2xl font-bold text-primary break-words">
                     ${job.budget_min} - ${job.budget_max}
                   </div>
                   <div className="text-sm text-gray-600 dark:text-gray-400">{job.job_type === 'fixed' ? 'Fixed Price' : 'Hourly Rate'}</div>
@@ -261,16 +261,16 @@ export default function JobDetailPage() {
               <div className="flex items-center space-x-3 mb-4">
                 <Link href={`/clients/${job.client?.id || ''}`} className="flex items-center">
                   <Avatar
-                    src={(job.client as any)?.profile_picture}
-                    avatarType={((job.client as any)?.avatar_type as "upload" | "avatar" | "google") || 'avatar'}
-                    selectedAvatar={(job.client as any)?.selected_avatar}
-                    googlePhotoUrl={(job.client as any)?.google_photo_url}
+                    src={job.client?.profile?.profile_picture}
+                    avatarType={(job.client?.profile?.avatar_type as "upload" | "avatar" | "google") || 'avatar'}
+                    selectedAvatar={job.client?.profile?.selected_avatar || 'user'}
+                    googlePhotoUrl={job.client?.profile?.google_photo_url}
                     size="md"
                     alt={job.client?.first_name || 'Client'}
                   />
                 </Link>
-                <div>
-                  <h4 className="font-semibold text-gray-900 dark:text-gray-100">
+                <div className="min-w-0 flex-1">
+                  <h4 className="font-semibold text-gray-900 dark:text-gray-100 truncate">
                     <Link href={`/clients/${job.client?.id || ''}`} className="hover:text-primary">
                       {job.client?.first_name || ''} {job.client?.last_name || job.client?.username || 'Client'}
                     </Link>
