@@ -86,9 +86,9 @@ export default function CreateProjectModal({ isOpen, onClose, onProjectCreated }
   };
 
   return (
-    <div className="modal-container">
-      <div className="modal-content">
-        <div className="p-6">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-2xl max-h-[90vh] overflow-hidden">
+        <div className="p-6 overflow-y-auto max-h-full">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Create New Project</h2>
             <button
@@ -112,7 +112,7 @@ export default function CreateProjectModal({ isOpen, onClose, onProjectCreated }
                 required
                 value={formData.title}
                 onChange={handleInputChange}
-                className="input-field"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#0D9E86] focus:border-transparent dark:bg-gray-700 dark:text-white"
                 placeholder="Enter project title..."
               />
             </div>
@@ -127,7 +127,7 @@ export default function CreateProjectModal({ isOpen, onClose, onProjectCreated }
                 rows={4}
                 value={formData.description}
                 onChange={handleInputChange}
-                className="input-field"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#0D9E86] focus:border-transparent dark:bg-gray-700 dark:text-white"
                 placeholder="Describe your project goals and objectives..."
               />
             </div>
@@ -144,7 +144,7 @@ export default function CreateProjectModal({ isOpen, onClose, onProjectCreated }
                   min="0"
                   value={formData.budget}
                   onChange={handleInputChange}
-                  className="input-field"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#0D9E86] focus:border-transparent dark:bg-gray-700 dark:text-white"
                   placeholder="5000"
                 />
               </div>
@@ -158,7 +158,7 @@ export default function CreateProjectModal({ isOpen, onClose, onProjectCreated }
                   name="deadline"
                   value={formData.deadline}
                   onChange={handleInputChange}
-                  className="input-field"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#0D9E86] focus:border-transparent dark:bg-gray-700 dark:text-white"
                 />
               </div>
             </div>
@@ -172,7 +172,7 @@ export default function CreateProjectModal({ isOpen, onClose, onProjectCreated }
                 required
                 value={formData.category}
                 onChange={handleInputChange}
-                className="input-field"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#0D9E86] focus:border-transparent dark:bg-gray-700 dark:text-white"
               >
                 <option value="">Select category...</option>
                 {categories.map(cat => (
@@ -190,7 +190,7 @@ export default function CreateProjectModal({ isOpen, onClose, onProjectCreated }
                 rows={4}
                 value={formData.requirements}
                 onChange={handleInputChange}
-                className="input-field"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#0D9E86] focus:border-transparent dark:bg-gray-700 dark:text-white"
                 placeholder="List specific requirements, technologies, deliverables..."
               />
             </div>
@@ -206,7 +206,7 @@ export default function CreateProjectModal({ isOpen, onClose, onProjectCreated }
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 btn-primary disabled:opacity-50"
+                className="flex-1 px-4 py-2 bg-[#0D9E86] text-white rounded-lg hover:opacity-90 disabled:opacity-50"
               >
                 {loading ? 'Creating...' : 'Create Project'}
               </button>
