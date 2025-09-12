@@ -250,6 +250,11 @@ def google_auth(request):
             }
         )
         
+        # Ensure profile has valid user_type (fix for superusers and existing accounts)
+        if not profile.user_type or profile.user_type not in ['client', 'freelancer', 'both']:
+            profile.user_type = 'client'  # Default to client for invalid/empty user_type
+            print(f"Fixed invalid user_type for user {user.username}: set to 'client'")
+        
         # For new users, set default user_type to client (they can change it later)
         if is_new_user and created:
             profile.user_type = 'client'  # Default to client, user can change later
@@ -268,6 +273,7 @@ def google_auth(request):
                 profile.google_photo_url = photo_url
                 if profile.avatar_type == 'default':
                     profile.avatar_type = 'google'
+            # Always save to ensure user_type fix is persisted
             profile.save()
         
         # Create or get token
