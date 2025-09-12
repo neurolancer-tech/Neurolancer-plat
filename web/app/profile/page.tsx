@@ -408,9 +408,11 @@ export default function ProfilePage() {
   const handleRoleChange = async (newRole: string) => {
     try {
       const response = await api.patch('/profile/update/', { user_type: newRole });
-      const updatedProfile = { ...profile, user_type: newRole };
-      setProfileState(updatedProfile);
-      setProfile(updatedProfile);
+      if (profile) {
+        const updatedProfile = { ...profile, user_type: newRole };
+        setProfileState(updatedProfile);
+        setProfile(updatedProfile);
+      }
       toast.success('Role updated successfully!');
       setShowRoleMenu(false);
     } catch (error: any) {
