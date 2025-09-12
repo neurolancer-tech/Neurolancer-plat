@@ -4779,7 +4779,7 @@ def get_database_tables(request):
     from django.db import connection
     
     with connection.cursor() as cursor:
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+        cursor.execute("SELECT tablename FROM pg_tables WHERE schemaname = 'public';")
         tables = [row[0] for row in cursor.fetchall()]
     
     return Response({'tables': tables})
