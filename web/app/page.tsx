@@ -284,6 +284,8 @@ export default function HomePage() {
           autoPlay 
           muted 
           loop 
+          playsInline
+          preload="auto"
           className="absolute inset-0 w-full h-full object-cover z-0"
         >
           <source src="/assets/videos/lv_0_20250912131627.mp4" type="video/mp4" />
