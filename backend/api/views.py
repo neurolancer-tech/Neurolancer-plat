@@ -244,9 +244,9 @@ def google_auth(request):
         }
     )
     
-    # For new users, ensure they don't have a user_type set yet (to trigger selection)
+    # For new users, set default user_type to client (they can change it later)
     if is_new_user and created:
-        profile.user_type = ''  # Clear user_type to force selection
+        profile.user_type = 'client'  # Default to client, user can change later
         profile.email_verified = True  # Google accounts are pre-verified
         if photo_url:
             profile.google_photo_url = photo_url
