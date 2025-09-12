@@ -246,7 +246,7 @@ export default function DashboardPage() {
       <Navigation />
       
       {/* Hero Section */}
-      <section className="relative overflow-hidden" style={{zIndex: 1}}>
+      <section className="relative overflow-hidden mt-20" style={{zIndex: 1}}>
         <div className="absolute inset-0 bg-gradient-to-br from-blue-500 via-green-500 to-purple-500"></div>
         <div className="absolute inset-0 bg-black opacity-10"></div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
