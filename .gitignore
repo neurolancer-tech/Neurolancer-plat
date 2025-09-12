@@ -129,3 +129,12 @@ media/
 *.bak
 *.backup
 *.orig
+
+# Old frontend (should not be committed)
+neurolancer_frontend/
+
+# IDE specific files
+.amazonq/
+
+# Chat logs and documentation
+q-dev-chat-*.md
