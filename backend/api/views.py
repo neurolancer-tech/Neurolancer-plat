@@ -4773,6 +4773,18 @@ def integration_sync_history(request, provider):
         )
 
 @api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def get_database_tables(request):
+    """Get list of all database tables"""
+    from django.db import connection
+    
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+        tables = [row[0] for row in cursor.fetchall()]
+    
+    return Response({'tables': tables})
+
+@api_view(['GET'])
 @permission_classes([permissions.AllowAny])
 def available_integrations(request):
     """Get list of available integrations"""

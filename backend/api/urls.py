@@ -325,6 +325,9 @@ urlpatterns = [
     path('ai/conversation/get/', views.get_ai_conversation, name='get-ai-conversation'),
     path('ai/conversation/clear/', views.clear_ai_conversation, name='clear-ai-conversation'),
     
+    # Database Debug URLs
+    path('debug/tables/', views.get_database_tables, name='get-database-tables'),
+    
     # Debug URLs
     path('debug/enrollment/<int:course_id>/', views.debug_enrollment_status, name='debug-enrollment-status'),
     path('debug/conversations/<int:conversation_id>/messages/', views.debug_conversation_messages, name='debug-conversation-messages'),
