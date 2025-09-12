@@ -6,7 +6,7 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navigation />
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pt-24">
         <section className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">About Neurolancer</h1>
           <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
