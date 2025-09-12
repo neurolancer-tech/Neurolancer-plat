@@ -8,7 +8,7 @@ export default function HomePage() {
       <Navigation />
       
       {/* Hero Section */}
-      <section className="text-white py-20 bg-gradient-to-r from-teal-600 to-teal-700 dark:from-teal-700 dark:to-teal-800">
+      <section className="text-white py-20 bg-gradient-to-r from-teal-600 to-teal-700 dark:from-teal-700 dark:to-teal-800 mt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-5xl font-bold mb-6">
             Find Top AI Experts & Freelancers

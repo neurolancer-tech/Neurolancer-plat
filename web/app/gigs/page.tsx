@@ -111,7 +111,7 @@ export default function GigsPage() {
       
       {/* Hero Section */}
       <section 
-        className="text-white py-16 relative"
+        className="text-white py-16 relative mt-20"
         style={{
           background: 'linear-gradient(to right, #0D9E86, #0d7377)',
           backgroundImage: `url('/assets/images/gigsdefault_imgupscaler.ai_General_2.jpeg')`,
@@ -132,7 +132,7 @@ export default function GigsPage() {
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Filters Sidebar */}
           <div className="lg:w-1/4">
-            <div className="card p-4 sticky top-4">
+            <div className="card p-4 sticky top-24">
               <h3 className="text-base font-semibold mb-3 text-gray-900 dark:text-gray-100">Filter Gigs</h3>
               
               {/* Search */}
