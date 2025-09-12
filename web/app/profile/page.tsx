@@ -405,7 +405,7 @@ export default function ProfilePage() {
     return rates[rate] || rate;
   };
 
-  const handleRoleChange = async (newRole: 'client' | 'freelancer' | 'both') => {
+  const handleRoleChange = async (newRole: 'client' | 'freelancer') => {
     try {
       const response = await api.patch('/profile/update/', { user_type: newRole });
       if (profile) {
@@ -415,6 +415,8 @@ export default function ProfilePage() {
       }
       toast.success('Role updated successfully!');
       setShowRoleMenu(false);
+      // Refresh page to update navigation
+      window.location.reload();
     } catch (error: any) {
       toast.error('Failed to update role');
     }
@@ -473,9 +475,7 @@ export default function ProfilePage() {
               </h1>
               <div className="flex items-center justify-center md:justify-start space-x-3 mb-4">
                 <p className="text-lg text-gray-600 dark:text-gray-400">
-                  {profile?.user_type === 'client' ? '🏢 Client' : 
-                   profile?.user_type === 'freelancer' ? '💼 Freelancer' : 
-                   '🔄 Client & Freelancer'}
+                  {profile?.user_type === 'client' ? '🏢 Client' : '💼 Freelancer'}
                 </p>
                 <RoleChangeButton currentRole={profile?.user_type} onRoleChange={handleRoleChange} />
               </div>
@@ -1438,13 +1438,12 @@ function DocumentsSection({ documents, onUpload, onDelete, uploading }: {
 }
 
 // Role Change Button Component
-function RoleChangeButton({ currentRole, onRoleChange }: { currentRole?: string; onRoleChange: (role: 'client' | 'freelancer' | 'both') => void }) {
+function RoleChangeButton({ currentRole, onRoleChange }: { currentRole?: string; onRoleChange: (role: 'client' | 'freelancer') => void }) {
   const [showMenu, setShowMenu] = useState(false);
   
-  const roles: Array<{ value: 'client' | 'freelancer' | 'both'; label: string; desc: string }> = [
+  const roles: Array<{ value: 'client' | 'freelancer'; label: string; desc: string }> = [
     { value: 'client', label: '🏢 Client', desc: 'Hire freelancers' },
-    { value: 'freelancer', label: '💼 Freelancer', desc: 'Offer services' },
-    { value: 'both', label: '🔄 Both', desc: 'Client & Freelancer' }
+    { value: 'freelancer', label: '💼 Freelancer', desc: 'Offer services' }
   ];
 
   return (
@@ -1465,7 +1464,7 @@ function RoleChangeButton({ currentRole, onRoleChange }: { currentRole?: string;
             <button
               key={role.value}
               onClick={() => {
-                onRoleChange(role.value as 'client' | 'freelancer' | 'both');
+                onRoleChange(role.value);
                 setShowMenu(false);
               }}
               className={`w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors first:rounded-t-lg last:rounded-b-lg ${
