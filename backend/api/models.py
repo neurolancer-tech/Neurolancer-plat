@@ -8,6 +8,7 @@ class UserProfile(models.Model):
     USER_TYPES = (
         ('client', 'Client'),
         ('freelancer', 'Freelancer'),
+        ('both', 'Both'),
     )
     
     GENDER_CHOICES = (

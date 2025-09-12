@@ -21,6 +21,7 @@ urlpatterns = [
     path('auth/verify-email/', views.verify_email, name='verify-email'),
     path('auth/resend-verification/', views.resend_verification_email, name='resend-verification'),
     path('auth/check-verification/', views.check_email_verification, name='check-verification'),
+    path('auth/check-email/', views.check_email_exists, name='check-email'),
     path('auth/forgot-password/', views.forgot_password, name='forgot-password'),
     path('auth/reset-password/', views.reset_password, name='reset-password'),
     path('auth/validate-reset-token/', views.validate_reset_token, name='validate-reset-token'),

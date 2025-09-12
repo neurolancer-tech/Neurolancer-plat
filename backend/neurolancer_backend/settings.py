@@ -170,7 +170,28 @@ CORS_ALLOWED_ORIGINS = [
     "https://neurolancer-5jxf-git-main-kbrian1237s-projects.vercel.app",
     "https://neurolancer-5jxf-gkvw3kxh2-kbrian1237s-projects.vercel.app",
     "https://neurolancer-git-main-kbrian1237s-projects.vercel.app",
-    
+]
+
+# Additional CORS headers
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
 ]
 
 # WebSocket CORS settings

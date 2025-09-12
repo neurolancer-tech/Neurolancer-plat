@@ -264,6 +264,78 @@ def google_auth(request):
                 profile.avatar_type = 'google'
         profile.save()
     
+    # Create or get token
+    token, created = Token.objects.get_or_create(user=user)
+    
+    return Response({
+        'user': UserSerializer(user).data,
+        'token': token.key,
+        'profile': UserProfileSerializer(profile).data,
+        'is_new_user': is_new_user
+    })')
+    email = request.data.get('email')
+    first_name = request.data.get('first_name', '')
+    last_name = request.data.get('last_name', '')
+    photo_url = request.data.get('photo_url', '')
+    
+    if not uid or not email:
+        return Response({'error': 'UID and email are required'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Check if user exists with this email
+    try:
+        user = User.objects.get(email=email)
+        is_new_user = False
+    except User.DoesNotExist:
+        # Create new user
+        username = email.split('@')[0]
+        # Ensure unique username
+        counter = 1
+        original_username = username
+        while User.objects.filter(username=username).exists():
+            username = f"{original_username}{counter}"
+            counter += 1
+        
+        user = User.objects.create_user(
+            username=username,
+            email=email,
+            first_name=first_name,
+            last_name=last_name
+        )
+        is_new_user = True
+    
+    # Get or create profile
+    profile, created = UserProfile.objects.get_or_create(
+        user=user,
+        defaults={
+            'user_type': 'client',
+            'bio': '',
+            'avatar_type': 'google' if photo_url else 'default',
+            'google_photo_url': photo_url or '',
+            'selected_avatar': 'user' if not photo_url else '',
+            'email_verified': True  # Google accounts are pre-verified
+        }
+    )
+    
+    # For new users, set default user_type to client (they can change it later)
+    if is_new_user and created:
+        profile.user_type = 'client'  # Default to client, user can change later
+        profile.email_verified = True  # Google accounts are pre-verified
+        if photo_url:
+            profile.google_photo_url = photo_url
+            profile.avatar_type = 'google'
+        else:
+            profile.avatar_type = 'avatar'
+            profile.selected_avatar = 'user'  # Default neutral avatar
+        profile.save()
+    else:
+        # For existing users, ensure they have email_verified set and update photo if needed
+        profile.email_verified = True  # Google accounts are pre-verified
+        if photo_url and not profile.google_photo_url:
+            profile.google_photo_url = photo_url
+            if profile.avatar_type == 'default':
+                profile.avatar_type = 'google'
+        profile.save()
+    
 
     
     # Create or get token
@@ -360,6 +432,21 @@ def check_email_verification(request):
     return Response({
         'email_verified': profile.email_verified,
         'email': request.user.email
+    })
+
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
+def check_email_exists(request):
+    """Check if email exists in the system"""
+    email = request.GET.get('email')
+    
+    if not email:
+        return Response({'error': 'Email parameter is required'}, status=400)
+    
+    exists = User.objects.filter(email=email).exists()
+    return Response({
+        'exists': exists,
+        'email': email
     })
 
 @api_view(['POST'])
