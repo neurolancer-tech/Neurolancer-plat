@@ -405,7 +405,7 @@ export default function ProfilePage() {
     return rates[rate] || rate;
   };
 
-  const handleRoleChange = async (newRole: string) => {
+  const handleRoleChange = async (newRole: 'client' | 'freelancer' | 'both') => {
     try {
       const response = await api.patch('/profile/update/', { user_type: newRole });
       if (profile) {
@@ -1438,7 +1438,7 @@ function DocumentsSection({ documents, onUpload, onDelete, uploading }: {
 }
 
 // Role Change Button Component
-function RoleChangeButton({ currentRole, onRoleChange }: { currentRole?: string; onRoleChange: (role: string) => void }) {
+function RoleChangeButton({ currentRole, onRoleChange }: { currentRole?: string; onRoleChange: (role: 'client' | 'freelancer' | 'both') => void }) {
   const [showMenu, setShowMenu] = useState(false);
   
   const roles = [
