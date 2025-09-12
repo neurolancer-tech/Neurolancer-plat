@@ -409,7 +409,7 @@ export default function ProfilePage() {
     try {
       const response = await api.patch('/profile/update/', { user_type: newRole });
       if (profile) {
-        const updatedProfile = { ...profile, user_type: newRole } as UserProfile;
+        const updatedProfile: UserProfile = { ...profile, user_type: newRole };
         setProfileState(updatedProfile);
         setProfile(updatedProfile);
       }
