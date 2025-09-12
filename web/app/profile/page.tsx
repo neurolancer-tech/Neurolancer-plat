@@ -1441,7 +1441,7 @@ function DocumentsSection({ documents, onUpload, onDelete, uploading }: {
 function RoleChangeButton({ currentRole, onRoleChange }: { currentRole?: string; onRoleChange: (role: 'client' | 'freelancer' | 'both') => void }) {
   const [showMenu, setShowMenu] = useState(false);
   
-  const roles = [
+  const roles: Array<{ value: 'client' | 'freelancer' | 'both'; label: string; desc: string }> = [
     { value: 'client', label: '🏢 Client', desc: 'Hire freelancers' },
     { value: 'freelancer', label: '💼 Freelancer', desc: 'Offer services' },
     { value: 'both', label: '🔄 Both', desc: 'Client & Freelancer' }
