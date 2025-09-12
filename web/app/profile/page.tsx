@@ -1465,7 +1465,7 @@ function RoleChangeButton({ currentRole, onRoleChange }: { currentRole?: string;
             <button
               key={role.value}
               onClick={() => {
-                onRoleChange(role.value);
+                onRoleChange(role.value as 'client' | 'freelancer' | 'both');
                 setShowMenu(false);
               }}
               className={`w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors first:rounded-t-lg last:rounded-b-lg ${
