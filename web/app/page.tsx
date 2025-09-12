@@ -1,6 +1,277 @@
 'use client';
 
 import Navigation from '@/components/Navigation';
+import { useState } from 'react';
+
+function AIDevCard() {
+  const [showModal, setShowModal] = useState(false);
+
+  const subcategories = [
+    'Machine Learning Development (classification, regression, clustering)',
+    'Deep Learning Models (CNNs, RNNs, Transformers)',
+    'Large Language Models (fine-tuning, embeddings, RAG, custom GPTs)',
+    'Prompt Engineering (chatbots, generative AI, system prompts)',
+    'Natural Language Processing (text summarization, translation, sentiment analysis)',
+    'Computer Vision (object detection, OCR, video analysis, AR/VR)',
+    'Speech AI (speech-to-text, text-to-speech, speaker recognition)',
+    'Reinforcement Learning (game AI, decision-making systems, robotics)',
+    'MLOps & AI Infrastructure (deployment pipelines, CI/CD, Docker, Kubernetes)',
+    'Edge AI & IoT AI (AI for mobile, embedded systems, smart devices)'
+  ];
+
+  return (
+    <div className="relative">
+      <div 
+        className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 p-6 text-center border border-gray-200/50 dark:border-gray-700/50 hover:border-teal-200 dark:hover:border-teal-700 group cursor-pointer"
+        onMouseEnter={() => setShowModal(true)}
+        onMouseLeave={() => setShowModal(false)}
+      >
+        <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">🧠</div>
+        <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-gray-100 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">AI Development & Engineering</h3>
+        <p className="text-gray-600 dark:text-gray-400">ML model building, NLP, computer vision.</p>
+      </div>
+      
+      {showModal && (
+        <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-4 z-50 max-w-md">
+          <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">Core technical work in building and deploying AI</h4>
+          <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+            {subcategories.map((sub, index) => (
+              <li key={index} className="flex items-start">
+                <span className="text-teal-500 mr-2">•</span>
+                <span>{sub}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DataModelCard() {
+  const [showModal, setShowModal] = useState(false);
+
+  const subcategories = [
+    'Data Annotation & Labeling (text, image, audio, video)',
+    'Data Cleaning & Preprocessing (feature engineering, outlier handling)',
+    'Synthetic Data Generation (simulation, GANs, data augmentation)',
+    'Data Visualization & Dashboards (BI tools, custom dashboards)',
+    'Model Training (supervised, unsupervised, semi-supervised)',
+    'Model Optimization (pruning, quantization, distillation)',
+    'Model Monitoring & Evaluation (performance metrics, error analysis)',
+    'Data Engineering (ETL pipelines, big data frameworks like Spark)',
+    'MLOps for Data (automated retraining, monitoring pipelines)',
+    'Cloud AI Setup (AWS Sagemaker, Google Vertex AI, Azure ML)'
+  ];
+
+  return (
+    <div className="relative">
+      <div 
+        className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 p-6 text-center border border-gray-200/50 dark:border-gray-700/50 hover:border-teal-200 dark:hover:border-teal-700 group cursor-pointer"
+        onMouseEnter={() => setShowModal(true)}
+        onMouseLeave={() => setShowModal(false)}
+      >
+        <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">🗃️</div>
+        <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-gray-100 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">Data & Model Management</h3>
+        <p className="text-gray-600 dark:text-gray-400">Data cleaning, labeling, pipelines, fine-tuning.</p>
+      </div>
+      
+      {showModal && (
+        <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-4 z-50 max-w-md">
+          <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">Everything around datasets, training, and optimizing AI models</h4>
+          <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+            {subcategories.map((sub, index) => (
+              <li key={index} className="flex items-start">
+                <span className="text-teal-500 mr-2">•</span>
+                <span>{sub}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AIEthicsCard() {
+  const [showModal, setShowModal] = useState(false);
+
+  const subcategories = [
+    'Bias & Fairness Audits (dataset bias detection, model bias testing)',
+    'Privacy-Preserving AI (federated learning, differential privacy)',
+    'AI Compliance (GDPR, HIPAA, EU AI Act, CCPA audits)',
+    'Risk Assessment & Safety (AI misuse, red teaming, risk frameworks)',
+    'AI Governance Frameworks (internal policies, accountability systems)',
+    'Explainable AI (interpretable models, SHAP, LIME, transparency reports)',
+    'AI Policy & Strategy Advisory (corporate AI policies, national strategies)',
+    'Ethical AI Consulting (human oversight, cultural sensitivity in AI)',
+    'Algorithmic Accountability (impact assessments, transparency standards)',
+    'Responsible Data Use (data ownership, consent management)'
+  ];
+
+  return (
+    <div className="relative">
+      <div 
+        className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 p-6 text-center border border-gray-200/50 dark:border-gray-700/50 hover:border-teal-200 dark:hover:border-teal-700 group cursor-pointer"
+        onMouseEnter={() => setShowModal(true)}
+        onMouseLeave={() => setShowModal(false)}
+      >
+        <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">⚖️</div>
+        <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-gray-100 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">AI Ethics, Law & Governance</h3>
+        <p className="text-gray-600 dark:text-gray-400">Compliance, bias auditing, responsible AI.</p>
+      </div>
+      
+      {showModal && (
+        <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-4 z-50 max-w-md">
+          <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">Responsible AI development, compliance, and regulation</h4>
+          <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+            {subcategories.map((sub, index) => (
+              <li key={index} className="flex items-start">
+                <span className="text-teal-500 mr-2">•</span>
+                <span>{sub}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AIIntegrationCard() {
+  const [showModal, setShowModal] = useState(false);
+
+  const subcategories = [
+    'Chatbot & Virtual Assistants (customer support, voice assistants)',
+    'Workflow Automation (CRM, ERP, marketing automation with AI)',
+    'AI API Integration (OpenAI, Anthropic, Hugging Face, custom APIs)',
+    'AI in Business Intelligence (AI dashboards, predictive analytics)',
+    'AI Product Management (scoping features, building roadmaps)',
+    'AI Training & Workshops (staff training, AI bootcamps, corporate enablement)',
+    'Customer Support AI (ticket triaging, knowledge base bots)',
+    'AI Consulting for SMBs (strategy, adoption, feasibility studies)',
+    'Cloud AI Deployment (AWS, Azure, GCP AI solutions)',
+    'AI Model Maintenance (bug fixing, retraining, monitoring post-deployment)'
+  ];
+
+  return (
+    <div className="relative">
+      <div 
+        className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 p-6 text-center border border-gray-200/50 dark:border-gray-700/50 hover:border-teal-200 dark:hover:border-teal-700 group cursor-pointer"
+        onMouseEnter={() => setShowModal(true)}
+        onMouseLeave={() => setShowModal(false)}
+      >
+        <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">🔌</div>
+        <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-gray-100 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">AI Integration & Support</h3>
+        <p className="text-gray-600 dark:text-gray-400">Chatbot deployment, workflow automation.</p>
+      </div>
+      
+      {showModal && (
+        <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-4 z-50 max-w-md">
+          <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">Helping businesses actually use AI in their workflows</h4>
+          <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+            {subcategories.map((sub, index) => (
+              <li key={index} className="flex items-start">
+                <span className="text-teal-500 mr-2">•</span>
+                <span>{sub}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CreativeAICard() {
+  const [showModal, setShowModal] = useState(false);
+
+  const subcategories = [
+    'AI Content Writing (blogs, ad copy, SEO with AI assistance)',
+    'AI Art & Design (digital art, logo design, concept art, 3D renders)',
+    'AI in Music & Audio (music composition, mixing, podcast editing)',
+    'AI in Video (video generation, VFX, AI-powered editing)',
+    'AI in Gaming (NPCs, procedural content generation, dynamic environments)',
+    'AI in Healthcare (diagnostic support, medical data analysis, patient triage AI)',
+    'AI in Finance (fraud detection, algorithmic trading, risk models)',
+    'AI in Education (personalized learning platforms, tutoring bots)',
+    'AI in Marketing (ad targeting, customer segmentation, campaign optimization)',
+    'AI in Legal & Research (contract analysis, AI legal research assistants)'
+  ];
+
+  return (
+    <div className="relative">
+      <div 
+        className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 p-6 text-center border border-gray-200/50 dark:border-gray-700/50 hover:border-teal-200 dark:hover:border-teal-700 group cursor-pointer"
+        onMouseEnter={() => setShowModal(true)}
+        onMouseLeave={() => setShowModal(false)}
+      >
+        <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">🎨</div>
+        <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-gray-100 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">Creative & Industry-Specific AI Roles</h3>
+        <p className="text-gray-600 dark:text-gray-400">AI in music, art, design, healthcare, finance.</p>
+      </div>
+      
+      {showModal && (
+        <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-4 z-50 max-w-md">
+          <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">Specialized uses of AI in creative industries & verticals</h4>
+          <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+            {subcategories.map((sub, index) => (
+              <li key={index} className="flex items-start">
+                <span className="text-teal-500 mr-2">•</span>
+                <span>{sub}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AIOperationsCard() {
+  const [showModal, setShowModal] = useState(false);
+
+  const subcategories = [
+    'Digital Twins & Simulation (smart factories, cities, supply chains)',
+    'AI for Agriculture (crop monitoring, pest detection, soil health analysis)',
+    'AI for Climate & Environment (energy optimization, emissions tracking)',
+    'AI in Logistics (demand forecasting, route optimization, fleet AI)',
+    'AI Companions & Agents (virtual friends, therapy bots, personal agents)',
+    'AI in Retail (recommendation engines, dynamic pricing, inventory prediction)',
+    'AI for Government & Policy (public sector AI use, e-governance)',
+    'AI in Security & Surveillance (threat detection, anomaly monitoring)',
+    'AI in Autonomy & Robotics (self-driving systems, drone oversight, robotics vision)',
+    'AI for Developing Economies (local language AI, low-resource models, community solutions)'
+  ];
+
+  return (
+    <div className="relative">
+      <div 
+        className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 p-6 text-center border border-gray-200/50 dark:border-gray-700/50 hover:border-teal-200 dark:hover:border-teal-700 group cursor-pointer"
+        onMouseEnter={() => setShowModal(true)}
+        onMouseLeave={() => setShowModal(false)}
+      >
+        <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">🌍</div>
+        <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-gray-100 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">AI Operations in New Markets</h3>
+        <p className="text-gray-600 dark:text-gray-400">AI in agriculture, energy, logistics.</p>
+      </div>
+      
+      {showModal && (
+        <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-4 z-50 max-w-md">
+          <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">AI applied to emerging fields and frontier technologies</h4>
+          <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+            {subcategories.map((sub, index) => (
+              <li key={index} className="flex items-start">
+                <span className="text-teal-500 mr-2">•</span>
+                <span>{sub}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function HomePage() {
   return (
@@ -33,20 +304,12 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-center mb-12 text-gray-900 dark:text-gray-100">AI Service Categories</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[
-              { name: 'AI Development & Engineering', icon: '🧠', description: 'ML model building, NLP, computer vision.' },
-              { name: 'Data & Model Management', icon: '🗃️', description: 'Data cleaning, labeling, pipelines, fine-tuning.' },
-              { name: 'AI Ethics, Law & Governance', icon: '⚖️', description: 'Compliance, bias auditing, responsible AI.' },
-              { name: 'AI Integration & Support', icon: '🔌', description: 'Chatbot deployment, workflow automation.' },
-              { name: 'Creative & Industry-Specific AI Roles', icon: '🎨', description: 'AI in music, art, design, healthcare, finance.' },
-              { name: 'AI Operations in New Markets', icon: '🌍', description: 'AI in agriculture, energy, logistics.' },
-            ].map((category) => (
-              <div key={category.name} className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 p-6 text-center border border-gray-200/50 dark:border-gray-700/50 hover:border-teal-200 dark:hover:border-teal-700 group">
-                <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">{category.icon}</div>
-                <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-gray-100 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">{category.name}</h3>
-                <p className="text-gray-600 dark:text-gray-400">{category.description}</p>
-              </div>
-            ))}
+            <AIDevCard />
+            <DataModelCard />
+            <AIEthicsCard />
+            <AIIntegrationCard />
+            <CreativeAICard />
+            <AIOperationsCard />
           </div>
         </div>
       </section>
