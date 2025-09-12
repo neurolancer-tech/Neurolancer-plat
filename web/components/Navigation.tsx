@@ -32,14 +32,14 @@ export default function Navigation() {
   return (
     <>
       <EmailVerificationGate />
-      <nav className="bg-white dark:bg-gray-900 shadow-sm border-b border-gray-200 dark:border-gray-700 relative z-30 transition-colors duration-200">
+      <nav className="fixed top-0 left-0 right-0 shadow-sm border-b border-gray-200 dark:border-gray-700 z-50 transition-colors duration-200" style={{backgroundColor: '#0D9E86'}}>
         <div className="px-2 sm:px-3 lg:px-4">
           <div className="flex justify-between items-center h-20">
             <div className="flex items-center space-x-4">
               {/* Mobile hamburger button */}
               <button
                 onClick={() => setShowMobileMenu(true)}
-                className="md:hidden p-2 rounded-md text-gray-600 dark:text-gray-300 hover:text-[#0D9E86] hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                className="md:hidden p-2 rounded-md text-white hover:text-gray-200 hover:bg-white/10 transition-colors"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -47,33 +47,31 @@ export default function Navigation() {
               </button>
               
               <Link href="/" className="flex items-center">
-                <div className="px-2 py-1 sm:px-3 sm:py-2 rounded-lg" style={{backgroundColor: '#0D9E86'}}>
-                  <Image
-                    src="/assets/Neurolancer-logo/vector/default-monochrome-white.svg"
-                    alt="Neurolancer"
-                    width={120}
-                    height={32}
-                    priority
-                    className="h-5 w-auto sm:h-8"
-                    style={{ width: 'auto' }}
-                  />
-                </div>
+                <Image
+                  src="/assets/Neurolancer-logo/vector/default-monochrome-white.svg"
+                  alt="Neurolancer"
+                  width={120}
+                  height={32}
+                  priority
+                  className="h-5 w-auto sm:h-8"
+                  style={{ width: 'auto' }}
+                />
               </Link>
             </div>
             
             {/* Desktop navigation */}
             <div className="hidden md:flex space-x-6">
-              <Link href="/gigs" className="text-gray-600 dark:text-gray-300 hover:text-[#0D9E86] transition-colors">
+              <Link href="/gigs" className="text-white hover:text-gray-200 transition-colors">
                 Gigs
               </Link>
-              <Link href="/jobs" className="text-gray-600 dark:text-gray-300 hover:text-[#0D9E86] transition-colors">
+              <Link href="/jobs" className="text-white hover:text-gray-200 transition-colors">
                 Jobs
               </Link>
-              <Link href="/freelancers" className="text-gray-600 dark:text-gray-300 hover:text-[#0D9E86] transition-colors">
+              <Link href="/freelancers" className="text-white hover:text-gray-200 transition-colors">
                 Freelancers
               </Link>
 {(!user || profile?.user_type === 'freelancer') && (
-              <Link href="/courses" className="text-gray-600 dark:text-gray-300 hover:text-[#0D9E86] transition-colors">
+              <Link href="/courses" className="text-white hover:text-gray-200 transition-colors">
                 Learn AI
               </Link>
             )}
@@ -101,7 +99,7 @@ export default function Navigation() {
               {/* Theme Toggle */}
               <button
                 onClick={toggleTheme}
-                className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:text-[#0D9E86] hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200"
+                className="p-2 rounded-lg text-white hover:text-gray-200 hover:bg-white/10 transition-all duration-200"
                 aria-label="Toggle theme"
               >
                 <div className="relative w-5 h-5">
@@ -145,7 +143,7 @@ export default function Navigation() {
                 <div className="relative">
                   <button
                     onClick={() => setShowUserMenu(!showUserMenu)}
-                    className="flex items-center space-x-1 sm:space-x-2 text-gray-700 dark:text-gray-300 hover:text-[#0D9E86] transition-colors"
+                    className="flex items-center space-x-1 sm:space-x-2 text-white hover:text-gray-200 transition-colors"
                   >
                     <Avatar
                       src={profile?.profile_picture}
@@ -234,7 +232,7 @@ export default function Navigation() {
                 </div>
               ) : (
                 <div className="flex space-x-2 sm:space-x-3">
-<Link href="/auth?tab=login" className="text-gray-600 dark:text-gray-300 hover:text-[#0D9E86] transition-colors text-sm sm:text-base">
+<Link href="/auth?tab=login" className="text-white hover:text-gray-200 transition-colors text-sm sm:text-base">
                     Login
                   </Link>
                   <Link href="/auth?tab=signup" className="bg-gradient-to-r from-purple-500 to-pink-600 text-white px-3 py-2 sm:px-4 rounded-lg hover:from-pink-600 hover:to-purple-500 hover:shadow-lg transition-all duration-300 text-sm sm:text-base font-medium">
