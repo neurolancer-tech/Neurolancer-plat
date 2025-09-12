@@ -200,14 +200,20 @@ def login_view(request):
 @permission_classes([permissions.AllowAny])
 def google_auth(request):
     """Handle Google OAuth authentication"""
-    uid = request.data.get('uid')
-    email = request.data.get('email')
-    first_name = request.data.get('first_name', '')
-    last_name = request.data.get('last_name', '')
-    photo_url = request.data.get('photo_url', '')
-    
-    if not uid or not email:
-        return Response({'error': 'UID and email are required'}, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        print(f"Google auth request received: {request.data}")
+        
+        uid = request.data.get('uid')
+        email = request.data.get('email')
+        first_name = request.data.get('first_name', '')
+        last_name = request.data.get('last_name', '')
+        photo_url = request.data.get('photo_url', '')
+        
+        print(f"Google auth data: uid={uid}, email={email}, name={first_name} {last_name}")
+        
+        if not uid or not email:
+            print("Google auth error: Missing UID or email")
+            return Response({'error': 'UID and email are required'}, status=status.HTTP_400_BAD_REQUEST)
     
     # Check if user exists with this email
     try:
@@ -267,12 +273,22 @@ def google_auth(request):
     # Create or get token
     token, created = Token.objects.get_or_create(user=user)
     
+    print(f"Google auth successful for user {user.username}")
+    
     return Response({
         'user': UserSerializer(user).data,
         'token': token.key,
         'profile': UserProfileSerializer(profile).data,
         'is_new_user': is_new_user
     })
+    
+    except Exception as e:
+        print(f"Google auth error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return Response({
+            'error': f'Authentication failed: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])

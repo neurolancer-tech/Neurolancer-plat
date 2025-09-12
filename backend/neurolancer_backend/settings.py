@@ -54,6 +54,7 @@ if not DEBUG:
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
+    'api.middleware.SecurityHeadersMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -197,6 +198,11 @@ CORS_ALLOW_METHODS = [
 # WebSocket CORS settings
 ALLOWED_HOSTS = ['*']
 CORS_ALLOW_WEBSOCKETS = True
+
+# Security headers for OAuth
+SECURE_CROSS_ORIGIN_OPENER_POLICY = None
+SECURE_REFERRER_POLICY = 'same-origin'
+X_FRAME_OPTIONS = 'SAMEORIGIN'
 
 # CSRF settings
 CSRF_TRUSTED_ORIGINS = [
