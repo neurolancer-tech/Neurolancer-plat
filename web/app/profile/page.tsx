@@ -67,6 +67,7 @@ export default function ProfilePage() {
   const [documents, setDocuments] = useState<any[]>([]);
   const [uploadingDocument, setUploadingDocument] = useState(false);
   const [skillBadges, setSkillBadges] = useState<any[]>([]);
+  const [showRoleMenu, setShowRoleMenu] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -404,6 +405,19 @@ export default function ProfilePage() {
     return rates[rate] || rate;
   };
 
+  const handleRoleChange = async (newRole: string) => {
+    try {
+      const response = await api.patch('/profile/update/', { user_type: newRole });
+      const updatedProfile = { ...profile, user_type: newRole };
+      setProfileState(updatedProfile);
+      setProfile(updatedProfile);
+      toast.success('Role updated successfully!');
+      setShowRoleMenu(false);
+    } catch (error: any) {
+      toast.error('Failed to update role');
+    }
+  };
+
   const tabs = [
     { id: 'personal', label: 'Personal Info', icon: '👤' },
     { id: 'contact', label: 'Contact Details', icon: '📞' },
@@ -455,11 +469,14 @@ export default function ProfilePage() {
               <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                 {user?.first_name} {user?.last_name}
               </h1>
-              <p className="text-lg text-gray-600 dark:text-gray-400 mb-4">
-                {profile?.user_type === 'client' ? '🏢 Client' : 
-                 profile?.user_type === 'freelancer' ? '💼 Freelancer' : 
-                 '🔄 Client & Freelancer'}
-              </p>
+              <div className="flex items-center justify-center md:justify-start space-x-3 mb-4">
+                <p className="text-lg text-gray-600 dark:text-gray-400">
+                  {profile?.user_type === 'client' ? '🏢 Client' : 
+                   profile?.user_type === 'freelancer' ? '💼 Freelancer' : 
+                   '🔄 Client & Freelancer'}
+                </p>
+                <RoleChangeButton currentRole={profile?.user_type} onRoleChange={handleRoleChange} />
+              </div>
               {profile?.bio && (
                 <p className="text-gray-700 dark:text-gray-300 leading-relaxed max-w-2xl">
                   {profile.bio}
@@ -1187,6 +1204,14 @@ export default function ProfilePage() {
         userType={profile?.user_type === 'freelancer' ? 'freelancer' : 'client'}
         onComplete={handleOnboardingComplete}
       />
+      
+      {/* Click outside to close role menu */}
+      {showRoleMenu && (
+        <div 
+          className="fixed inset-0 z-10" 
+          onClick={() => setShowRoleMenu(false)}
+        />
+      )}
     </div>
   );
 }
@@ -1404,6 +1429,51 @@ function DocumentsSection({ documents, onUpload, onDelete, uploading }: {
               </button>
             </div>
           </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Role Change Button Component
+function RoleChangeButton({ currentRole, onRoleChange }: { currentRole?: string; onRoleChange: (role: string) => void }) {
+  const [showMenu, setShowMenu] = useState(false);
+  
+  const roles = [
+    { value: 'client', label: '🏢 Client', desc: 'Hire freelancers' },
+    { value: 'freelancer', label: '💼 Freelancer', desc: 'Offer services' },
+    { value: 'both', label: '🔄 Both', desc: 'Client & Freelancer' }
+  ];
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setShowMenu(!showMenu)}
+        className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+        title="Change Role"
+      >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
+        </svg>
+      </button>
+      
+      {showMenu && (
+        <div className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10 min-w-48">
+          {roles.map((role) => (
+            <button
+              key={role.value}
+              onClick={() => {
+                onRoleChange(role.value);
+                setShowMenu(false);
+              }}
+              className={`w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors first:rounded-t-lg last:rounded-b-lg ${
+                currentRole === role.value ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'
+              }`}
+            >
+              <div className="font-medium">{role.label}</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400">{role.desc}</div>
+            </button>
+          ))}
         </div>
       )}
     </div>
