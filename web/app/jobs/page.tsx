@@ -129,7 +129,7 @@ export default function JobsPage() {
       
       {/* Hero Section */}
       <section 
-        className="text-white py-16 relative mt-20"
+        className="text-white py-16 relative"
         style={{
           background: 'linear-gradient(to right, #0D9E86, #0d7377)',
           backgroundImage: `url('/assets/images/gigsdefault_imgupscaler.ai_General_2.jpeg')`,
