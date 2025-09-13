@@ -432,87 +432,7 @@ export default function FloatingChatbot() {
                       </div>
                     )}
 
-                    {/* Interactive Form */}
-                    {activeForm && (
-                      <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-600">
-                        <div className="flex items-center justify-between mb-4">
-                          <h3 className="font-semibold text-gray-900 dark:text-gray-100">{activeForm.title}</h3>
-                          <button
-                            onClick={() => { setActiveForm(null); setFormData({}); }}
-                            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                          >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                          </button>
-                        </div>
-                        <div className="space-y-3">
-                          {activeForm.fields.map((field) => (
-                            <div key={field.name}>
-                              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                {field.label} {field.required && <span className="text-red-500">*</span>}
-                              </label>
-                              {field.type === 'textarea' ? (
-                                <textarea
-                                  value={formData[field.name] || ''}
-                                  onChange={(e) => setFormData(prev => ({ ...prev, [field.name]: e.target.value }))}
-                                  placeholder={field.placeholder}
-                                  required={field.required}
-                                  rows={3}
-                                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-                                />
-                              ) : field.type === 'select' ? (
-                                <select
-                                  value={formData[field.name] || ''}
-                                  onChange={(e) => setFormData(prev => ({ ...prev, [field.name]: e.target.value }))}
-                                  required={field.required}
-                                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-                                >
-                                  <option value="">Select {field.label}</option>
-                                  {field.options?.map((option) => (
-                                    <option key={option.value} value={option.value}>{option.label}</option>
-                                  ))}
-                                </select>
-                              ) : (
-                                <input
-                                  type={field.type}
-                                  value={formData[field.name] || ''}
-                                  onChange={(e) => setFormData(prev => ({ ...prev, [field.name]: e.target.value }))}
-                                  placeholder={field.placeholder}
-                                  required={field.required}
-                                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-                                />
-                              )}
-                            </div>
-                          ))}
-                          <div className="flex space-x-2 pt-2">
-                            <button
-                              onClick={() => {
-                                const successMessage: ChatMessage = {
-                                  id: Date.now(),
-                                  content: `✅ **${activeForm.type === 'job' ? 'Job' : 'Gig'} created successfully!**\n\nYour ${activeForm.type} "${formData.title}" has been posted.`,
-                                  sender: 'ai',
-                                  timestamp: new Date()
-                                };
-                                setMessages(prev => [...prev, successMessage]);
-                                setActiveForm(null);
-                                setFormData({});
-                              }}
-                              className="flex-1 py-2 px-4 text-white rounded-lg hover:opacity-90 transition-all text-sm font-medium"
-                              style={{background: 'linear-gradient(135deg, #0D9E86, #0B8A73)'}}
-                            >
-                              {activeForm.submitText}
-                            </button>
-                            <button
-                              onClick={() => { setActiveForm(null); setFormData({}); }}
-                              className="px-4 py-2 text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-sm"
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    )}
+
 
                     <p className="text-xs text-gray-500 mt-1 text-right">
                       {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -536,6 +456,88 @@ export default function FloatingChatbot() {
 
               <div ref={messagesEndRef} />
             </div>
+
+            {/* Interactive Form */}
+            {activeForm && (
+              <div className="p-4 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-600">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold text-gray-900 dark:text-gray-100">{activeForm.title}</h3>
+                  <button
+                    onClick={() => { setActiveForm(null); setFormData({}); }}
+                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                <div className="space-y-3">
+                  {activeForm.fields.map((field) => (
+                    <div key={field.name}>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        {field.label} {field.required && <span className="text-red-500">*</span>}
+                      </label>
+                      {field.type === 'textarea' ? (
+                        <textarea
+                          value={formData[field.name] || ''}
+                          onChange={(e) => setFormData(prev => ({ ...prev, [field.name]: e.target.value }))}
+                          placeholder={field.placeholder}
+                          required={field.required}
+                          rows={3}
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+                        />
+                      ) : field.type === 'select' ? (
+                        <select
+                          value={formData[field.name] || ''}
+                          onChange={(e) => setFormData(prev => ({ ...prev, [field.name]: e.target.value }))}
+                          required={field.required}
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+                        >
+                          <option value="">Select {field.label}</option>
+                          {field.options?.map((option) => (
+                            <option key={option.value} value={option.value}>{option.label}</option>
+                          ))}
+                        </select>
+                      ) : (
+                        <input
+                          type={field.type}
+                          value={formData[field.name] || ''}
+                          onChange={(e) => setFormData(prev => ({ ...prev, [field.name]: e.target.value }))}
+                          placeholder={field.placeholder}
+                          required={field.required}
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+                        />
+                      )}
+                    </div>
+                  ))}
+                  <div className="flex space-x-2 pt-2">
+                    <button
+                      onClick={() => {
+                        const successMessage: ChatMessage = {
+                          id: Date.now(),
+                          content: `✅ **${activeForm.type === 'job' ? 'Job' : activeForm.type === 'gig' ? 'Gig' : 'Project'} created successfully!**\n\nYour ${activeForm.type} "${formData.title}" has been posted.`,
+                          sender: 'ai',
+                          timestamp: new Date()
+                        };
+                        setMessages(prev => [...prev, successMessage]);
+                        setActiveForm(null);
+                        setFormData({});
+                      }}
+                      className="flex-1 py-2 px-4 text-white rounded-lg hover:opacity-90 transition-all text-sm font-medium"
+                      style={{background: 'linear-gradient(135deg, #0D9E86, #0B8A73)'}}
+                    >
+                      {activeForm.submitText}
+                    </button>
+                    <button
+                      onClick={() => { setActiveForm(null); setFormData({}); }}
+                      className="px-4 py-2 text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-sm"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Input */}
             <form onSubmit={sendMessage} className="p-4 border-t border-gray-200 dark:border-gray-700">
