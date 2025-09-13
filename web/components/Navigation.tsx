@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Avatar from './Avatar';
 import EmailVerificationGate from './EmailVerificationGate';
+import FloatingChatbot from './FloatingChatbot';
 import { User, UserProfile } from '../types';
 import { getUser, getProfile, logout, isAuthenticated } from '../lib/auth';
 import NotificationCenter from './NotificationCenter';
@@ -518,6 +519,9 @@ export default function Navigation() {
           </div>
         </div>
       )}
+      
+      {/* Floating Chatbot */}
+      <FloatingChatbot />
     </>
   );
 }
