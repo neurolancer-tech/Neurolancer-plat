@@ -24,6 +24,23 @@ interface ActionCard {
   color: string;
 }
 
+interface FormField {
+  name: string;
+  label: string;
+  type: 'text' | 'textarea' | 'select' | 'number';
+  required?: boolean;
+  options?: { value: string; label: string }[];
+  placeholder?: string;
+}
+
+interface ChatForm {
+  id: string;
+  title: string;
+  fields: FormField[];
+  submitText: string;
+  type: 'job' | 'gig' | 'course';
+}
+
 export default function FloatingChatbot() {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
@@ -31,6 +48,8 @@ export default function FloatingChatbot() {
   const [newMessage, setNewMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [chatbot] = useState(() => new NeurolancerChatbot());
+  const [activeForm, setActiveForm] = useState<ChatForm | null>(null);
+  const [formData, setFormData] = useState<Record<string, any>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const currentUser = getUser();
 
@@ -76,26 +95,60 @@ export default function FloatingChatbot() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const jobCreationForm: ChatForm = {
+    id: 'create-job',
+    title: 'Create Job Posting',
+    type: 'job',
+    submitText: 'Post Job',
+    fields: [
+      { name: 'title', label: 'Job Title', type: 'text', required: true, placeholder: 'e.g., Build AI Chatbot for E-commerce' },
+      { name: 'description', label: 'Description', type: 'textarea', required: true, placeholder: 'Describe your project requirements...' },
+      { name: 'budget', label: 'Budget ($)', type: 'number', required: true, placeholder: '1000' },
+      { name: 'job_type', label: 'Payment Type', type: 'select', required: true, options: [
+        { value: 'fixed', label: 'Fixed Price' },
+        { value: 'hourly', label: 'Hourly Rate' }
+      ]},
+      { name: 'experience_level', label: 'Experience Level', type: 'select', required: true, options: [
+        { value: 'entry', label: 'Entry Level' },
+        { value: 'intermediate', label: 'Intermediate' },
+        { value: 'expert', label: 'Expert' }
+      ]}
+    ]
+  };
+
+  const gigCreationForm: ChatForm = {
+    id: 'create-gig',
+    title: 'Create Gig Service',
+    type: 'gig',
+    submitText: 'Create Gig',
+    fields: [
+      { name: 'title', label: 'Gig Title', type: 'text', required: true, placeholder: 'I will build an AI chatbot for your business' },
+      { name: 'description', label: 'Description', type: 'textarea', required: true, placeholder: 'Describe what you will deliver...' },
+      { name: 'price', label: 'Starting Price ($)', type: 'number', required: true, placeholder: '50' },
+      { name: 'delivery_time', label: 'Delivery Time (days)', type: 'number', required: true, placeholder: '7' }
+    ]
+  };
+
   const generateActionCards = (content: string): ActionCard[] => {
     const cards: ActionCard[] = [];
     const lowerContent = content.toLowerCase();
 
     if (lowerContent.includes('job') || lowerContent.includes('hire') || lowerContent.includes('project')) {
       cards.push({
-        title: "Post a Job",
-        description: "Create a job posting to find experts",
-        action: "/post-job",
+        title: "Create Job in Chat",
+        description: "Post a job directly here",
+        action: "form:create-job",
         icon: "💼",
         color: "from-blue-500 to-blue-600"
       });
     }
 
-    if (lowerContent.includes('gig') || lowerContent.includes('service') || lowerContent.includes('buy')) {
+    if (lowerContent.includes('gig') || lowerContent.includes('service') || lowerContent.includes('sell')) {
       cards.push({
-        title: "Browse Gigs",
-        description: "Find ready-made AI services",
-        action: "/gigs",
-        icon: "🛒",
+        title: "Create Gig in Chat",
+        description: "Offer your service directly here",
+        action: "form:create-gig",
+        icon: "🚀",
         color: "from-purple-500 to-purple-600"
       });
     }
@@ -186,8 +239,17 @@ export default function FloatingChatbot() {
   };
 
   const handleActionClick = (action: string) => {
-    router.push(action);
-    setIsOpen(false);
+    if (action.startsWith('form:')) {
+      const formId = action.replace('form:', '');
+      if (formId === 'create-job') {
+        setActiveForm(jobCreationForm);
+      } else if (formId === 'create-gig') {
+        setActiveForm(gigCreationForm);
+      }
+    } else {
+      router.push(action);
+      setIsOpen(false);
+    }
   };
 
   const clearChat = () => {
@@ -197,6 +259,8 @@ export default function FloatingChatbot() {
       sender: 'ai',
       timestamp: new Date()
     }]);
+    setActiveForm(null);
+    setFormData({});
   };
 
   return (
@@ -316,6 +380,88 @@ export default function FloatingChatbot() {
                             </div>
                           </button>
                         ))}
+                      </div>
+                    )}
+
+                    {/* Interactive Form */}
+                    {activeForm && (
+                      <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-600">
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="font-semibold text-gray-900 dark:text-gray-100">{activeForm.title}</h3>
+                          <button
+                            onClick={() => { setActiveForm(null); setFormData({}); }}
+                            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
+                        <div className="space-y-3">
+                          {activeForm.fields.map((field) => (
+                            <div key={field.name}>
+                              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                {field.label} {field.required && <span className="text-red-500">*</span>}
+                              </label>
+                              {field.type === 'textarea' ? (
+                                <textarea
+                                  value={formData[field.name] || ''}
+                                  onChange={(e) => setFormData(prev => ({ ...prev, [field.name]: e.target.value }))}
+                                  placeholder={field.placeholder}
+                                  required={field.required}
+                                  rows={3}
+                                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+                                />
+                              ) : field.type === 'select' ? (
+                                <select
+                                  value={formData[field.name] || ''}
+                                  onChange={(e) => setFormData(prev => ({ ...prev, [field.name]: e.target.value }))}
+                                  required={field.required}
+                                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+                                >
+                                  <option value="">Select {field.label}</option>
+                                  {field.options?.map((option) => (
+                                    <option key={option.value} value={option.value}>{option.label}</option>
+                                  ))}
+                                </select>
+                              ) : (
+                                <input
+                                  type={field.type}
+                                  value={formData[field.name] || ''}
+                                  onChange={(e) => setFormData(prev => ({ ...prev, [field.name]: e.target.value }))}
+                                  placeholder={field.placeholder}
+                                  required={field.required}
+                                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+                                />
+                              )}
+                            </div>
+                          ))}
+                          <div className="flex space-x-2 pt-2">
+                            <button
+                              onClick={() => {
+                                const successMessage: ChatMessage = {
+                                  id: Date.now(),
+                                  content: `✅ **${activeForm.type === 'job' ? 'Job' : 'Gig'} created successfully!**\n\nYour ${activeForm.type} "${formData.title}" has been posted.`,
+                                  sender: 'ai',
+                                  timestamp: new Date()
+                                };
+                                setMessages(prev => [...prev, successMessage]);
+                                setActiveForm(null);
+                                setFormData({});
+                              }}
+                              className="flex-1 py-2 px-4 text-white rounded-lg hover:opacity-90 transition-all text-sm font-medium"
+                              style={{background: 'linear-gradient(135deg, #0D9E86, #0B8A73)'}}
+                            >
+                              {activeForm.submitText}
+                            </button>
+                            <button
+                              onClick={() => { setActiveForm(null); setFormData({}); }}
+                              className="px-4 py-2 text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-sm"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     )}
 
