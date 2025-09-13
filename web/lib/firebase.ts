@@ -3,13 +3,13 @@ import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, sig
 import { getAnalytics } from "firebase/analytics";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCURRAbxMgW2ofeMAR0VXT4PJbTsaQIeCo",
-  authDomain: "neurolancer-2135f.firebaseapp.com",
-  projectId: "neurolancer-2135f",
-  storageBucket: "neurolancer-2135f.firebasestorage.app",
-  messagingSenderId: "156617154270",
-  appId: "1:156617154270:web:5706961b914d4ce4856c4f",
-  measurementId: "G-ERTQKCNGE5"
+  apiKey: "AIzaSyCtgr5jKrpNLr9MhmGUCibnpI0ZgyOgKOk",
+  authDomain: "neurolancer-9aee7.firebaseapp.com",
+  projectId: "neurolancer-9aee7",
+  storageBucket: "neurolancer-9aee7.firebasestorage.app",
+  messagingSenderId: "731943476565",
+  appId: "1:731943476565:web:9ced77cf6a5a061a8de3dc",
+  measurementId: "G-XGY4NVVSDH"
 };
 
 // Initialize Firebase
