@@ -27,7 +27,7 @@ interface ActionCard {
 interface FormField {
   name: string;
   label: string;
-  type: 'text' | 'textarea' | 'select' | 'number';
+  type: 'text' | 'textarea' | 'select' | 'number' | 'date';
   required?: boolean;
   options?: { value: string; label: string }[];
   placeholder?: string;
@@ -38,7 +38,7 @@ interface ChatForm {
   title: string;
   fields: FormField[];
   submitText: string;
-  type: 'job' | 'gig' | 'course';
+  type: 'job' | 'gig' | 'project';
 }
 
 export default function FloatingChatbot() {
@@ -122,10 +122,24 @@ export default function FloatingChatbot() {
     type: 'gig',
     submitText: 'Create Gig',
     fields: [
-      { name: 'title', label: 'Gig Title', type: 'text', required: true, placeholder: 'I will build an AI chatbot for your business' },
-      { name: 'description', label: 'Description', type: 'textarea', required: true, placeholder: 'Describe what you will deliver...' },
-      { name: 'price', label: 'Starting Price ($)', type: 'number', required: true, placeholder: '50' },
-      { name: 'delivery_time', label: 'Delivery Time (days)', type: 'number', required: true, placeholder: '7' }
+      { name: 'title', label: 'Gig Title', type: 'text', required: true, placeholder: 'I will create an AI chatbot for your business' },
+      { name: 'description', label: 'Description', type: 'textarea', required: true, placeholder: 'Describe your service in detail...' },
+      { name: 'basic_title', label: 'Basic Package Title', type: 'text', required: true, placeholder: 'Basic AI Solution' },
+      { name: 'basic_price', label: 'Basic Package Price ($)', type: 'number', required: true, placeholder: '500' },
+      { name: 'basic_delivery_time', label: 'Basic Delivery Time (days)', type: 'number', required: true, placeholder: '7' }
+    ]
+  };
+
+  const projectCreationForm: ChatForm = {
+    id: 'create-project',
+    title: 'Create Project',
+    type: 'project',
+    submitText: 'Create Project',
+    fields: [
+      { name: 'title', label: 'Project Title', type: 'text', required: true, placeholder: 'Enter project title...' },
+      { name: 'description', label: 'Description', type: 'textarea', required: true, placeholder: 'Describe your project goals and objectives...' },
+      { name: 'total_budget', label: 'Budget (USD)', type: 'number', required: true, placeholder: '5000' },
+      { name: 'deadline', label: 'Deadline', type: 'date' }
     ]
   };
 
@@ -133,7 +147,8 @@ export default function FloatingChatbot() {
     const cards: ActionCard[] = [];
     const lowerContent = content.toLowerCase();
 
-    if (lowerContent.includes('job') || lowerContent.includes('hire') || lowerContent.includes('project')) {
+    // Role-based job creation (clients only)
+    if ((lowerContent.includes('job') || lowerContent.includes('hire')) && currentUser?.user_type === 'client') {
       cards.push({
         title: "Create Job in Chat",
         description: "Post a job directly here",
@@ -143,13 +158,25 @@ export default function FloatingChatbot() {
       });
     }
 
-    if (lowerContent.includes('gig') || lowerContent.includes('service') || lowerContent.includes('sell')) {
+    // Role-based gig creation (freelancers only)
+    if ((lowerContent.includes('gig') || lowerContent.includes('service') || lowerContent.includes('sell')) && (currentUser?.user_type === 'freelancer' || currentUser?.user_type === 'both')) {
       cards.push({
         title: "Create Gig in Chat",
         description: "Offer your service directly here",
         action: "form:create-gig",
         icon: "🚀",
         color: "from-purple-500 to-purple-600"
+      });
+    }
+
+    // Project creation (clients only)
+    if ((lowerContent.includes('project') || lowerContent.includes('manage')) && currentUser?.user_type === 'client') {
+      cards.push({
+        title: "Create Project in Chat",
+        description: "Start a new project here",
+        action: "form:create-project",
+        icon: "📁",
+        color: "from-indigo-500 to-indigo-600"
       });
     }
 
@@ -245,6 +272,8 @@ export default function FloatingChatbot() {
         setActiveForm(jobCreationForm);
       } else if (formId === 'create-gig') {
         setActiveForm(gigCreationForm);
+      } else if (formId === 'create-project') {
+        setActiveForm(projectCreationForm);
       }
     } else {
       router.push(action);
@@ -361,12 +390,13 @@ export default function FloatingChatbot() {
 
                     {/* Action Cards */}
                     {message.actionCards && message.actionCards.length > 0 && (
-                      <div className="mt-3 space-y-2">
-                        {message.actionCards.map((card, index) => (
+                      <div className="mt-3">
+                        {/* Form buttons (full width) */}
+                        {message.actionCards.filter(card => card.action.startsWith('form:')).map((card, index) => (
                           <button
                             key={index}
                             onClick={() => handleActionClick(card.action)}
-                            className={`w-full p-3 rounded-xl bg-gradient-to-r ${card.color} text-white text-left hover:shadow-lg transform hover:scale-105 transition-all duration-200`}
+                            className={`w-full p-3 mb-2 rounded-xl bg-gradient-to-r ${card.color} text-white text-left hover:shadow-lg transform hover:scale-105 transition-all duration-200`}
                           >
                             <div className="flex items-center space-x-3">
                               <span className="text-2xl">{card.icon}</span>
@@ -380,6 +410,25 @@ export default function FloatingChatbot() {
                             </div>
                           </button>
                         ))}
+                        
+                        {/* Navigation buttons (horizontal grid) */}
+                        {message.actionCards.filter(card => !card.action.startsWith('form:')).length > 0 && (
+                          <div className="grid grid-cols-3 gap-1">
+                            {message.actionCards.filter(card => !card.action.startsWith('form:')).map((card, index) => (
+                              <button
+                                key={index}
+                                onClick={() => handleActionClick(card.action)}
+                                className={`p-2 rounded-lg bg-gradient-to-r ${card.color} text-white text-center hover:shadow-lg transform hover:scale-105 transition-all duration-200`}
+                                title={card.description}
+                              >
+                                <div className="flex flex-col items-center space-y-1">
+                                  <span className="text-lg">{card.icon}</span>
+                                  <h4 className="font-medium text-xs leading-tight">{card.title}</h4>
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     )}
 
