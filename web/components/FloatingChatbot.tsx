@@ -55,37 +55,92 @@ export default function FloatingChatbot() {
 
   useEffect(() => {
     // Initialize with welcome message
+    const getWelcomeCards = () => {
+      if (currentUser?.user_type === 'freelancer') {
+        return [
+          {
+            title: "Create Gig",
+            description: "Offer your AI services",
+            action: "/create-gig",
+            icon: "🚀",
+            color: "from-purple-500 to-purple-600"
+          },
+          {
+            title: "Browse Jobs",
+            description: "Find work opportunities",
+            action: "/jobs",
+            icon: "💼",
+            color: "from-blue-500 to-blue-600"
+          },
+          {
+            title: "My Dashboard",
+            description: "Manage your freelance business",
+            action: "/dashboard",
+            icon: "📊",
+            color: "from-teal-500 to-teal-600"
+          }
+        ];
+      } else if (currentUser?.user_type === 'client') {
+        return [
+          {
+            title: "Post a Job",
+            description: "Find the perfect AI expert for your project",
+            action: "/post-job",
+            icon: "💼",
+            color: "from-blue-500 to-blue-600"
+          },
+          {
+            title: "Browse Gigs",
+            description: "Discover AI services from experts",
+            action: "/gigs",
+            icon: "🚀",
+            color: "from-purple-500 to-purple-600"
+          },
+          {
+            title: "Find Freelancers",
+            description: "Connect with AI professionals",
+            action: "/freelancers",
+            icon: "👥",
+            color: "from-green-500 to-green-600"
+          }
+        ];
+      } else {
+        // Default for both or unauthenticated users
+        return [
+          {
+            title: "Browse Jobs",
+            description: "Explore work opportunities",
+            action: "/jobs",
+            icon: "💼",
+            color: "from-blue-500 to-blue-600"
+          },
+          {
+            title: "Browse Gigs",
+            description: "Discover AI services",
+            action: "/gigs",
+            icon: "🚀",
+            color: "from-purple-500 to-purple-600"
+          },
+          {
+            title: "Learn More",
+            description: "Explore our platform",
+            action: "/courses",
+            icon: "🎓",
+            color: "from-indigo-500 to-indigo-600"
+          }
+        ];
+      }
+    };
+
     const welcomeMessage: ChatMessage = {
       id: 1,
       content: "👋 Hi! I'm your Neurolancer AI Assistant. I can help you with:\n\n• **Creating jobs and gigs**\n• **Finding freelancers**\n• **Platform navigation**\n• **Account management**\n• **General questions**\n\nWhat would you like to know?",
       sender: 'ai',
       timestamp: new Date(),
-      actionCards: [
-        {
-          title: "Post a Job",
-          description: "Find the perfect AI expert for your project",
-          action: "/post-job",
-          icon: "💼",
-          color: "from-blue-500 to-blue-600"
-        },
-        {
-          title: "Browse Gigs",
-          description: "Discover AI services from experts",
-          action: "/gigs",
-          icon: "🚀",
-          color: "from-purple-500 to-purple-600"
-        },
-        {
-          title: "Find Freelancers",
-          description: "Connect with AI professionals",
-          action: "/freelancers",
-          icon: "👥",
-          color: "from-green-500 to-green-600"
-        }
-      ]
+      actionCards: getWelcomeCards()
     };
     setMessages([welcomeMessage]);
-  }, []);
+  }, [currentUser]);
 
   useEffect(() => {
     scrollToBottom();
