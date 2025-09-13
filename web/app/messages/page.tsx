@@ -20,7 +20,6 @@ import api from '../../lib/api';
 import { ALL_EMOJIS, POPULAR_EMOJIS } from '../../lib/emojis';
 import { searchEmojisWithMapping } from '../../lib/emoji-search-mappings';
 import { NeurolancerChatbot } from '../../lib/chatbot';
-import api from '../../lib/api';
 
 interface Conversation {
   id: number;
