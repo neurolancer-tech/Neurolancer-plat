@@ -208,8 +208,9 @@ export default function FloatingChatbot() {
           className={`w-14 h-14 rounded-full shadow-lg transition-all duration-300 transform hover:scale-110 ${
             isOpen 
               ? 'bg-red-500 hover:bg-red-600 rotate-45' 
-              : 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 animate-pulse'
+              : 'bg-gradient-to-r animate-pulse'
           }`}
+          style={!isOpen ? {background: 'linear-gradient(135deg, #0D9E86, #0B8A73)'} : {}}
         >
           {isOpen ? (
             <svg className="w-6 h-6 text-white mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -240,7 +241,7 @@ export default function FloatingChatbot() {
           {/* Chat Window */}
           <div className="relative w-full max-w-md h-[600px] bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 flex flex-col animate-slide-up">
             {/* Header */}
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-t-2xl">
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700 text-white rounded-t-2xl" style={{background: 'linear-gradient(135deg, #0D9E86, #0B8A73)'}}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
@@ -280,9 +281,9 @@ export default function FloatingChatbot() {
                   <div className={`max-w-[80%] ${message.sender === 'user' ? 'order-2' : 'order-1'}`}>
                     <div className={`rounded-2xl px-4 py-2 ${
                       message.sender === 'user'
-                        ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white'
+                        ? 'text-white'
                         : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-600'
-                    }`}>
+                    }`} style={message.sender === 'user' ? {background: 'linear-gradient(135deg, #0D9E86, #0B8A73)'} : {}}>
                       {message.sender === 'ai' ? (
                         <div className="prose prose-sm max-w-none dark:prose-invert">
                           <ReactMarkdown remarkPlugins={[remarkGfm]}>
@@ -354,7 +355,8 @@ export default function FloatingChatbot() {
                 <button
                   type="submit"
                   disabled={!newMessage.trim() || isTyping}
-                  className="p-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full hover:from-blue-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  className="p-2 text-white rounded-full hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  style={{background: 'linear-gradient(135deg, #0D9E86, #0B8A73)'}}
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
