@@ -244,6 +244,8 @@ export default function Navigation() {
           </div>
         </div>
       </nav>
+      {/* Navigation spacer - same height as nav but scrolls with page */}
+      <div className="h-20 w-full"></div>
 
       {/* Mobile Sidebar */}
       {showMobileMenu && (

@@ -6,45 +6,7 @@ import toast from 'react-hot-toast';
 import { isAuthenticated, getUser, getProfile } from '../lib/auth';
 import { User, UserProfile } from '../types';
 
-const NavigationPadding = () => {
-  useEffect(() => {
-    const applyPadding = () => {
-      // Wait for DOM to be ready
-      setTimeout(() => {
-        const sections = document.querySelectorAll('section');
-        const mains = document.querySelectorAll('main');
-        
-        // Check sections first (hero sections)
-        sections.forEach(section => {
-          const classes = section.className;
-          const hasTopSpacing = classes.includes('mt-') || classes.includes('pt-') || 
-                               section.style.marginTop || section.style.paddingTop;
-          
-          if (!hasTopSpacing) {
-            section.style.paddingTop = '5rem';
-          }
-        });
-        
-        // Then check main elements if no sections with padding found
-        if (sections.length === 0 || ![...sections].some(s => s.style.paddingTop || s.className.includes('mt-') || s.className.includes('pt-'))) {
-          mains.forEach(main => {
-            const classes = main.className;
-            const hasTopSpacing = classes.includes('mt-') || classes.includes('pt-') || 
-                                 main.style.marginTop || main.style.paddingTop;
-            
-            if (!hasTopSpacing) {
-              main.style.paddingTop = '5rem';
-            }
-          });
-        }
-      }, 100);
-    };
-    
-    applyPadding();
-  }, []);
-  
-  return null;
-};
+
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -100,8 +62,7 @@ const Footer = () => {
         }
       `}</style>
       
-      {/* Navigation Padding Component */}
-      <NavigationPadding />
+
       
     <footer className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white py-16 mt-auto border-t border-gray-700">
       <div className="max-w-7xl mx-auto px-6">
