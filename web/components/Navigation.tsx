@@ -10,6 +10,23 @@ import { getUser, getProfile, logout, isAuthenticated } from '../lib/auth';
 import NotificationCenter from './NotificationCenter';
 import { useTheme } from '../contexts/ThemeContext';
 
+// Load Marko One font
+if (typeof window !== 'undefined') {
+  const link = document.createElement('link');
+  link.href = 'https://fonts.googleapis.com/css2?family=Marko+One&display=swap';
+  link.rel = 'stylesheet';
+  document.head.appendChild(link);
+  
+  // Apply font to all headings
+  const style = document.createElement('style');
+  style.textContent = `
+    h1, h2, h3, h4, h5, h6 {
+      font-family: 'Marko One', cursive !important;
+    }
+  `;
+  document.head.appendChild(style);
+}
+
 export default function Navigation() {
   const { theme, toggleTheme, mounted } = useTheme();
   const [user, setUser] = useState<User | null>(null);

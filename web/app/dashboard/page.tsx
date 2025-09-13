@@ -249,28 +249,28 @@ export default function DashboardPage() {
       <section className="relative overflow-hidden" style={{zIndex: 1}}>
         <div className="absolute inset-0 bg-gradient-to-br from-blue-500 via-green-500 to-purple-500"></div>
         <div className="absolute inset-0 bg-black opacity-10"></div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="flex items-center justify-between text-white">
-            <div>
-              <div className="flex items-center space-x-4 mb-4">
-                <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center backdrop-blur-sm">
-                  <span className="text-2xl">{isFreelancer ? '💼' : '🎯'}</span>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-16">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between text-white space-y-6 lg:space-y-0">
+            <div className="flex-1">
+              <div className="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center backdrop-blur-sm flex-shrink-0">
+                  <span className="text-xl sm:text-2xl">{isFreelancer ? '💼' : '🎯'}</span>
                 </div>
-                <div>
-                  <h1 className="text-4xl font-bold">
+                <div className="min-w-0">
+                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold break-words">
                     {getGreeting()}, {user?.first_name || user?.username}!
                   </h1>
-                  <p className="text-xl opacity-90">Ready to achieve great things today?</p>
+                  <p className="text-base sm:text-lg lg:text-xl opacity-90 break-words">Ready to achieve great things today?</p>
                 </div>
               </div>
             </div>
-            <div className="text-right">
-              <div className="bg-white bg-opacity-20 rounded-lg p-4 backdrop-blur-sm">
-                <div className="text-sm text-white opacity-90">Current Time</div>
-                <div className="text-2xl font-mono font-bold text-white">
+            <div className="flex-shrink-0">
+              <div className="bg-white bg-opacity-20 rounded-lg p-3 sm:p-4 backdrop-blur-sm max-w-full">
+                <div className="text-xs sm:text-sm text-white opacity-90 text-center">Current Time</div>
+                <div className="text-lg sm:text-xl lg:text-2xl font-mono font-bold text-white text-center break-all">
                   {currentTime.toLocaleTimeString()}
                 </div>
-                <div className="text-sm text-white opacity-90">
+                <div className="text-xs sm:text-sm text-white opacity-90 text-center break-all">
                   {currentTime.toLocaleDateString()}
                 </div>
               </div>
@@ -282,60 +282,60 @@ export default function DashboardPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-6 mb-8">
           {isFreelancer && (
             <>
-              <div className="relative overflow-hidden bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white shadow-lg card-hover animate-slide-in animate-gradient">
-                <div className="absolute top-0 right-0 w-16 h-16 bg-white bg-opacity-10 rounded-full -mr-8 -mt-8 animate-float"></div>
+              <div className="relative overflow-hidden bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-3 sm:p-4 text-white shadow-lg card-hover animate-slide-in animate-gradient">
+                <div className="absolute top-0 right-0 w-12 h-12 sm:w-16 sm:h-16 bg-white bg-opacity-10 rounded-full -mr-6 sm:-mr-8 -mt-6 sm:-mt-8 animate-float"></div>
                 <div className="relative">
-                  <div className="text-2xl mb-1 animate-float">🚀</div>
-                  <p className="text-blue-100 text-xs">Total Gigs</p>
-                  <p className="text-2xl font-bold">{stats?.total_gigs || 0}</p>
+                  <div className="text-lg sm:text-2xl mb-1 animate-float">🚀</div>
+                  <p className="text-blue-100 text-xs break-words">Total Gigs</p>
+                  <p className="text-lg sm:text-2xl font-bold break-words">{stats?.total_gigs || 0}</p>
                 </div>
               </div>
 
-              <div className="relative overflow-hidden bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl p-4 text-white shadow-lg card-hover animate-slide-in animate-gradient neon-glow">
-                <div className="absolute top-0 right-0 w-16 h-16 bg-white bg-opacity-10 rounded-full -mr-8 -mt-8 animate-float"></div>
+              <div className="relative overflow-hidden bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl p-3 sm:p-4 text-white shadow-lg card-hover animate-slide-in animate-gradient neon-glow">
+                <div className="absolute top-0 right-0 w-12 h-12 sm:w-16 sm:h-16 bg-white bg-opacity-10 rounded-full -mr-6 sm:-mr-8 -mt-6 sm:-mt-8 animate-float"></div>
                 <div className="relative">
-                  <div className="text-2xl mb-1 animate-float">💰</div>
-                  <p className="text-green-100 text-xs">Earnings</p>
-                  <p className="text-2xl font-bold">${stats?.total_earnings || 0}</p>
+                  <div className="text-lg sm:text-2xl mb-1 animate-float">💰</div>
+                  <p className="text-green-100 text-xs break-words">Earnings</p>
+                  <p className="text-lg sm:text-2xl font-bold break-words">${stats?.total_earnings || 0}</p>
                 </div>
               </div>
 
-              <div className="relative overflow-hidden bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white shadow-lg card-hover animate-slide-in animate-gradient">
-                <div className="absolute top-0 right-0 w-16 h-16 bg-white bg-opacity-10 rounded-full -mr-8 -mt-8 animate-float"></div>
+              <div className="relative overflow-hidden bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-3 sm:p-4 text-white shadow-lg card-hover animate-slide-in animate-gradient">
+                <div className="absolute top-0 right-0 w-12 h-12 sm:w-16 sm:h-16 bg-white bg-opacity-10 rounded-full -mr-6 sm:-mr-8 -mt-6 sm:-mt-8 animate-float"></div>
                 <div className="relative">
-                  <div className="text-2xl mb-1 animate-float">💳</div>
-                  <p className="text-purple-100 text-xs">Balance</p>
-                  <p className="text-2xl font-bold">${stats?.available_balance || 0}</p>
+                  <div className="text-lg sm:text-2xl mb-1 animate-float">💳</div>
+                  <p className="text-purple-100 text-xs break-words">Balance</p>
+                  <p className="text-lg sm:text-2xl font-bold break-words">${stats?.available_balance || 0}</p>
                 </div>
               </div>
 
-              <div className="relative overflow-hidden bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-4 text-white shadow-lg card-hover animate-slide-in animate-gradient">
-                <div className="absolute top-0 right-0 w-16 h-16 bg-white bg-opacity-10 rounded-full -mr-8 -mt-8 animate-float"></div>
+              <div className="relative overflow-hidden bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-3 sm:p-4 text-white shadow-lg card-hover animate-slide-in animate-gradient">
+                <div className="absolute top-0 right-0 w-12 h-12 sm:w-16 sm:h-16 bg-white bg-opacity-10 rounded-full -mr-6 sm:-mr-8 -mt-6 sm:-mt-8 animate-float"></div>
                 <div className="relative">
-                  <div className="text-2xl mb-1 animate-float">🎓</div>
-                  <p className="text-indigo-100 text-xs">Courses</p>
-                  <p className="text-2xl font-bold">{completedCoursesCount}</p>
+                  <div className="text-lg sm:text-2xl mb-1 animate-float">🎓</div>
+                  <p className="text-indigo-100 text-xs break-words">Courses</p>
+                  <p className="text-lg sm:text-2xl font-bold break-words">{completedCoursesCount}</p>
                 </div>
               </div>
 
-              <div className="relative overflow-hidden bg-gradient-to-br from-green-400 to-green-500 rounded-xl p-4 text-white shadow-lg card-hover animate-slide-in animate-gradient">
-                <div className="absolute top-0 right-0 w-16 h-16 bg-white bg-opacity-10 rounded-full -mr-8 -mt-8 animate-float"></div>
+              <div className="relative overflow-hidden bg-gradient-to-br from-green-400 to-green-500 rounded-xl p-3 sm:p-4 text-white shadow-lg card-hover animate-slide-in animate-gradient">
+                <div className="absolute top-0 right-0 w-12 h-12 sm:w-16 sm:h-16 bg-white bg-opacity-10 rounded-full -mr-6 sm:-mr-8 -mt-6 sm:-mt-8 animate-float"></div>
                 <div className="relative">
-                  <div className="text-2xl mb-1 animate-float">👍</div>
-                  <p className="text-green-100 text-xs">Likes</p>
-                  <p className="text-2xl font-bold">{profile?.likes_count || 0}</p>
+                  <div className="text-lg sm:text-2xl mb-1 animate-float">👍</div>
+                  <p className="text-green-100 text-xs break-words">Likes</p>
+                  <p className="text-lg sm:text-2xl font-bold break-words">{profile?.likes_count || 0}</p>
                 </div>
               </div>
 
-              <div className="relative overflow-hidden bg-gradient-to-br from-red-400 to-red-500 rounded-xl p-4 text-white shadow-lg card-hover animate-slide-in animate-gradient">
-                <div className="absolute top-0 right-0 w-16 h-16 bg-white bg-opacity-10 rounded-full -mr-8 -mt-8 animate-float"></div>
+              <div className="relative overflow-hidden bg-gradient-to-br from-red-400 to-red-500 rounded-xl p-3 sm:p-4 text-white shadow-lg card-hover animate-slide-in animate-gradient">
+                <div className="absolute top-0 right-0 w-12 h-12 sm:w-16 sm:h-16 bg-white bg-opacity-10 rounded-full -mr-6 sm:-mr-8 -mt-6 sm:-mt-8 animate-float"></div>
                 <div className="relative">
-                  <div className="text-2xl mb-1 animate-float">👎</div>
-                  <p className="text-red-100 text-xs">Dislikes</p>
-                  <p className="text-2xl font-bold">{profile?.dislikes_count || 0}</p>
+                  <div className="text-lg sm:text-2xl mb-1 animate-float">👎</div>
+                  <p className="text-red-100 text-xs break-words">Dislikes</p>
+                  <p className="text-lg sm:text-2xl font-bold break-words">{profile?.dislikes_count || 0}</p>
                 </div>
               </div>
             </>
@@ -343,85 +343,85 @@ export default function DashboardPage() {
 
           {isClient && (
             <>
-              <div className="relative overflow-hidden bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white shadow-lg card-hover animate-slide-in animate-gradient">
-                <div className="absolute top-0 right-0 w-16 h-16 bg-white bg-opacity-10 rounded-full -mr-8 -mt-8 animate-float"></div>
+              <div className="relative overflow-hidden bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-3 sm:p-4 text-white shadow-lg card-hover animate-slide-in animate-gradient">
+                <div className="absolute top-0 right-0 w-12 h-12 sm:w-16 sm:h-16 bg-white bg-opacity-10 rounded-full -mr-6 sm:-mr-8 -mt-6 sm:-mt-8 animate-float"></div>
                 <div className="relative">
-                  <div className="text-2xl mb-1 animate-float">💸</div>
-                  <p className="text-white opacity-90 text-xs">Total Spent</p>
-                  <p className="text-2xl font-bold text-white">${stats?.total_spent || 0}</p>
+                  <div className="text-lg sm:text-2xl mb-1 animate-float">💸</div>
+                  <p className="text-white opacity-90 text-xs break-words">Total Spent</p>
+                  <p className="text-lg sm:text-2xl font-bold text-white break-words">${stats?.total_spent || 0}</p>
                 </div>
               </div>
 
-              <div className="relative overflow-hidden bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl p-4 text-white shadow-lg card-hover animate-slide-in animate-gradient">
-                <div className="absolute top-0 right-0 w-16 h-16 bg-white bg-opacity-10 rounded-full -mr-8 -mt-8 animate-float"></div>
+              <div className="relative overflow-hidden bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl p-3 sm:p-4 text-white shadow-lg card-hover animate-slide-in animate-gradient">
+                <div className="absolute top-0 right-0 w-12 h-12 sm:w-16 sm:h-16 bg-white bg-opacity-10 rounded-full -mr-6 sm:-mr-8 -mt-6 sm:-mt-8 animate-float"></div>
                 <div className="relative">
-                  <div className="text-2xl mb-1 animate-float">📋</div>
-                  <p className="text-white opacity-90 text-xs">Orders</p>
-                  <p className="text-2xl font-bold text-white">{stats?.total_orders || 0}</p>
+                  <div className="text-lg sm:text-2xl mb-1 animate-float">📋</div>
+                  <p className="text-white opacity-90 text-xs break-words">Orders</p>
+                  <p className="text-lg sm:text-2xl font-bold text-white break-words">{stats?.total_orders || 0}</p>
                 </div>
               </div>
 
-              <div className="relative overflow-hidden bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-4 text-white shadow-lg card-hover animate-slide-in animate-gradient">
-                <div className="absolute top-0 right-0 w-16 h-16 bg-white bg-opacity-10 rounded-full -mr-8 -mt-8 animate-float"></div>
+              <div className="relative overflow-hidden bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-3 sm:p-4 text-white shadow-lg card-hover animate-slide-in animate-gradient">
+                <div className="absolute top-0 right-0 w-12 h-12 sm:w-16 sm:h-16 bg-white bg-opacity-10 rounded-full -mr-6 sm:-mr-8 -mt-6 sm:-mt-8 animate-float"></div>
                 <div className="relative">
-                  <div className="text-2xl mb-1 animate-float">🎓</div>
-                  <p className="text-indigo-100 text-xs">Courses</p>
-                  <p className="text-2xl font-bold">{completedCoursesCount}</p>
+                  <div className="text-lg sm:text-2xl mb-1 animate-float">🎓</div>
+                  <p className="text-indigo-100 text-xs break-words">Courses</p>
+                  <p className="text-lg sm:text-2xl font-bold break-words">{completedCoursesCount}</p>
                 </div>
               </div>
 
-              <div className="relative overflow-hidden bg-gradient-to-br from-green-400 to-green-500 rounded-xl p-4 text-white shadow-lg card-hover animate-slide-in animate-gradient">
-                <div className="absolute top-0 right-0 w-16 h-16 bg-white bg-opacity-10 rounded-full -mr-8 -mt-8 animate-float"></div>
+              <div className="relative overflow-hidden bg-gradient-to-br from-green-400 to-green-500 rounded-xl p-3 sm:p-4 text-white shadow-lg card-hover animate-slide-in animate-gradient">
+                <div className="absolute top-0 right-0 w-12 h-12 sm:w-16 sm:h-16 bg-white bg-opacity-10 rounded-full -mr-6 sm:-mr-8 -mt-6 sm:-mt-8 animate-float"></div>
                 <div className="relative">
-                  <div className="text-2xl mb-1 animate-float">👍</div>
-                  <p className="text-green-100 text-xs">Likes</p>
-                  <p className="text-2xl font-bold">{profile?.likes_count || 0}</p>
+                  <div className="text-lg sm:text-2xl mb-1 animate-float">👍</div>
+                  <p className="text-green-100 text-xs break-words">Likes</p>
+                  <p className="text-lg sm:text-2xl font-bold break-words">{profile?.likes_count || 0}</p>
                 </div>
               </div>
 
-              <div className="relative overflow-hidden bg-gradient-to-br from-red-400 to-red-500 rounded-xl p-4 text-white shadow-lg card-hover animate-slide-in animate-gradient">
-                <div className="absolute top-0 right-0 w-16 h-16 bg-white bg-opacity-10 rounded-full -mr-8 -mt-8 animate-float"></div>
+              <div className="relative overflow-hidden bg-gradient-to-br from-red-400 to-red-500 rounded-xl p-3 sm:p-4 text-white shadow-lg card-hover animate-slide-in animate-gradient">
+                <div className="absolute top-0 right-0 w-12 h-12 sm:w-16 sm:h-16 bg-white bg-opacity-10 rounded-full -mr-6 sm:-mr-8 -mt-6 sm:-mt-8 animate-float"></div>
                 <div className="relative">
-                  <div className="text-2xl mb-1 animate-float">👎</div>
-                  <p className="text-red-100 text-xs">Dislikes</p>
-                  <p className="text-2xl font-bold">{profile?.dislikes_count || 0}</p>
+                  <div className="text-lg sm:text-2xl mb-1 animate-float">👎</div>
+                  <p className="text-red-100 text-xs break-words">Dislikes</p>
+                  <p className="text-lg sm:text-2xl font-bold break-words">{profile?.dislikes_count || 0}</p>
                 </div>
               </div>
             </>
           )}
 
-          <div className="relative overflow-hidden bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-4 text-white shadow-lg card-hover animate-slide-in animate-gradient">
-            <div className="absolute top-0 right-0 w-16 h-16 bg-white bg-opacity-10 rounded-full -mr-8 -mt-8 animate-float"></div>
+          <div className="relative overflow-hidden bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-3 sm:p-4 text-white shadow-lg card-hover animate-slide-in animate-gradient">
+            <div className="absolute top-0 right-0 w-12 h-12 sm:w-16 sm:h-16 bg-white bg-opacity-10 rounded-full -mr-6 sm:-mr-8 -mt-6 sm:-mt-8 animate-float"></div>
             <div className="relative">
-              <div className="text-2xl mb-1 animate-float">🔥</div>
-              <p className="text-white opacity-90 text-xs">Active</p>
-              <p className="text-2xl font-bold text-white">{stats?.active_orders || 0}</p>
+              <div className="text-lg sm:text-2xl mb-1 animate-float">🔥</div>
+              <p className="text-white opacity-90 text-xs break-words">Active</p>
+              <p className="text-lg sm:text-2xl font-bold text-white break-words">{stats?.active_orders || 0}</p>
             </div>
           </div>
 
-          <div className="relative overflow-hidden bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl p-4 text-white shadow-lg card-hover animate-slide-in animate-gradient">
-            <div className="absolute top-0 right-0 w-16 h-16 bg-white bg-opacity-10 rounded-full -mr-8 -mt-8 animate-float"></div>
+          <div className="relative overflow-hidden bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl p-3 sm:p-4 text-white shadow-lg card-hover animate-slide-in animate-gradient">
+            <div className="absolute top-0 right-0 w-12 h-12 sm:w-16 sm:h-16 bg-white bg-opacity-10 rounded-full -mr-6 sm:-mr-8 -mt-6 sm:-mt-8 animate-float"></div>
             <div className="relative">
-              <div className="text-2xl mb-1 animate-float">✅</div>
-              <p className="text-white opacity-90 text-xs">Completed</p>
-              <p className="text-2xl font-bold text-white">{stats?.completed_orders || 0}</p>
+              <div className="text-lg sm:text-2xl mb-1 animate-float">✅</div>
+              <p className="text-white opacity-90 text-xs break-words">Completed</p>
+              <p className="text-lg sm:text-2xl font-bold text-white break-words">{stats?.completed_orders || 0}</p>
             </div>
           </div>
         </div>
 
         {/* Quick Actions */}
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">Quick Actions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4 sm:mb-6 break-words">Quick Actions</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {getQuickActions().map((action, index) => (
               <Link key={index} href={action.href} className="group block">
-                <div className={`${action.gradient} ${action.color} rounded-xl p-6 text-white shadow-lg card-hover animate-slide-in animate-gradient relative`} style={{animationDelay: `${index * 0.1}s`}}>
-                  <div className="text-4xl mb-4 animate-float" style={{animationDelay: `${index * 0.2}s`}}>{action.icon}</div>
-                  <h3 className="text-lg font-semibold mb-2">{action.title}</h3>
-                  <p className="text-sm opacity-90">{action.description}</p>
-                  <div className="mt-4 flex items-center text-sm font-medium">
-                    Get Started
-                    <svg className="w-4 h-4 ml-2 group-hover:translate-x-2 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className={`${action.gradient} ${action.color} rounded-xl p-4 sm:p-6 text-white shadow-lg card-hover animate-slide-in animate-gradient relative`} style={{animationDelay: `${index * 0.1}s`}}>
+                  <div className="text-2xl sm:text-4xl mb-3 sm:mb-4 animate-float" style={{animationDelay: `${index * 0.2}s`}}>{action.icon}</div>
+                  <h3 className="text-base sm:text-lg font-semibold mb-2 break-words">{action.title}</h3>
+                  <p className="text-xs sm:text-sm opacity-90 break-words">{action.description}</p>
+                  <div className="mt-3 sm:mt-4 flex items-center text-xs sm:text-sm font-medium">
+                    <span className="break-words">Get Started</span>
+                    <svg className="w-3 h-3 sm:w-4 sm:h-4 ml-2 group-hover:translate-x-2 transition-all duration-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                   </div>
@@ -432,7 +432,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Charts and Analytics */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 mb-6 sm:mb-8">
           {/* Earnings Chart */}
           {isFreelancer && (
             <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
@@ -508,7 +508,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Recent Activity & Notifications */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
           {/* Recent Notifications */}
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
             <div className="flex items-center justify-between mb-6">

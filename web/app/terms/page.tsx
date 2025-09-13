@@ -7,7 +7,7 @@ export default function TermsPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navigation />
       
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pt-24">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-8">Terms of Service</h1>
           <p className="text-gray-600 dark:text-gray-300 mb-8">Last updated: January 2025</p>
