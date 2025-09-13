@@ -281,11 +281,18 @@ export default function MyJobsPage() {
                         >
                           {job.title}
                         </Link>
-                        <div className="flex items-center mt-2 text-sm text-gray-600 dark:text-gray-400">
-                          <span>{job.category?.name || 'Uncategorized'}</span>
-                          <span className="mx-2">•</span>
+                        <div className="flex flex-wrap items-center gap-2 mt-2 text-sm text-gray-600 dark:text-gray-400">
+                          <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">{job.category?.name || 'Uncategorized'}</span>
+                          {/* Subcategories */}
+                          {((job as any).subcategories) && ((job as any).subcategories).length > 0 && (
+                            ((job as any).subcategories).slice(0, 2).map((sub: any) => (
+                              <span key={sub.id} className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">
+                                {sub.name}
+                              </span>
+                            ))
+                          )}
                           <span>{job.experience_level}</span>
-                          <span className="mx-2">•</span>
+                          <span>•</span>
                           <span>Posted {new Date(job.created_at).toLocaleDateString()}</span>
                         </div>
                       </div>

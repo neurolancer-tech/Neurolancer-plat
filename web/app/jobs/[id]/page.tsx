@@ -142,6 +142,19 @@ export default function JobDetailPage() {
                     <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium">
                       {job.category?.name || 'Uncategorized'}
                     </span>
+                    {/* Subcategories */}
+                    {((job as any).subcategories) && ((job as any).subcategories).length > 0 && (
+                      ((job as any).subcategories).slice(0, 2).map((sub: any, index: number) => (
+                        <span key={sub.id} className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs">
+                          {sub.name}
+                        </span>
+                      ))
+                    )}
+                    {((job as any).subcategories) && ((job as any).subcategories).length > 2 && (
+                      <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs">
+                        +{((job as any).subcategories).length - 2} more
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -154,6 +167,20 @@ export default function JobDetailPage() {
                 {job.description}
               </div>
             </div>
+
+            {/* Subcategories */}
+            {((job as any).subcategories) && ((job as any).subcategories).length > 0 && (
+              <div className="card p-6 mb-6">
+                <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Subcategories</h3>
+                <div className="flex flex-wrap gap-2">
+                  {((job as any).subcategories).map((sub: any) => (
+                    <span key={sub.id} className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm">
+                      {sub.name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Skills Required */}
             <div className="card p-6 mb-6">

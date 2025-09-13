@@ -171,8 +171,16 @@ export default function GigDetailPage() {
             {/* Gig Details */}
             <div className="card rounded-lg shadow-sm p-6 mb-6">
               <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">{gig.title}</h1>
-              <div className="flex items-center space-x-4 mb-4">
+              <div className="flex flex-wrap items-center gap-2 mb-4">
                 <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">{gig.category.name}</span>
+                {/* Subcategories */}
+                {((gig as any).subcategories) && ((gig as any).subcategories).length > 0 && (
+                  ((gig as any).subcategories).map((sub: any) => (
+                    <span key={sub.id} className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs">
+                      {sub.name}
+                    </span>
+                  ))
+                )}
                 <span className="text-gray-500 dark:text-gray-400">{gig.freelancer_profile?.completed_gigs || 0} orders completed</span>
               </div>
               <p className="text-gray-700 dark:text-gray-300 mb-6 leading-relaxed">{gig.description}</p>

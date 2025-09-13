@@ -117,13 +117,21 @@ export default function CourseDetailPage() {
               />
             </div>
             <div className="md:w-2/3 p-6">
-              <div className="flex items-center space-x-2 mb-2">
+              <div className="flex flex-wrap items-center gap-2 mb-2">
                 <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
                   {course.category.name}
                 </span>
                 <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">
                   {course.difficulty_level}
                 </span>
+                {/* Subcategories */}
+                {((course as any).subcategories) && ((course as any).subcategories).length > 0 && (
+                  ((course as any).subcategories).map((sub: any) => (
+                    <span key={sub.id} className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">
+                      {sub.name}
+                    </span>
+                  ))
+                )}
               </div>
               
               <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">{course.title}</h1>

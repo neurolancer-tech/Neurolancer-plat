@@ -7,23 +7,36 @@ import Navigation from '@/components/Navigation';
 import Avatar from '@/components/Avatar';
 import LikeButton from '@/components/LikeButton';
 import { Gig, Category } from '@/types';
+
+interface Subcategory {
+  id: number;
+  category: number;
+  name: string;
+  description: string;
+  created_at: string;
+}
 import api from '@/lib/api';
 import Pagination from '@/components/Pagination';
 import { getProfile } from '@/lib/auth';
 
+
 export default function GigsPage() {
   const [gigs, setGigs] = useState<Gig[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
+  const [subcategoriesLoading, setSubcategoriesLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
     search: '',
     category: '',
+    subcategory: '',
     minPrice: '',
     maxPrice: '',
     rating: '',
     minLikes: '',
     sortBy: 'created_at'
   });
+  
   const [currentPage, setCurrentPage] = useState(1);
   const gigsPerPage = 12;
 
@@ -31,6 +44,14 @@ export default function GigsPage() {
     loadCategories();
     loadGigs();
   }, []);
+
+  useEffect(() => {
+    if (filters.category) {
+      loadSubcategories(filters.category);
+    } else {
+      setSubcategories([]);
+    }
+  }, [filters.category]);
 
   const loadCategories = async () => {
     try {
@@ -52,17 +73,32 @@ export default function GigsPage() {
     }
   };
 
+  const loadSubcategories = async (categoryId: string) => {
+    setSubcategoriesLoading(true);
+    try {
+      const response = await api.get(`/subcategories/?category=${categoryId}`);
+      setSubcategories(response.data.results || response.data);
+    } catch (error) {
+      console.error('Error loading subcategories:', error);
+      setSubcategories([]);
+    } finally {
+      setSubcategoriesLoading(false);
+    }
+  };
+
   const filteredGigs = useMemo(() => {
     return gigs.filter(gig => {
       const matchesSearch = gig.title.toLowerCase().includes(filters.search.toLowerCase()) ||
                            gig.description.toLowerCase().includes(filters.search.toLowerCase());
       const matchesCategory = !filters.category || gig.category.id.toString() === filters.category;
+      const matchesSubcategory = !filters.subcategory || 
+        ((gig as any).subcategories && (gig as any).subcategories.some((sub: any) => sub.id.toString() === filters.subcategory));
       const matchesMinPrice = !filters.minPrice || gig.basic_price >= parseFloat(filters.minPrice);
       const matchesMaxPrice = !filters.maxPrice || gig.basic_price <= parseFloat(filters.maxPrice);
       const matchesRating = !filters.rating || gig.rating >= parseFloat(filters.rating);
       const matchesMinLikes = !filters.minLikes || ((gig.likes_count || 0) >= parseInt(filters.minLikes));
       
-      return matchesSearch && matchesCategory && matchesMinPrice && matchesMaxPrice && matchesRating && matchesMinLikes;
+      return matchesSearch && matchesCategory && matchesSubcategory && matchesMinPrice && matchesMaxPrice && matchesRating && matchesMinLikes;
     });
   }, [gigs, filters]);
 
@@ -152,7 +188,7 @@ export default function GigsPage() {
                 <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
                 <select
                   value={filters.category}
-                  onChange={(e) => setFilters({...filters, category: e.target.value})}
+                  onChange={(e) => setFilters({...filters, category: e.target.value, subcategory: ''})}
                   className="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:text-white"
                 >
                   <option value="">All Categories</option>
@@ -161,6 +197,27 @@ export default function GigsPage() {
                   ))}
                 </select>
               </div>
+
+              {/* Subcategory Filter */}
+              {filters.category && (
+                <div className="mb-3">
+                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Subcategory</label>
+                  <select
+                    value={filters.subcategory}
+                    onChange={(e) => setFilters({...filters, subcategory: e.target.value})}
+                    className="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:text-white"
+                    disabled={subcategoriesLoading}
+                  >
+                    <option value="">All Subcategories</option>
+                    {subcategories.map(sub => (
+                      <option key={sub.id} value={sub.id}>{sub.name}</option>
+                    ))}
+                  </select>
+                  {subcategoriesLoading && (
+                    <div className="text-xs text-gray-500 mt-1">Loading subcategories...</div>
+                  )}
+                </div>
+              )}
 
               {/* Price Range */}
               <div className="mb-3">
@@ -213,6 +270,7 @@ export default function GigsPage() {
                 onClick={() => setFilters({
                   search: '',
                   category: '',
+                  subcategory: '',
                   minPrice: '',
                   maxPrice: '',
                   rating: '',
@@ -268,6 +326,7 @@ export default function GigsPage() {
                       onClick={() => setFilters({
                         search: '',
                         category: '',
+                        subcategory: '',
                         minPrice: '',
                         maxPrice: '',
                         rating: '',
@@ -309,6 +368,23 @@ export default function GigsPage() {
                             </div>
                           </div>
                           <h3 className="font-semibold text-lg mb-2 line-clamp-2 text-gray-900 dark:text-gray-100">{gig.title}</h3>
+                          
+                          {/* Subcategories */}
+                          {((gig as any).subcategories) && ((gig as any).subcategories).length > 0 && (
+                            <div className="flex flex-wrap gap-1 mb-2">
+                              {((gig as any).subcategories).slice(0, 2).map((sub: any) => (
+                                <span key={sub.id} className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs">
+                                  {sub.name}
+                                </span>
+                              ))}
+                              {((gig as any).subcategories).length > 2 && (
+                                <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs">
+                                  +{((gig as any).subcategories).length - 2}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                          
                           <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">{gig.description}</p>
                           <div className="flex items-center justify-between mb-3">
                             <div className="flex items-center space-x-1 text-sm">

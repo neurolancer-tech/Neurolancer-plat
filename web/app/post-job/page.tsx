@@ -8,14 +8,25 @@ import { isAuthenticated, getProfile } from '@/lib/auth';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
 
+interface Subcategory {
+  id: number;
+  category: number;
+  name: string;
+  description: string;
+  created_at: string;
+}
+
 export default function PostJobPage() {
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
+  const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
+  const [subcategoriesLoading, setSubcategoriesLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     category: '',
+    subcategories: [] as string[],
     budget_min: '',
     budget_max: '',
     deadline: '',
@@ -41,6 +52,14 @@ export default function PostJobPage() {
     loadCategories();
   }, [router]);
 
+  useEffect(() => {
+    if (formData.category) {
+      loadSubcategories(formData.category);
+    } else {
+      setSubcategories([]);
+    }
+  }, [formData.category]);
+
   const loadCategories = async () => {
     try {
       const response = await api.get('/categories/');
@@ -50,10 +69,37 @@ export default function PostJobPage() {
     }
   };
 
+  const loadSubcategories = async (categoryId: string) => {
+    setSubcategoriesLoading(true);
+    try {
+      const response = await api.get(`/subcategories/?category=${categoryId}`);
+      setSubcategories(response.data.results || response.data);
+    } catch (error) {
+      console.error('Error loading subcategories:', error);
+      setSubcategories([]);
+    } finally {
+      setSubcategoriesLoading(false);
+    }
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [name]: value,
+      // Clear subcategories when category changes
+      ...(name === 'category' && { subcategories: [] })
+    });
+  };
+
+  const handleSubcategoryChange = (subcategoryId: string) => {
+    const updatedSubcategories = formData.subcategories.includes(subcategoryId)
+      ? formData.subcategories.filter(id => id !== subcategoryId)
+      : [...formData.subcategories, subcategoryId];
+    
+    setFormData({
+      ...formData,
+      subcategories: updatedSubcategories
     });
   };
 
@@ -66,7 +112,8 @@ export default function PostJobPage() {
         ...formData,
         budget_min: parseFloat(formData.budget_min),
         budget_max: parseFloat(formData.budget_max),
-        category_id: parseInt(formData.category)
+        category_id: parseInt(formData.category),
+        subcategories: formData.subcategories.map(id => parseInt(id))
       };
       
       // Remove the original category field to avoid confusion
@@ -131,6 +178,32 @@ export default function PostJobPage() {
                   ))}
                 </select>
               </div>
+
+              {/* Subcategories */}
+              {formData.category && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Subcategories (Select relevant ones)
+                  </label>
+                  {subcategoriesLoading ? (
+                    <div className="text-sm text-gray-500">Loading subcategories...</div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-48 overflow-y-auto border border-gray-300 rounded-md p-3">
+                      {subcategories.map(sub => (
+                        <label key={sub.id} className="flex items-start space-x-2 text-sm">
+                          <input
+                            type="checkbox"
+                            checked={formData.subcategories.includes(sub.id.toString())}
+                            onChange={() => handleSubcategoryChange(sub.id.toString())}
+                            className="mt-0.5 rounded border-gray-300 text-primary focus:ring-primary"
+                          />
+                          <span className="text-gray-700">{sub.name}</span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">

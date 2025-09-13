@@ -201,9 +201,19 @@ export default function MyCoursesPage() {
                   
                   <div className="p-4">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
-                        {course.category.name}
-                      </span>
+                      <div className="flex flex-wrap gap-1">
+                        <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
+                          {course.category.name}
+                        </span>
+                        {/* Subcategories */}
+                        {((course as any).subcategories) && ((course as any).subcategories).length > 0 && (
+                          ((course as any).subcategories).slice(0, 1).map((sub: any) => (
+                            <span key={sub.id} className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">
+                              {sub.name}
+                            </span>
+                          ))
+                        )}
+                      </div>
                       <span className={`text-xs px-2 py-1 rounded ${
                         course.status === 'completed' 
                           ? 'bg-green-100 text-green-800'

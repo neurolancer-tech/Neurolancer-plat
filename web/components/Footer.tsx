@@ -235,7 +235,7 @@ const Footer = () => {
               © {currentYear} Neurolancer. All rights reserved. Empowering AI innovation worldwide.
             </p>
             <div className="flex items-center space-x-6 text-sm text-gray-400">
-              <span>Made with ❤️ for AI professionals</span>
+              <span>Made with ❤️ by GuruCrafts agency</span>
             </div>
           </div>
         </div>

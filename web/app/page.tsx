@@ -1,11 +1,118 @@
 'use client';
 
 import Navigation from '@/components/Navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
+function CategoryCard({ title, icon, description, subcategories, subtitle, index }: {
+  title: string;
+  icon: string;
+  description: string;
+  subcategories: string[];
+  subtitle: string;
+  index: number;
+}) {
+  const [showModal, setShowModal] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  const isLeftSide = index % 3 === 0;
+  const isRightSide = index % 3 === 2;
+
+  const handleCardInteraction = () => {
+    if (isMobile) {
+      setShowModal(true);
+    }
+  };
+
+  const handleMouseEnter = () => {
+    if (!isMobile) {
+      setShowModal(true);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (!isMobile) {
+      setShowModal(false);
+    }
+  };
+
+  return (
+    <>
+      <div className="relative">
+        <div 
+          className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 p-6 text-center border border-gray-200/50 dark:border-gray-700/50 hover:border-teal-200 dark:hover:border-teal-700 group cursor-pointer"
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+          onClick={handleCardInteraction}
+        >
+          <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">{icon}</div>
+          <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-gray-100 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">{title}</h3>
+          <p className="text-gray-600 dark:text-gray-400">{description}</p>
+        </div>
+        
+        {/* Desktop Modal */}
+        {showModal && !isMobile && (
+          <div 
+            className={`absolute top-0 ${isLeftSide ? 'left-full ml-4' : isRightSide ? 'right-full mr-4' : 'left-full ml-4'} w-80 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-4 z-50`}
+            onMouseEnter={() => setShowModal(true)}
+            onMouseLeave={() => setShowModal(false)}
+          >
+            <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">{subtitle}</h4>
+            <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+              {subcategories.map((sub, idx) => (
+                <li key={idx} className="flex items-start">
+                  <span className="text-teal-500 mr-2">•</span>
+                  <span>{sub}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+
+      {/* Mobile Modal */}
+      {showModal && isMobile && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full max-h-[80vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-3">
+                  <span className="text-3xl">{icon}</span>
+                  <h4 className="font-semibold text-gray-900 dark:text-gray-100">{title}</h4>
+                </div>
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">{subtitle}</p>
+              <ul className="space-y-3 text-sm text-gray-700 dark:text-gray-300">
+                {subcategories.map((sub, idx) => (
+                  <li key={idx} className="flex items-start">
+                    <span className="text-teal-500 mr-2 mt-1">•</span>
+                    <span>{sub}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
 
 function AIDevCard() {
-  const [showModal, setShowModal] = useState(false);
-
   const subcategories = [
     'Machine Learning Development (classification, regression, clustering)',
     'Deep Learning Models (CNNs, RNNs, Transformers)',
@@ -20,37 +127,18 @@ function AIDevCard() {
   ];
 
   return (
-    <div className="relative">
-      <div 
-        className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 p-6 text-center border border-gray-200/50 dark:border-gray-700/50 hover:border-teal-200 dark:hover:border-teal-700 group cursor-pointer"
-        onMouseEnter={() => setShowModal(true)}
-        onMouseLeave={() => setShowModal(false)}
-      >
-        <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">🧠</div>
-        <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-gray-100 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">AI Development & Engineering</h3>
-        <p className="text-gray-600 dark:text-gray-400">ML model building, NLP, computer vision.</p>
-      </div>
-      
-      {showModal && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-4 z-50 max-w-md">
-          <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">Core technical work in building and deploying AI</h4>
-          <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
-            {subcategories.map((sub, index) => (
-              <li key={index} className="flex items-start">
-                <span className="text-teal-500 mr-2">•</span>
-                <span>{sub}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </div>
+    <CategoryCard
+      title="AI Development & Engineering"
+      icon="🧠"
+      description="ML model building, NLP, computer vision."
+      subcategories={subcategories}
+      subtitle="Core technical work in building and deploying AI"
+      index={0}
+    />
   );
 }
 
 function DataModelCard() {
-  const [showModal, setShowModal] = useState(false);
-
   const subcategories = [
     'Data Annotation & Labeling (text, image, audio, video)',
     'Data Cleaning & Preprocessing (feature engineering, outlier handling)',
@@ -65,37 +153,18 @@ function DataModelCard() {
   ];
 
   return (
-    <div className="relative">
-      <div 
-        className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 p-6 text-center border border-gray-200/50 dark:border-gray-700/50 hover:border-teal-200 dark:hover:border-teal-700 group cursor-pointer"
-        onMouseEnter={() => setShowModal(true)}
-        onMouseLeave={() => setShowModal(false)}
-      >
-        <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">🗃️</div>
-        <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-gray-100 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">Data & Model Management</h3>
-        <p className="text-gray-600 dark:text-gray-400">Data cleaning, labeling, pipelines, fine-tuning.</p>
-      </div>
-      
-      {showModal && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-4 z-50 max-w-md">
-          <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">Everything around datasets, training, and optimizing AI models</h4>
-          <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
-            {subcategories.map((sub, index) => (
-              <li key={index} className="flex items-start">
-                <span className="text-teal-500 mr-2">•</span>
-                <span>{sub}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </div>
+    <CategoryCard
+      title="Data & Model Management"
+      icon="🗃️"
+      description="Data cleaning, labeling, pipelines, fine-tuning."
+      subcategories={subcategories}
+      subtitle="Everything around datasets, training, and optimizing AI models"
+      index={1}
+    />
   );
 }
 
 function AIEthicsCard() {
-  const [showModal, setShowModal] = useState(false);
-
   const subcategories = [
     'Bias & Fairness Audits (dataset bias detection, model bias testing)',
     'Privacy-Preserving AI (federated learning, differential privacy)',
@@ -110,37 +179,18 @@ function AIEthicsCard() {
   ];
 
   return (
-    <div className="relative">
-      <div 
-        className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 p-6 text-center border border-gray-200/50 dark:border-gray-700/50 hover:border-teal-200 dark:hover:border-teal-700 group cursor-pointer"
-        onMouseEnter={() => setShowModal(true)}
-        onMouseLeave={() => setShowModal(false)}
-      >
-        <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">⚖️</div>
-        <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-gray-100 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">AI Ethics, Law & Governance</h3>
-        <p className="text-gray-600 dark:text-gray-400">Compliance, bias auditing, responsible AI.</p>
-      </div>
-      
-      {showModal && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-4 z-50 max-w-md">
-          <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">Responsible AI development, compliance, and regulation</h4>
-          <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
-            {subcategories.map((sub, index) => (
-              <li key={index} className="flex items-start">
-                <span className="text-teal-500 mr-2">•</span>
-                <span>{sub}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </div>
+    <CategoryCard
+      title="AI Ethics, Law & Governance"
+      icon="⚖️"
+      description="Compliance, bias auditing, responsible AI."
+      subcategories={subcategories}
+      subtitle="Responsible AI development, compliance, and regulation"
+      index={2}
+    />
   );
 }
 
 function AIIntegrationCard() {
-  const [showModal, setShowModal] = useState(false);
-
   const subcategories = [
     'Chatbot & Virtual Assistants (customer support, voice assistants)',
     'Workflow Automation (CRM, ERP, marketing automation with AI)',
@@ -155,37 +205,18 @@ function AIIntegrationCard() {
   ];
 
   return (
-    <div className="relative">
-      <div 
-        className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 p-6 text-center border border-gray-200/50 dark:border-gray-700/50 hover:border-teal-200 dark:hover:border-teal-700 group cursor-pointer"
-        onMouseEnter={() => setShowModal(true)}
-        onMouseLeave={() => setShowModal(false)}
-      >
-        <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">🔌</div>
-        <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-gray-100 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">AI Integration & Support</h3>
-        <p className="text-gray-600 dark:text-gray-400">Chatbot deployment, workflow automation.</p>
-      </div>
-      
-      {showModal && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-4 z-50 max-w-md">
-          <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">Helping businesses actually use AI in their workflows</h4>
-          <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
-            {subcategories.map((sub, index) => (
-              <li key={index} className="flex items-start">
-                <span className="text-teal-500 mr-2">•</span>
-                <span>{sub}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </div>
+    <CategoryCard
+      title="AI Integration & Support"
+      icon="🔌"
+      description="Chatbot deployment, workflow automation."
+      subcategories={subcategories}
+      subtitle="Helping businesses actually use AI in their workflows"
+      index={3}
+    />
   );
 }
 
 function CreativeAICard() {
-  const [showModal, setShowModal] = useState(false);
-
   const subcategories = [
     'AI Content Writing (blogs, ad copy, SEO with AI assistance)',
     'AI Art & Design (digital art, logo design, concept art, 3D renders)',
@@ -200,37 +231,18 @@ function CreativeAICard() {
   ];
 
   return (
-    <div className="relative">
-      <div 
-        className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 p-6 text-center border border-gray-200/50 dark:border-gray-700/50 hover:border-teal-200 dark:hover:border-teal-700 group cursor-pointer"
-        onMouseEnter={() => setShowModal(true)}
-        onMouseLeave={() => setShowModal(false)}
-      >
-        <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">🎨</div>
-        <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-gray-100 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">Creative & Industry-Specific AI Roles</h3>
-        <p className="text-gray-600 dark:text-gray-400">AI in music, art, design, healthcare, finance.</p>
-      </div>
-      
-      {showModal && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-4 z-50 max-w-md">
-          <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">Specialized uses of AI in creative industries & verticals</h4>
-          <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
-            {subcategories.map((sub, index) => (
-              <li key={index} className="flex items-start">
-                <span className="text-teal-500 mr-2">•</span>
-                <span>{sub}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </div>
+    <CategoryCard
+      title="Creative & Industry-Specific AI Roles"
+      icon="🎨"
+      description="AI in music, art, design, healthcare, finance."
+      subcategories={subcategories}
+      subtitle="Specialized uses of AI in creative industries & verticals"
+      index={4}
+    />
   );
 }
 
 function AIOperationsCard() {
-  const [showModal, setShowModal] = useState(false);
-
   const subcategories = [
     'Digital Twins & Simulation (smart factories, cities, supply chains)',
     'AI for Agriculture (crop monitoring, pest detection, soil health analysis)',
@@ -245,31 +257,14 @@ function AIOperationsCard() {
   ];
 
   return (
-    <div className="relative">
-      <div 
-        className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 p-6 text-center border border-gray-200/50 dark:border-gray-700/50 hover:border-teal-200 dark:hover:border-teal-700 group cursor-pointer"
-        onMouseEnter={() => setShowModal(true)}
-        onMouseLeave={() => setShowModal(false)}
-      >
-        <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">🌍</div>
-        <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-gray-100 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">AI Operations in New Markets</h3>
-        <p className="text-gray-600 dark:text-gray-400">AI in agriculture, energy, logistics.</p>
-      </div>
-      
-      {showModal && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-4 z-50 max-w-md">
-          <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">AI applied to emerging fields and frontier technologies</h4>
-          <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
-            {subcategories.map((sub, index) => (
-              <li key={index} className="flex items-start">
-                <span className="text-teal-500 mr-2">•</span>
-                <span>{sub}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </div>
+    <CategoryCard
+      title="AI Operations in New Markets"
+      icon="🌍"
+      description="AI in agriculture, energy, logistics."
+      subcategories={subcategories}
+      subtitle="AI applied to emerging fields and frontier technologies"
+      index={5}
+    />
   );
 }
 
@@ -362,8 +357,11 @@ export default function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="text-white py-16 bg-teal-600 dark:bg-teal-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <section className="relative text-white py-16 overflow-hidden" style={{backgroundImage: 'url(/assets/images/get started-min.png)', backgroundSize: 'cover', backgroundPosition: 'center'}}>
+        {/* Overlay */}
+        <div className="absolute inset-0 bg-black bg-opacity-60 z-10"></div>
+        
+        <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
           <p className="text-xl mb-8">Join thousands of clients and freelancers in the AI marketplace</p>
           <div className="flex justify-center space-x-4">

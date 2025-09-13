@@ -12,6 +12,14 @@ interface Category {
   name: string;
 }
 
+interface Subcategory {
+  id: number;
+  category: number;
+  name: string;
+  description: string;
+  created_at: string;
+}
+
 interface Lesson {
   title: string;
   description: string;
@@ -23,6 +31,8 @@ interface Lesson {
 export default function CreateCoursePage() {
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
+  const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
+  const [subcategoriesLoading, setSubcategoriesLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   
@@ -30,6 +40,7 @@ export default function CreateCoursePage() {
     title: '',
     description: '',
     category: '',
+    subcategories: [] as string[],
     price: '',
     difficulty_level: 'beginner',
     duration_hours: '',
@@ -58,12 +69,33 @@ export default function CreateCoursePage() {
     loadCategories();
   }, []);
 
+  useEffect(() => {
+    if (formData.category) {
+      loadSubcategories(formData.category);
+    } else {
+      setSubcategories([]);
+    }
+  }, [formData.category]);
+
   const loadCategories = async () => {
     try {
       const response = await api.get('/categories/');
       setCategories(response.data.results || response.data);
     } catch (error) {
       console.error('Error loading categories:', error);
+    }
+  };
+
+  const loadSubcategories = async (categoryId: string) => {
+    setSubcategoriesLoading(true);
+    try {
+      const response = await api.get(`/subcategories/?category=${categoryId}`);
+      setSubcategories(response.data.results || response.data);
+    } catch (error) {
+      console.error('Error loading subcategories:', error);
+      setSubcategories([]);
+    } finally {
+      setSubcategoriesLoading(false);
     }
   };
 
@@ -159,6 +191,13 @@ export default function CreateCoursePage() {
       formDataToSend.append('learning_outcomes', formData.learning_outcomes);
       formDataToSend.append('prerequisites', formData.prerequisites);
       formDataToSend.append('status', 'published');
+      
+      // Add subcategories
+      if (formData.subcategories.length > 0) {
+        formData.subcategories.forEach(subId => {
+          formDataToSend.append('subcategories', subId);
+        });
+      }
       
       // Add image based on option
       if (imageOption === 'upload' && imageFile) {
@@ -270,6 +309,43 @@ export default function CreateCoursePage() {
                     </select>
                   </div>
                 </div>
+
+                {/* Subcategories */}
+                {formData.category && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Subcategories
+                    </label>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-32 overflow-y-auto border border-gray-300 rounded-lg p-3">
+                      {subcategoriesLoading ? (
+                        <div className="col-span-full text-center text-gray-500">Loading...</div>
+                      ) : subcategories.length > 0 ? (
+                        subcategories.map(sub => (
+                          <label key={sub.id} className="flex items-center text-sm">
+                            <input
+                              type="checkbox"
+                              value={sub.id}
+                              checked={formData.subcategories.includes(sub.id.toString())}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                setFormData(prev => ({
+                                  ...prev,
+                                  subcategories: e.target.checked
+                                    ? [...prev.subcategories, value]
+                                    : prev.subcategories.filter(id => id !== value)
+                                }));
+                              }}
+                              className="mr-2"
+                            />
+                            {sub.name}
+                          </label>
+                        ))
+                      ) : (
+                        <div className="col-span-full text-center text-gray-500">No subcategories available</div>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -569,6 +645,22 @@ export default function CreateCoursePage() {
                       <p className="font-medium">{lessons.length}</p>
                     </div>
                   </div>
+                  
+                  {formData.subcategories.length > 0 && (
+                    <div className="mb-4">
+                      <h4 className="font-medium mb-2 text-gray-900 dark:text-gray-100">Subcategories:</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {formData.subcategories.map(subId => {
+                          const sub = subcategories.find(s => s.id.toString() === subId);
+                          return sub ? (
+                            <span key={subId} className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
+                              {sub.name}
+                            </span>
+                          ) : null;
+                        })}
+                      </div>
+                    </div>
+                  )}
                   
                   <div className="mb-4">
                     <h4 className="font-medium mb-2 text-gray-900 dark:text-gray-100">Lessons:</h4>

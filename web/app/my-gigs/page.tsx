@@ -161,9 +161,21 @@ export default function MyGigsPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 mb-4 text-sm text-gray-600 dark:text-gray-400">
-                    <div>Orders: {gig.freelancer_profile?.completed_gigs || 0}</div>
-                    <div>Category: {gig.category.name}</div>
+                  <div className="mb-4">
+                    <div className="flex flex-wrap gap-1 mb-2">
+                      <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">{gig.category.name}</span>
+                      {/* Subcategories */}
+                      {((gig as any).subcategories) && ((gig as any).subcategories).length > 0 && (
+                        ((gig as any).subcategories).slice(0, 2).map((sub: any) => (
+                          <span key={sub.id} className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">
+                            {sub.name}
+                          </span>
+                        ))
+                      )}
+                    </div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                      Orders: {gig.freelancer_profile?.completed_gigs || 0}
+                    </div>
                   </div>
 
                   <div className="flex items-center justify-center mb-4">

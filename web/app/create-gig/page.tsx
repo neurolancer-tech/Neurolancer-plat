@@ -4,18 +4,30 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Navigation from '@/components/Navigation';
 import { Category } from '@/types';
+
+interface Subcategory {
+  id: number;
+  category: number;
+  name: string;
+  description: string;
+  created_at: string;
+}
 import { isAuthenticated, getProfile } from '@/lib/auth';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
 
+
 export default function CreateGigPage() {
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
+  const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
+  const [subcategoriesLoading, setSubcategoriesLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     category: '',
+    subcategories: [] as string[],
     tags: '',
     basic_title: '',
     basic_description: '',
@@ -53,6 +65,14 @@ export default function CreateGigPage() {
     loadCategories();
   }, [router]);
 
+  useEffect(() => {
+    if (formData.category) {
+      loadSubcategories(formData.category);
+    } else {
+      setSubcategories([]);
+    }
+  }, [formData.category]);
+
   const loadCategories = async () => {
     try {
       const response = await api.get('/categories/');
@@ -62,10 +82,37 @@ export default function CreateGigPage() {
     }
   };
 
+  const loadSubcategories = async (categoryId: string) => {
+    setSubcategoriesLoading(true);
+    try {
+      const response = await api.get(`/subcategories/?category=${categoryId}`);
+      setSubcategories(response.data.results || response.data);
+    } catch (error) {
+      console.error('Error loading subcategories:', error);
+      setSubcategories([]);
+    } finally {
+      setSubcategoriesLoading(false);
+    }
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [name]: value,
+      // Clear subcategories when category changes
+      ...(name === 'category' && { subcategories: [] })
+    });
+  };
+
+  const handleSubcategoryChange = (subcategoryId: string) => {
+    const updatedSubcategories = formData.subcategories.includes(subcategoryId)
+      ? formData.subcategories.filter(id => id !== subcategoryId)
+      : [...formData.subcategories, subcategoryId];
+    
+    setFormData({
+      ...formData,
+      subcategories: updatedSubcategories
     });
   };
 
@@ -104,9 +151,14 @@ export default function CreateGigPage() {
         if (value) {
           // Convert category to category_id for backend compatibility
           if (key === 'category') {
-            submitData.append('category_id', value);
+            submitData.append('category_id', value as string);
+          } else if (key === 'subcategories') {
+            // Handle subcategories array
+            (value as string[]).forEach(subId => {
+              submitData.append('subcategories', subId);
+            });
           } else {
-            submitData.append(key, value);
+            submitData.append(key, value as string);
           }
         }
       });
@@ -184,6 +236,32 @@ export default function CreateGigPage() {
                 </select>
               </div>
             </div>
+
+            {/* Subcategories */}
+            {formData.category && (
+              <div className="mt-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Subcategories (Select relevant ones)
+                </label>
+                {subcategoriesLoading ? (
+                  <div className="text-sm text-gray-500">Loading subcategories...</div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-48 overflow-y-auto border border-gray-300 rounded-md p-3">
+                    {subcategories.map(sub => (
+                      <label key={sub.id} className="flex items-start space-x-2 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={formData.subcategories.includes(sub.id.toString())}
+                          onChange={() => handleSubcategoryChange(sub.id.toString())}
+                          className="mt-0.5 rounded border-gray-300 text-primary focus:ring-primary"
+                        />
+                        <span className="text-gray-700">{sub.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
             <div className="mt-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">

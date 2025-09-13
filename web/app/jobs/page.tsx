@@ -10,13 +10,24 @@ import { getProfile } from '@/lib/auth';
 import api from '@/lib/api';
 import Pagination from '@/components/Pagination';
 
+interface Subcategory {
+  id: number;
+  category: number;
+  name: string;
+  description: string;
+  created_at: string;
+}
+
 export default function JobsPage() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
+  const [subcategoriesLoading, setSubcategoriesLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
     search: '',
     category: '',
+    subcategory: '',
     experienceLevel: '',
     jobType: '',
     minBudget: '',
@@ -33,6 +44,14 @@ export default function JobsPage() {
     loadCategories();
     loadJobs();
   }, []);
+
+  useEffect(() => {
+    if (filters.category) {
+      loadSubcategories(filters.category);
+    } else {
+      setSubcategories([]);
+    }
+  }, [filters.category]);
 
   const loadCategories = async () => {
     try {
@@ -54,6 +73,19 @@ export default function JobsPage() {
     }
   };
 
+  const loadSubcategories = async (categoryId: string) => {
+    setSubcategoriesLoading(true);
+    try {
+      const response = await api.get(`/subcategories/?category=${categoryId}`);
+      setSubcategories(response.data.results || response.data);
+    } catch (error) {
+      console.error('Error loading subcategories:', error);
+      setSubcategories([]);
+    } finally {
+      setSubcategoriesLoading(false);
+    }
+  };
+
   const filteredJobs = useMemo(() => {
     return jobs.filter(job => {
       if (!job || !job.title) return false;
@@ -63,13 +95,15 @@ export default function JobsPage() {
         job.description?.toLowerCase().includes(filters.search.toLowerCase())
       );
       const matchesCategory = !filters.category || (job.category?.id?.toString() === filters.category);
+      const matchesSubcategory = !filters.subcategory || 
+        (((job as any).subcategories) && ((job as any).subcategories).some((sub: any) => sub.id.toString() === filters.subcategory));
       const matchesExperience = !filters.experienceLevel || job.experience_level === filters.experienceLevel;
       const matchesJobType = !filters.jobType || job.job_type === filters.jobType;
       const matchesMinBudget = !filters.minBudget || job.budget_min >= parseFloat(filters.minBudget);
       const matchesMaxBudget = !filters.maxBudget || job.budget_max <= parseFloat(filters.maxBudget);
       const matchesMinLikes = !filters.minLikes || (job.likes_count && job.likes_count >= parseInt(filters.minLikes));
       
-      return matchesSearch && matchesCategory && matchesExperience && matchesJobType && matchesMinBudget && matchesMaxBudget && matchesMinLikes;
+      return matchesSearch && matchesCategory && matchesSubcategory && matchesExperience && matchesJobType && matchesMinBudget && matchesMaxBudget && matchesMinLikes;
     });
   }, [jobs, filters]);
 
@@ -142,7 +176,7 @@ export default function JobsPage() {
                 <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
                 <select
                   value={filters.category}
-                  onChange={(e) => setFilters({...filters, category: e.target.value})}
+                  onChange={(e) => setFilters({...filters, category: e.target.value, subcategory: ''})}
                   className="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:text-white"
                 >
                   <option value="">All Categories</option>
@@ -151,6 +185,27 @@ export default function JobsPage() {
                   ))}
                 </select>
               </div>
+
+              {/* Subcategory Filter */}
+              {filters.category && (
+                <div className="mb-3">
+                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Subcategory</label>
+                  <select
+                    value={filters.subcategory}
+                    onChange={(e) => setFilters({...filters, subcategory: e.target.value})}
+                    className="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:text-white"
+                    disabled={subcategoriesLoading}
+                  >
+                    <option value="">All Subcategories</option>
+                    {subcategories.map(sub => (
+                      <option key={sub.id} value={sub.id}>{sub.name}</option>
+                    ))}
+                  </select>
+                  {subcategoriesLoading && (
+                    <div className="text-xs text-gray-500 mt-1">Loading subcategories...</div>
+                  )}
+                </div>
+              )}
 
               <div className="mb-3">
                 <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Experience Level</label>
@@ -214,6 +269,7 @@ export default function JobsPage() {
                 onClick={() => setFilters({
                   search: '',
                   category: '',
+                  subcategory: '',
                   experienceLevel: '',
                   jobType: '',
                   minBudget: '',

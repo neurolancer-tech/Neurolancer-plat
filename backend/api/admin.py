@@ -4,7 +4,7 @@ from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.utils import timezone
 from .models import (
-    UserProfile, Category, Gig, Order, OrderDeliverable, Review, Team, 
+    UserProfile, Category, Subcategory, Gig, Order, OrderDeliverable, Review, Team, 
     Conversation, Message, Portfolio, Withdrawal, HelpRequest, GroupJoinRequest,
     Job, Proposal, Notification, UserVerification, SavedSearch, OnboardingResponse,
     Course, Lesson, Enrollment, SkillAssessment, AssessmentQuestion, 
@@ -283,10 +283,26 @@ class UserProfileAdmin(admin.ModelAdmin):
     list_filter = ['user_type', 'created_at']
     search_fields = ['user__username', 'user__email']
 
+class SubcategoryInline(admin.TabularInline):
+    model = Subcategory
+    extra = 0
+    fields = ['name', 'description', 'is_active']
+
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ['name', 'description', 'created_at']
+    list_display = ['name', 'description', 'subcategory_count', 'created_at']
     search_fields = ['name', 'description']
+    inlines = [SubcategoryInline]
+    
+    def subcategory_count(self, obj):
+        return obj.subcategories.count()
+    subcategory_count.short_description = 'Subcategories'
+
+@admin.register(Subcategory)
+class SubcategoryAdmin(admin.ModelAdmin):
+    list_display = ['name', 'category', 'is_active', 'created_at']
+    list_filter = ['category', 'is_active', 'created_at']
+    search_fields = ['name', 'description', 'category__name']
 
 @admin.register(Gig)
 class GigAdmin(admin.ModelAdmin):

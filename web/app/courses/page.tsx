@@ -11,16 +11,27 @@ import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import Pagination from '@/components/Pagination';
 
+interface Subcategory {
+  id: number;
+  category: number;
+  name: string;
+  description: string;
+  created_at: string;
+}
+
 export default function CoursesPage() {
   const router = useRouter();
   const [courses, setCourses] = useState<Course[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
+  const [subcategoriesLoading, setSubcategoriesLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [filters, setFilters] = useState({
     search: '',
     category: '',
+    subcategory: '',
     difficulty: '',
     price: '',
     sortBy: 'created_at'
@@ -39,6 +50,14 @@ export default function CoursesPage() {
     loadCategories();
     loadCourses();
   }, [router]);
+
+  useEffect(() => {
+    if (filters.category) {
+      loadSubcategories(filters.category);
+    } else {
+      setSubcategories([]);
+    }
+  }, [filters.category]);
 
   const loadCategories = async () => {
     try {
@@ -60,20 +79,40 @@ export default function CoursesPage() {
     }
   };
 
+  const loadSubcategories = async (categoryId: string) => {
+    setSubcategoriesLoading(true);
+    try {
+      const response = await api.get(`/subcategories/?category=${categoryId}`);
+      setSubcategories(response.data.results || response.data);
+    } catch (error) {
+      console.error('Error loading subcategories:', error);
+      setSubcategories([]);
+    } finally {
+      setSubcategoriesLoading(false);
+    }
+  };
+
   const handleFilterChange = (key: string, value: string) => {
-    setFilters({ ...filters, [key]: value });
+    setFilters({ 
+      ...filters, 
+      [key]: value,
+      // Clear subcategory when category changes
+      ...(key === 'category' && { subcategory: '' })
+    });
   };
 
   const filteredCourses = courses.filter(course => {
     const matchesSearch = course.title.toLowerCase().includes(filters.search.toLowerCase()) ||
                          course.description.toLowerCase().includes(filters.search.toLowerCase());
     const matchesCategory = !filters.category || course.category.id.toString() === filters.category;
+    const matchesSubcategory = !filters.subcategory || 
+      (((course as any).subcategories) && ((course as any).subcategories).some((sub: any) => sub.id.toString() === filters.subcategory));
     const matchesDifficulty = !filters.difficulty || course.difficulty_level === filters.difficulty;
     const matchesPrice = !filters.price || 
                         (filters.price === 'free' && course.price === 0) ||
                         (filters.price === 'paid' && course.price > 0);
     
-    return matchesSearch && matchesCategory && matchesDifficulty && matchesPrice;
+    return matchesSearch && matchesCategory && matchesSubcategory && matchesDifficulty && matchesPrice;
   }).sort((a, b) => {
     switch (filters.sortBy) {
       case 'rating':
@@ -212,6 +251,27 @@ export default function CoursesPage() {
                 </select>
               </div>
 
+              {/* Subcategory Filter */}
+              {filters.category && (
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Subcategory</label>
+                  <select
+                    value={filters.subcategory}
+                    onChange={(e) => handleFilterChange('subcategory', e.target.value)}
+                    className="input-field"
+                    disabled={subcategoriesLoading}
+                  >
+                    <option value="">All Subcategories</option>
+                    {subcategories.map(sub => (
+                      <option key={sub.id} value={sub.id}>{sub.name}</option>
+                    ))}
+                  </select>
+                  {subcategoriesLoading && (
+                    <div className="text-xs text-gray-500 mt-1">Loading subcategories...</div>
+                  )}
+                </div>
+              )}
+
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Difficulty</label>
                 <select
@@ -241,7 +301,7 @@ export default function CoursesPage() {
               </div>
 
               <button
-                onClick={() => setFilters({ search: '', category: '', difficulty: '', price: '', sortBy: 'created_at' })}
+                onClick={() => setFilters({ search: '', category: '', subcategory: '', difficulty: '', price: '', sortBy: 'created_at' })}
                 className="w-full text-primary py-2 px-4 rounded-lg border border-primary hover:bg-primary hover:text-white transition-colors"
               >
                 Clear Filters
@@ -304,6 +364,22 @@ export default function CoursesPage() {
                           </div>
                           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">{course.title}</h3>
                           <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2">{course.description}</p>
+                          
+                          {/* Subcategories */}
+                          {((course as any).subcategories) && ((course as any).subcategories).length > 0 && (
+                            <div className="flex flex-wrap gap-1 mb-3">
+                              {((course as any).subcategories).slice(0, 2).map((sub: any) => (
+                                <span key={sub.id} className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs">
+                                  {sub.name}
+                                </span>
+                              ))}
+                              {((course as any).subcategories).length > 2 && (
+                                <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs">
+                                  +{((course as any).subcategories).length - 2}
+                                </span>
+                              )}
+                            </div>
+                          )}
                           
                           <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mb-4">
                             <div className="flex items-center">

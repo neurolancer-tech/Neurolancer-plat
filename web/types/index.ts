@@ -31,6 +31,15 @@ export interface Category {
   name: string;
   description: string;
   icon: string;
+  subcategories?: Subcategory[];
+}
+
+export interface Subcategory {
+  id: number;
+  category: number;
+  name: string;
+  description: string;
+  created_at: string;
 }
 
 export interface Gig {
@@ -43,6 +52,7 @@ export interface Gig {
     profile_picture?: string;
   };
   category: Category;
+  subcategories?: Subcategory[];
   title: string;
   description: string;
   image?: string;
