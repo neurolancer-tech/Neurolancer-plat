@@ -51,6 +51,35 @@ const Footer = () => {
   };
 
   return (
+    <>
+      {/* Font Loader */}
+      <style jsx global>{`
+        @import url('https://fonts.googleapis.com/css2?family=Marko+One&display=swap');
+        h1, h2, h3, h4, h5, h6 {
+          font-family: 'Marko One', serif !important;
+        }
+      `}</style>
+      
+      {/* Navigation Padding Component */}
+      <style jsx global>{`
+        body:not(.nav-padding-applied) main:first-of-type,
+        body:not(.nav-padding-applied) section:first-of-type {
+          padding-top: 5rem !important;
+        }
+      `}</style>
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `
+            if (typeof window !== 'undefined' && !document.body.classList.contains('nav-padding-applied')) {
+              const hasExistingPadding = document.querySelector('main[class*="mt-"], section[class*="mt-"], main[class*="pt-"], section[class*="pt-"]');
+              if (!hasExistingPadding) {
+                document.body.classList.add('nav-padding-applied');
+              }
+            }
+          `
+        }}
+      />
+      
     <footer className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white py-16 mt-auto border-t border-gray-700">
       <div className="max-w-7xl mx-auto px-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
@@ -241,6 +270,7 @@ const Footer = () => {
         </div>
       </div>
     </footer>
+    </>
   );
 };
 
