@@ -17,10 +17,10 @@ if (typeof window !== 'undefined') {
   link.rel = 'stylesheet';
   document.head.appendChild(link);
   
-  // Apply font to all headings
+  // Apply font to all headings and buttons
   const style = document.createElement('style');
   style.textContent = `
-    h1, h2, h3, h4, h5, h6 {
+    h1, h2, h3, h4, h5, h6, button, .btn, .btn-primary, .btn-secondary, input[type="button"], input[type="submit"] {
       font-family: 'Marko One', cursive !important;
     }
   `;
