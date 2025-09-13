@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Navigation from '@/components/Navigation';
+import Avatar from '@/components/Avatar';
 import OnboardingModal from '@/components/OnboardingModal';
 import OnboardingReminderModal from '@/components/OnboardingReminderModal';
 import { getUser, getProfile, isAuthenticated } from '@/lib/auth';
@@ -253,8 +254,15 @@ export default function DashboardPage() {
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between text-white space-y-6 lg:space-y-0">
             <div className="flex-1">
               <div className="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
-                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center backdrop-blur-sm flex-shrink-0">
-                  <span className="text-xl sm:text-2xl">{isFreelancer ? '💼' : '🎯'}</span>
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center backdrop-blur-sm flex-shrink-0 p-1">
+                  <Avatar
+                    src={profile?.profile_picture}
+                    avatarType={profile?.avatar_type as 'upload' | 'avatar' | 'google' | undefined}
+                    selectedAvatar={profile?.selected_avatar}
+                    googlePhotoUrl={profile?.google_photo_url}
+                    size="md"
+                    alt="Profile"
+                  />
                 </div>
                 <div className="min-w-0">
                   <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold break-words">
