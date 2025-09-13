@@ -17,10 +17,17 @@ if (typeof window !== 'undefined') {
   link.rel = 'stylesheet';
   document.head.appendChild(link);
   
-  // Apply font to all headings and buttons
+  // Apply font to headings, buttons, navigation, mobile sidebar, and admin navigation
   const style = document.createElement('style');
   style.textContent = `
-    h1, h2, h3, h4, h5, h6, button, .btn, .btn-primary, .btn-secondary, input[type="button"], input[type="submit"] {
+    h1, h2, h3, h4, h5, h6,
+    button, .btn, .btn-primary, .btn-secondary,
+    input[type="button"], input[type="submit"],
+    nav a, nav button, nav span,
+    .fixed.inset-y-0 a, .fixed.inset-y-0 button, .fixed.inset-y-0 span,
+    .fixed.inset-y-0 h3, .fixed.inset-y-0 p,
+    .admin-sidebar a, .admin-sidebar button, .admin-sidebar span,
+    .admin-nav a, .admin-nav button, .admin-nav span {
       font-family: 'Marko One', cursive !important;
     }
   `;
