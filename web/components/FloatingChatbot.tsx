@@ -202,7 +202,7 @@ export default function FloatingChatbot() {
   return (
     <>
       {/* Floating Button */}
-      <div className="fixed bottom-6 right-6 z-50">
+      <div className="fixed bottom-6 right-6 z-40 hover:z-50">
         <button
           onClick={() => setIsOpen(!isOpen)}
           className={`w-14 h-14 rounded-full shadow-lg transition-all duration-300 transform hover:scale-110 ${
@@ -230,7 +230,7 @@ export default function FloatingChatbot() {
 
       {/* Chat Modal */}
       {isOpen && (
-        <div className="fixed inset-0 z-40 flex items-end justify-end p-4">
+        <div className="fixed inset-0 z-40 flex items-end justify-end p-4 hover:z-50">
           {/* Backdrop */}
           <div 
             className="absolute inset-0 bg-black bg-opacity-20"

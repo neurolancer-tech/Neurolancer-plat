@@ -57,7 +57,7 @@ export default function Navigation() {
   return (
     <>
       <EmailVerificationGate />
-      <nav className="fixed top-0 left-0 right-0 shadow-sm border-b border-gray-200 dark:border-gray-700 z-50 transition-colors duration-200" style={{backgroundColor: '#0D9E86'}}>
+      <nav className="fixed top-0 left-0 right-0 shadow-sm border-b border-gray-200 dark:border-gray-700 z-50 hover:z-[60] transition-colors duration-200" style={{backgroundColor: '#0D9E86'}}>
         <div className="px-2 sm:px-3 lg:px-4">
           <div className="flex justify-between items-center h-20">
             <div className="flex items-center space-x-4">
