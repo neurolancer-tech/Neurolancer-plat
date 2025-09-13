@@ -6,6 +6,31 @@ import toast from 'react-hot-toast';
 import { isAuthenticated, getUser, getProfile } from '../lib/auth';
 import { User, UserProfile } from '../types';
 
+const NavigationPadding = () => {
+  useEffect(() => {
+    const checkAndApplyPadding = () => {
+      const main = document.querySelector('main');
+      const section = document.querySelector('section');
+      const target = main || section;
+      
+      if (target) {
+        const hasExistingPadding = target.className.includes('mt-') || 
+                                 target.className.includes('pt-') ||
+                                 target.style.marginTop ||
+                                 target.style.paddingTop;
+        
+        if (!hasExistingPadding) {
+          target.style.paddingTop = '5rem';
+        }
+      }
+    };
+    
+    checkAndApplyPadding();
+  }, []);
+  
+  return null;
+};
+
 const Footer = () => {
   const currentYear = new Date().getFullYear();
   const [email, setEmail] = useState('');
@@ -61,24 +86,7 @@ const Footer = () => {
       `}</style>
       
       {/* Navigation Padding Component */}
-      <style jsx global>{`
-        body:not(.nav-padding-applied) main:first-of-type,
-        body:not(.nav-padding-applied) section:first-of-type {
-          padding-top: 5rem !important;
-        }
-      `}</style>
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `
-            if (typeof window !== 'undefined' && !document.body.classList.contains('nav-padding-applied')) {
-              const hasExistingPadding = document.querySelector('main[class*="mt-"], section[class*="mt-"], main[class*="pt-"], section[class*="pt-"]');
-              if (!hasExistingPadding) {
-                document.body.classList.add('nav-padding-applied');
-              }
-            }
-          `
-        }}
-      />
+      <NavigationPadding />
       
     <footer className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white py-16 mt-auto border-t border-gray-700">
       <div className="max-w-7xl mx-auto px-6">
