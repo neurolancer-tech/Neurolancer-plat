@@ -6,7 +6,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import Avatar from './Avatar';
 import { NeurolancerChatbot } from '../lib/chatbot';
-import { getUser } from '../lib/auth';
+import { getProfile } from '../lib/auth';
 
 interface ChatMessage {
   id: number;
@@ -51,7 +51,7 @@ export default function FloatingChatbot() {
   const [activeForm, setActiveForm] = useState<ChatForm | null>(null);
   const [formData, setFormData] = useState<Record<string, any>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const currentUser = getUser();
+  const currentUser = getProfile();
 
   useEffect(() => {
     // Initialize with welcome message
