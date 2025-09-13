@@ -231,11 +231,11 @@ export default function Navigation() {
                   )}
                 </div>
               ) : (
-                <div className="flex space-x-2 sm:space-x-3">
-<Link href="/auth?tab=login" className="text-white hover:text-gray-200 transition-colors text-sm sm:text-base">
+                <div className="flex items-center space-x-2 sm:space-x-3">
+                  <Link href="/auth?tab=login" className="flex items-center px-3 py-2 text-white hover:text-gray-200 hover:bg-white/10 rounded-lg transition-colors text-sm sm:text-base">
                     Login
                   </Link>
-                  <Link href="/auth?tab=signup" className="bg-gradient-to-r from-purple-500 to-pink-600 text-white px-3 py-2 sm:px-4 rounded-lg hover:from-pink-600 hover:to-purple-500 hover:shadow-lg transition-all duration-300 text-sm sm:text-base font-medium">
+                  <Link href="/auth?tab=signup" className="flex items-center bg-gradient-to-r from-purple-500 to-pink-600 text-white px-3 py-2 sm:px-4 rounded-lg hover:from-pink-600 hover:to-purple-500 hover:shadow-lg transition-all duration-300 text-sm sm:text-base font-medium">
                     Sign Up
                   </Link>
                 </div>
@@ -247,7 +247,7 @@ export default function Navigation() {
 
       {/* Mobile Sidebar */}
       {showMobileMenu && (
-        <div className="fixed inset-0 z-40 md:hidden">
+        <div className="fixed inset-0 z-[60] md:hidden">
           {/* Backdrop */}
           <div 
             className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
@@ -255,7 +255,7 @@ export default function Navigation() {
           />
           
           {/* Sidebar */}
-          <div className="fixed inset-y-0 left-0 w-80 bg-white dark:bg-gray-900 shadow-xl transform transition-transform">
+          <div className="fixed inset-y-0 left-0 w-80 bg-white dark:bg-gray-900 shadow-xl transform transition-transform z-[70]">
             <div className="flex flex-col h-full">
               {/* Header */}
               <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
