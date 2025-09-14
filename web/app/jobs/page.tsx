@@ -186,10 +186,11 @@ export default function JobsPage() {
       const matchesCategory = !filters.category || (job.category?.id?.toString() === filters.category);
       
       const matchesSubcategory = !filters.subcategory || 
-        (((job as any).subcategories) && Array.isArray((job as any).subcategories) && ((job as any).subcategories).some((sub: any) => {
-          const subId = typeof sub === 'object' ? sub.id : sub;
-          return subId?.toString() === filters.subcategory;
-        }));
+        (!((job as any).subcategories) || // Show jobs without subcategories when no filter is applied
+         (Array.isArray((job as any).subcategories) && ((job as any).subcategories).some((sub: any) => {
+           const subId = typeof sub === 'object' ? sub.id : sub;
+           return subId?.toString() === filters.subcategory;
+         })));
       
       const matchesExperience = !filters.experienceLevel || job.experience_level === filters.experienceLevel;
       const matchesJobType = !filters.jobType || job.job_type === filters.jobType;
