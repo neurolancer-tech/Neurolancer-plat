@@ -133,7 +133,8 @@ export default function ProfilePage() {
       const response = await api.get('/onboarding/');
       setOnboardingData(response.data);
     } catch (error) {
-      console.log('No onboarding data found');
+      console.log('No onboarding data found - endpoint may not be implemented yet');
+      setOnboardingData(null);
     }
   };
 
@@ -253,7 +254,8 @@ export default function ProfilePage() {
   const hasOnboardingData = onboardingData && (
     onboardingData.company_name || 
     onboardingData.specialization || 
-    onboardingData.goals
+    onboardingData.goals ||
+    (onboardingData as any).interested_subcategories
   );
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {

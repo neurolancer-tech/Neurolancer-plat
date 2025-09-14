@@ -36,10 +36,30 @@ export default function FreelancersPage() {
 
   const loadCategories = async () => {
     try {
-      const response = await api.get('/categories-with-subcategories/');
-      setCategories(response.data);
+      // Try the new endpoint first, fallback to existing categories
+      let categoriesData = [];
+      try {
+        const response = await api.get('/categories-with-subcategories/');
+        categoriesData = response.data;
+      } catch {
+        // Fallback to existing categories endpoint
+        const response = await api.get('/categories/');
+        categoriesData = response.data.results || response.data || [];
+        
+        // Try to get subcategories for each category
+        for (const category of categoriesData) {
+          try {
+            const subResponse = await api.get(`/subcategories/?category=${category.id}`);
+            category.subcategories = subResponse.data.results || subResponse.data || [];
+          } catch {
+            category.subcategories = [];
+          }
+        }
+      }
+      setCategories(categoriesData);
     } catch (error) {
       console.error('Error loading categories:', error);
+      setCategories([]);
     }
   };
 
