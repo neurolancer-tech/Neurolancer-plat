@@ -7,6 +7,8 @@ import Navigation from '@/components/Navigation';
 import Avatar from '@/components/Avatar';
 import OnboardingModal from '@/components/OnboardingModal';
 import OnboardingReminderModal from '@/components/OnboardingReminderModal';
+import NeuralNetworkBackground from '@/components/NeuralNetworkBackground';
+import RecommendationsSection from '@/components/RecommendationsSection';
 import { getUser, getProfile, isAuthenticated } from '@/lib/auth';
 import { User, UserProfile } from '@/types';
 import api from '@/lib/api';
@@ -248,8 +250,8 @@ export default function DashboardPage() {
       
       {/* Hero Section */}
       <section className="relative overflow-hidden" style={{zIndex: 1}}>
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-500 via-green-500 to-purple-500"></div>
-        <div className="absolute inset-0 bg-black opacity-10"></div>
+        <NeuralNetworkBackground />
+        <div className="absolute inset-0 bg-gradient-to-br from-teal-500/20 via-blue-500/10 to-purple-500/20"></div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-16">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between text-white space-y-6 lg:space-y-0">
             <div className="flex-1">
@@ -293,26 +295,29 @@ export default function DashboardPage() {
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-6 mb-8">
           {isFreelancer && (
             <>
-              <div className="relative overflow-hidden bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-3 sm:p-4 text-white shadow-lg card-hover animate-slide-in animate-gradient">
+              <div className="relative overflow-hidden bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-3 sm:p-4 text-white shadow-lg card-hover animate-slide-in animate-gradient neural-pulse">
                 <div className="absolute top-0 right-0 w-12 h-12 sm:w-16 sm:h-16 bg-white bg-opacity-10 rounded-full -mr-6 sm:-mr-8 -mt-6 sm:-mt-8 animate-float"></div>
+                <div className="absolute inset-0 neural-glow opacity-30"></div>
                 <div className="relative">
                   <div className="text-lg sm:text-2xl mb-1 animate-float">🚀</div>
-                  <p className="text-blue-100 text-xs break-words">Total Gigs</p>
+                  <p className="text-blue-100 text-xs break-words">Neural Gigs</p>
                   <p className="text-lg sm:text-2xl font-bold break-words">{stats?.total_gigs || 0}</p>
                 </div>
               </div>
 
-              <div className="relative overflow-hidden bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl p-3 sm:p-4 text-white shadow-lg card-hover animate-slide-in animate-gradient neon-glow">
+              <div className="relative overflow-hidden bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl p-3 sm:p-4 text-white shadow-lg card-hover animate-slide-in animate-gradient neon-glow neural-pulse">
                 <div className="absolute top-0 right-0 w-12 h-12 sm:w-16 sm:h-16 bg-white bg-opacity-10 rounded-full -mr-6 sm:-mr-8 -mt-6 sm:-mt-8 animate-float"></div>
+                <div className="absolute inset-0 neural-glow opacity-30"></div>
                 <div className="relative">
                   <div className="text-lg sm:text-2xl mb-1 animate-float">💰</div>
-                  <p className="text-green-100 text-xs break-words">Earnings</p>
+                  <p className="text-teal-100 text-xs break-words">AI Earnings</p>
                   <p className="text-lg sm:text-2xl font-bold break-words">${stats?.total_earnings || 0}</p>
                 </div>
               </div>
 
-              <div className="relative overflow-hidden bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-3 sm:p-4 text-white shadow-lg card-hover animate-slide-in animate-gradient">
+              <div className="relative overflow-hidden bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-3 sm:p-4 text-white shadow-lg card-hover animate-slide-in animate-gradient neural-pulse">
                 <div className="absolute top-0 right-0 w-12 h-12 sm:w-16 sm:h-16 bg-white bg-opacity-10 rounded-full -mr-6 sm:-mr-8 -mt-6 sm:-mt-8 animate-float"></div>
+                <div className="absolute inset-0 neural-glow opacity-30"></div>
                 <div className="relative">
                   <div className="text-lg sm:text-2xl mb-1 animate-float">💳</div>
                   <p className="text-purple-100 text-xs break-words">Balance</p>
@@ -320,29 +325,32 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              <div className="relative overflow-hidden bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-3 sm:p-4 text-white shadow-lg card-hover animate-slide-in animate-gradient">
+              <div className="relative overflow-hidden bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-3 sm:p-4 text-white shadow-lg card-hover animate-slide-in animate-gradient neural-pulse">
                 <div className="absolute top-0 right-0 w-12 h-12 sm:w-16 sm:h-16 bg-white bg-opacity-10 rounded-full -mr-6 sm:-mr-8 -mt-6 sm:-mt-8 animate-float"></div>
+                <div className="absolute inset-0 neural-glow opacity-30"></div>
                 <div className="relative">
-                  <div className="text-lg sm:text-2xl mb-1 animate-float">🎓</div>
-                  <p className="text-indigo-100 text-xs break-words">Courses</p>
+                  <div className="text-lg sm:text-2xl mb-1 animate-float">🧠</div>
+                  <p className="text-indigo-100 text-xs break-words">AI Learning</p>
                   <p className="text-lg sm:text-2xl font-bold break-words">{completedCoursesCount}</p>
                 </div>
               </div>
 
-              <div className="relative overflow-hidden bg-gradient-to-br from-green-400 to-green-500 rounded-xl p-3 sm:p-4 text-white shadow-lg card-hover animate-slide-in animate-gradient">
+              <div className="relative overflow-hidden bg-gradient-to-br from-green-400 to-green-500 rounded-xl p-3 sm:p-4 text-white shadow-lg card-hover animate-slide-in animate-gradient neural-pulse">
                 <div className="absolute top-0 right-0 w-12 h-12 sm:w-16 sm:h-16 bg-white bg-opacity-10 rounded-full -mr-6 sm:-mr-8 -mt-6 sm:-mt-8 animate-float"></div>
+                <div className="absolute inset-0 neural-glow opacity-30"></div>
                 <div className="relative">
-                  <div className="text-lg sm:text-2xl mb-1 animate-float">👍</div>
-                  <p className="text-green-100 text-xs break-words">Likes</p>
+                  <div className="text-lg sm:text-2xl mb-1 animate-float">⚡</div>
+                  <p className="text-green-100 text-xs break-words">Neural Likes</p>
                   <p className="text-lg sm:text-2xl font-bold break-words">{profile?.likes_count || 0}</p>
                 </div>
               </div>
 
-              <div className="relative overflow-hidden bg-gradient-to-br from-red-400 to-red-500 rounded-xl p-3 sm:p-4 text-white shadow-lg card-hover animate-slide-in animate-gradient">
+              <div className="relative overflow-hidden bg-gradient-to-br from-red-400 to-red-500 rounded-xl p-3 sm:p-4 text-white shadow-lg card-hover animate-slide-in animate-gradient neural-pulse">
                 <div className="absolute top-0 right-0 w-12 h-12 sm:w-16 sm:h-16 bg-white bg-opacity-10 rounded-full -mr-6 sm:-mr-8 -mt-6 sm:-mt-8 animate-float"></div>
+                <div className="absolute inset-0 neural-glow opacity-30"></div>
                 <div className="relative">
-                  <div className="text-lg sm:text-2xl mb-1 animate-float">👎</div>
-                  <p className="text-red-100 text-xs break-words">Dislikes</p>
+                  <div className="text-lg sm:text-2xl mb-1 animate-float">⚠️</div>
+                  <p className="text-red-100 text-xs break-words">Feedback</p>
                   <p className="text-lg sm:text-2xl font-bold break-words">{profile?.dislikes_count || 0}</p>
                 </div>
               </div>
@@ -438,6 +446,9 @@ export default function DashboardPage() {
             ))}
           </div>
         </div>
+
+        {/* Recommendations */}
+        {profile && <RecommendationsSection userProfile={profile} />}
 
         {/* Charts and Analytics */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 mb-6 sm:mb-8">

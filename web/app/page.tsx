@@ -1,6 +1,7 @@
 'use client';
 
 import Navigation from '@/components/Navigation';
+import NeuralNetworkBackground from '@/components/NeuralNetworkBackground';
 import { useState, useEffect } from 'react';
 
 function CategoryCard({ title, icon, description, subcategories, subtitle, index }: {
@@ -306,9 +307,11 @@ export default function HomePage() {
       </section>
 
       {/* Categories Section */}
-      <section className="py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-center mb-12 text-gray-900 dark:text-gray-100">AI Service Categories</h2>
+      <section className="relative py-16 overflow-hidden">
+        <NeuralNetworkBackground />
+        <div className="absolute inset-0 bg-gradient-to-br from-teal-500/10 via-blue-500/5 to-purple-500/10"></div>
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold text-center mb-12 text-white">AI Service Categories</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <AIDevCard />
             <DataModelCard />
@@ -321,54 +324,56 @@ export default function HomePage() {
       </section>
 
       {/* Features Section */}
-      <section className="bg-white dark:bg-gray-800 py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-center mb-12 text-gray-900 dark:text-gray-100">Why Choose Neurolancer?</h2>
+      <section className="relative bg-white dark:bg-gray-800 py-16 overflow-hidden">
+        <NeuralNetworkBackground />
+        <div className="absolute inset-0 bg-gradient-to-br from-teal-500/10 via-blue-500/5 to-purple-500/10"></div>
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold text-center mb-12 text-white">Why Choose Neurolancer?</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center">
-              <div className="text-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 bg-teal-600 dark:bg-teal-500">
+              <div className="text-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 bg-teal-600/80 backdrop-blur-sm neural-pulse">
                 <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-gray-100">Verified Experts</h3>
-              <p className="text-gray-600 dark:text-gray-400">All freelancers are vetted and verified for their AI expertise</p>
+              <h3 className="text-xl font-semibold mb-2 text-white">Verified Experts</h3>
+              <p className="text-gray-200">All freelancers are vetted and verified for their AI expertise</p>
             </div>
             <div className="text-center">
-              <div className="text-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 bg-teal-600 dark:bg-teal-500">
+              <div className="text-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 bg-teal-600/80 backdrop-blur-sm neural-pulse">
                 <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-gray-100">Secure Payments</h3>
-              <p className="text-gray-600 dark:text-gray-400">Escrow protection and secure payment processing</p>
+              <h3 className="text-xl font-semibold mb-2 text-white">Secure Payments</h3>
+              <p className="text-gray-200">Escrow protection and secure payment processing</p>
             </div>
             <div className="text-center">
-              <div className="text-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 bg-teal-600 dark:bg-teal-500">
+              <div className="text-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 bg-teal-600/80 backdrop-blur-sm neural-pulse">
                 <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-gray-100">Fast Delivery</h3>
-              <p className="text-gray-600 dark:text-gray-400">Quick turnaround times for your AI projects</p>
+              <h3 className="text-xl font-semibold mb-2 text-white">Fast Delivery</h3>
+              <p className="text-gray-200">Quick turnaround times for your AI projects</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="relative text-white py-16 overflow-hidden" style={{backgroundImage: 'url(/assets/images/get started-min.png)', backgroundSize: 'cover', backgroundPosition: 'center'}}>
-        {/* Overlay */}
-        <div className="absolute inset-0 bg-black bg-opacity-60 z-10"></div>
+      <section className="relative text-white py-16 overflow-hidden">
+        <NeuralNetworkBackground />
+        <div className="absolute inset-0 bg-gradient-to-br from-teal-500/20 via-blue-500/10 to-purple-500/20 z-10"></div>
         
         <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
           <p className="text-xl mb-8">Join thousands of clients and freelancers in the AI marketplace</p>
           <div className="flex justify-center space-x-4">
-            <button onClick={() => window.location.href='/auth?tab=signup'} className="bg-gradient-to-r from-purple-500 to-pink-600 text-white px-8 py-3 rounded-lg font-semibold hover:from-pink-600 hover:to-purple-500 hover:shadow-lg transition-all duration-300">
+            <button onClick={() => window.location.href='/auth?tab=signup'} className="bg-gradient-to-r from-purple-500 to-pink-600 text-white px-8 py-3 rounded-lg font-semibold hover:from-pink-600 hover:to-purple-500 hover:shadow-lg transition-all duration-300 neural-pulse">
               Join as Freelancer
             </button>
-            <button onClick={() => window.location.href='/auth?tab=signup'} className="bg-gradient-to-r from-yellow-500 to-orange-600 text-white px-8 py-3 rounded-lg font-semibold hover:from-orange-600 hover:to-yellow-500 hover:shadow-lg transition-all duration-300">
+            <button onClick={() => window.location.href='/auth?tab=signup'} className="bg-gradient-to-r from-yellow-500 to-orange-600 text-white px-8 py-3 rounded-lg font-semibold hover:from-orange-600 hover:to-yellow-500 hover:shadow-lg transition-all duration-300 neural-pulse">
               Hire AI Experts
             </button>
           </div>
