@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next'
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://neurolancer-9omq.vercel.app'
+  const baseUrl = 'https://neurolancer.work'
 
   return [
     {

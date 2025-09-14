@@ -21,14 +21,14 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL('https://neurolancer-9omq.vercel.app'),
+  metadataBase: new URL('https://neurolancer.work'),
   alternates: {
     canonical: '/',
   },
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://neurolancer-9omq.vercel.app',
+    url: 'https://neurolancer.work',
     siteName: 'Neurolancer',
     title: 'Neurolancer - AI Freelance Marketplace',
     description: 'Connect with skilled AI professionals and freelancers specializing in artificial intelligence, machine learning, and cutting-edge technology solutions.',
