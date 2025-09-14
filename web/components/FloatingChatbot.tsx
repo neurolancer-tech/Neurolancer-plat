@@ -384,10 +384,10 @@ export default function FloatingChatbot() {
   };
 
   const clearChat = () => {
-    const newMessages = [{
+    const newMessages: ChatMessage[] = [{
       id: 1,
       content: "Chat cleared! How can I help you today?",
-      sender: 'ai',
+      sender: 'ai' as const,
       timestamp: new Date()
     }];
     setMessages(newMessages);
