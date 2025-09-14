@@ -273,9 +273,9 @@ export default function HomePage() {
       </section>
 
       {/* Categories Section */}
-      <section className="py-16 bg-gradient-to-br from-slate-800 via-gray-900 to-slate-800 dark:from-slate-800 dark:via-gray-900 dark:to-slate-800 bg-gradient-to-br from-gray-100 via-white to-gray-100">
+      <section className="py-16 bg-gradient-to-br from-teal-50 via-teal-25 to-teal-50 dark:from-slate-800 dark:via-gray-900 dark:to-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-center mb-12 text-white dark:text-white text-gray-900">AI Service Categories</h2>
+          <h2 className="text-3xl font-bold text-center mb-12 text-gray-900 dark:text-white">AI Service Categories</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-stretch">
             <AIDevCard />
             <DataModelCard />
@@ -288,9 +288,9 @@ export default function HomePage() {
       </section>
 
       {/* Features Section */}
-      <section className="bg-gradient-to-r from-gray-800 via-slate-900 to-gray-800 dark:from-gray-800 dark:via-slate-900 dark:to-gray-800 bg-gradient-to-r from-slate-50 via-gray-100 to-slate-50 py-16">
+      <section className="bg-teal-25 dark:bg-gradient-to-r dark:from-gray-800 dark:via-slate-900 dark:to-gray-800 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-center mb-12 text-white dark:text-white text-gray-900">Why Choose Neurolancer?</h2>
+          <h2 className="text-3xl font-bold text-center mb-12 text-gray-900 dark:text-white">Why Choose Neurolancer?</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center">
               <div className="text-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 bg-teal-600/80 backdrop-blur-sm neural-pulse">
@@ -298,8 +298,8 @@ export default function HomePage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold mb-2 text-white dark:text-white text-gray-900">Verified Experts</h3>
-              <p className="text-gray-200 dark:text-gray-200 text-gray-600">All freelancers are vetted and verified for their AI expertise</p>
+              <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">Verified Experts</h3>
+              <p className="text-gray-700 dark:text-gray-200">All freelancers are vetted and verified for their AI expertise</p>
             </div>
             <div className="text-center">
               <div className="text-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 bg-teal-600/80 backdrop-blur-sm neural-pulse">
@@ -307,8 +307,8 @@ export default function HomePage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold mb-2 text-white dark:text-white text-gray-900">Secure Payments</h3>
-              <p className="text-gray-200 dark:text-gray-200 text-gray-600">Escrow protection and secure payment processing</p>
+              <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">Secure Payments</h3>
+              <p className="text-gray-700 dark:text-gray-200">Escrow protection and secure payment processing</p>
             </div>
             <div className="text-center">
               <div className="text-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 bg-teal-600/80 backdrop-blur-sm neural-pulse">
@@ -316,16 +316,16 @@ export default function HomePage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold mb-2 text-white dark:text-white text-gray-900">Fast Delivery</h3>
-              <p className="text-gray-200 dark:text-gray-200 text-gray-600">Quick turnaround times for your AI projects</p>
+              <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">Fast Delivery</h3>
+              <p className="text-gray-700 dark:text-gray-200">Quick turnaround times for your AI projects</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="text-white dark:text-white text-gray-900 py-16 bg-gradient-to-br from-teal-900 via-slate-900 to-blue-900 dark:from-teal-900 dark:via-slate-900 dark:to-blue-900 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <section className="py-16 bg-gradient-to-br from-teal-100 via-teal-50 to-teal-100 dark:from-teal-900 dark:via-slate-900 dark:to-blue-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-gray-900 dark:text-white">
           <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
           <p className="text-xl mb-8">Join thousands of clients and freelancers in the AI marketplace</p>
           <div className="flex justify-center space-x-4">
