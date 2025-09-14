@@ -14,73 +14,39 @@ function CategoryCard({ title, icon, description, subcategories, subtitle, index
   index: number;
 }) {
   const [showModal, setShowModal] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
 
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  const isLeftSide = index % 3 === 0;
-  const isRightSide = index % 3 === 2;
-
-  const handleCardInteraction = () => {
-    if (isMobile) {
-      setShowModal(true);
-    }
+  const handleModalClose = () => {
+    setShowModal(false);
   };
 
-  const handleMouseEnter = () => {
-    if (!isMobile) {
-      setShowModal(true);
-    }
-  };
-
-  const handleMouseLeave = () => {
-    if (!isMobile) {
-      setShowModal(false);
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      handleModalClose();
     }
   };
 
   return (
     <>
-      <div className="relative">
-        <div 
-          className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 p-6 text-center border border-gray-200/50 dark:border-gray-700/50 hover:border-teal-200 dark:hover:border-teal-700 group cursor-pointer"
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-          onClick={handleCardInteraction}
-        >
+      <div className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 p-6 text-center border border-gray-200/50 dark:border-gray-700/50 hover:border-teal-200 dark:hover:border-teal-700 group h-80 w-full flex flex-col justify-between">
+        <div>
           <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">{icon}</div>
           <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-gray-100 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">{title}</h3>
-          <p className="text-gray-600 dark:text-gray-400">{description}</p>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">{description}</p>
         </div>
-        
-        {/* Desktop Modal */}
-        {showModal && !isMobile && (
-          <div 
-            className={`absolute top-0 ${isLeftSide ? 'left-full ml-4' : isRightSide ? 'right-full mr-4' : 'left-full ml-4'} w-80 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-4 z-50`}
-            onMouseEnter={() => setShowModal(true)}
-            onMouseLeave={() => setShowModal(false)}
-          >
-            <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">{subtitle}</h4>
-            <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
-              {subcategories.map((sub, idx) => (
-                <li key={idx} className="flex items-start">
-                  <span className="text-teal-500 mr-2">•</span>
-                  <span>{sub}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+        <button
+          onClick={() => setShowModal(true)}
+          className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 mt-auto"
+        >
+          View Subcategories
+        </button>
       </div>
 
-      {/* Mobile Modal */}
-      {showModal && isMobile && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+      {/* Modal */}
+      {showModal && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4"
+          onClick={handleBackdropClick}
+        >
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full max-h-[80vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
@@ -89,7 +55,7 @@ function CategoryCard({ title, icon, description, subcategories, subtitle, index
                   <h4 className="font-semibold text-gray-900 dark:text-gray-100">{title}</h4>
                 </div>
                 <button
-                  onClick={() => setShowModal(false)}
+                  onClick={handleModalClose}
                   className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -293,8 +259,8 @@ export default function HomePage() {
             Find Top AI Experts & Freelancers
           </h1>
           <p className="text-xl mb-8 max-w-3xl mx-auto">
-            Connect with skilled professionals specializing in artificial intelligence, 
-            machine learning, and cutting-edge technology solutions.
+            Connect with skilled professionals specializing in Artificial Intelligence, 
+            Machine Learning, and cutting-edge technology solutions.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <button onClick={() => window.location.href='/gigs'} className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-3 rounded-lg font-semibold hover:from-purple-600 hover:to-blue-500 hover:shadow-lg transition-all duration-300">
@@ -316,7 +282,7 @@ export default function HomePage() {
         <div className="absolute inset-0 bg-gradient-to-br from-teal-500/10 via-blue-500/5 to-purple-500/10 z-10"></div>
         <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-center mb-12 text-white">AI Service Categories</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-stretch">
             <AIDevCard />
             <DataModelCard />
             <AIEthicsCard />
