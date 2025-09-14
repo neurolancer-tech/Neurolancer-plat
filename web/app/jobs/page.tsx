@@ -192,6 +192,7 @@ export default function JobsPage() {
   };
 
   const filteredJobs = useMemo(() => {
+    console.log('Filtering jobs:', { jobs: jobs.length, filters });
     return jobs.filter(job => {
       if (!job || !job.title) return false;
       
@@ -199,19 +200,35 @@ export default function JobsPage() {
         job.title?.toLowerCase().includes(filters.search.toLowerCase()) ||
         job.description?.toLowerCase().includes(filters.search.toLowerCase())
       );
+      
       const matchesCategory = !filters.category || (job.category?.id?.toString() === filters.category);
+      
       const matchesSubcategory = !filters.subcategory || 
-        (((job as any).subcategories) && ((job as any).subcategories).some((sub: any) => {
+        (((job as any).subcategories) && Array.isArray((job as any).subcategories) && ((job as any).subcategories).some((sub: any) => {
           const subId = typeof sub === 'object' ? sub.id : sub;
-          return subId.toString() === filters.subcategory;
+          return subId?.toString() === filters.subcategory;
         }));
+      
       const matchesExperience = !filters.experienceLevel || job.experience_level === filters.experienceLevel;
       const matchesJobType = !filters.jobType || job.job_type === filters.jobType;
-      const matchesMinBudget = !filters.minBudget || job.budget_min >= parseFloat(filters.minBudget);
-      const matchesMaxBudget = !filters.maxBudget || job.budget_max <= parseFloat(filters.maxBudget);
+      const matchesMinBudget = !filters.minBudget || (job.budget_min && job.budget_min >= parseFloat(filters.minBudget));
+      const matchesMaxBudget = !filters.maxBudget || (job.budget_max && job.budget_max <= parseFloat(filters.maxBudget));
       const matchesMinLikes = !filters.minLikes || (job.likes_count && job.likes_count >= parseInt(filters.minLikes));
       
-      return matchesSearch && matchesCategory && matchesSubcategory && matchesExperience && matchesJobType && matchesMinBudget && matchesMaxBudget && matchesMinLikes;
+      const result = matchesSearch && matchesCategory && matchesSubcategory && matchesExperience && matchesJobType && matchesMinBudget && matchesMaxBudget && matchesMinLikes;
+      
+      if (filters.category || filters.subcategory) {
+        console.log('Job filter check:', {
+          jobId: job.id,
+          jobCategory: job.category?.id,
+          jobSubcategories: (job as any).subcategories,
+          matchesCategory,
+          matchesSubcategory,
+          result
+        });
+      }
+      
+      return result;
     });
   }, [jobs, filters]);
 
