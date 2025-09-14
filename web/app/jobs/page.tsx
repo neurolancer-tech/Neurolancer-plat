@@ -23,6 +23,7 @@ export default function JobsPage() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
+  const [allSubcategories, setAllSubcategories] = useState<Subcategory[]>([]);
   const [subcategoriesLoading, setSubcategoriesLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
@@ -44,6 +45,7 @@ export default function JobsPage() {
   useEffect(() => {
     loadCategories();
     loadJobs();
+    loadAllSubcategories();
   }, []);
 
   useEffect(() => {
@@ -74,6 +76,15 @@ export default function JobsPage() {
     }
   };
 
+  const loadAllSubcategories = async () => {
+    try {
+      const response = await api.get('/subcategories/');
+      setAllSubcategories(response.data.results || response.data);
+    } catch (error) {
+      console.error('Error loading all subcategories:', error);
+    }
+  };
+
   const loadSubcategories = async (categoryId: string) => {
     setSubcategoriesLoading(true);
     try {
@@ -85,6 +96,11 @@ export default function JobsPage() {
     } finally {
       setSubcategoriesLoading(false);
     }
+  };
+
+  const getSubcategoryName = (subcategoryId: number) => {
+    const subcategory = allSubcategories.find(sub => sub.id === subcategoryId);
+    return subcategory?.name || `Subcategory ${subcategoryId}`;
   };
 
   const filteredJobs = useMemo(() => {
@@ -352,9 +368,9 @@ export default function JobsPage() {
                           <div className="mb-3">
                             <div className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Subcategories:</div>
                             <div className="flex flex-wrap gap-2">
-                              {((job as any).subcategories).slice(0, 3).map((sub: any) => (
-                                <span key={sub.id || sub.name} className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-1 rounded text-xs">
-                                  {sub.name || sub}
+                              {((job as any).subcategories).slice(0, 3).map((sub: any, index: number) => (
+                                <span key={sub.id || sub.name || sub || index} className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-1 rounded text-xs">
+                                  {typeof sub === 'object' ? (sub.name || sub) : (typeof sub === 'number' ? getSubcategoryName(sub) : sub)}
                                 </span>
                               ))}
                               {((job as any).subcategories).length > 3 && (

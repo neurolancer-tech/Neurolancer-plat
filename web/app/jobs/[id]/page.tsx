@@ -19,12 +19,28 @@ export default function JobDetailPage() {
   const [loading, setLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userProfile, setUserProfile] = useState<any>(null);
+  const [allSubcategories, setAllSubcategories] = useState<any[]>([]);
 
   useEffect(() => {
     setIsLoggedIn(isAuthenticated());
     setUserProfile(getProfile());
     loadJobDetails();
+    loadAllSubcategories();
   }, [jobId]);
+
+  const loadAllSubcategories = async () => {
+    try {
+      const response = await api.get('/subcategories/');
+      setAllSubcategories(response.data.results || response.data);
+    } catch (error) {
+      console.error('Error loading subcategories:', error);
+    }
+  };
+
+  const getSubcategoryName = (subcategoryId: number) => {
+    const subcategory = allSubcategories.find(sub => sub.id === subcategoryId);
+    return subcategory?.name || `Subcategory ${subcategoryId}`;
+  };
 
   const loadJobDetails = async () => {
     try {
@@ -145,8 +161,8 @@ export default function JobDetailPage() {
                     {/* Subcategories */}
                     {((job as any).subcategories) && Array.isArray((job as any).subcategories) && ((job as any).subcategories).length > 0 && (
                       ((job as any).subcategories).slice(0, 2).map((sub: any, index: number) => (
-                        <span key={sub.id || sub.name || index} className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs">
-                          {sub.name || sub}
+                        <span key={sub.id || sub.name || sub || index} className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs">
+                          {typeof sub === 'object' ? (sub.name || sub) : (typeof sub === 'number' ? getSubcategoryName(sub) : sub)}
                         </span>
                       ))
                     )}
@@ -174,8 +190,8 @@ export default function JobDetailPage() {
                 <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Subcategories</h3>
                 <div className="flex flex-wrap gap-2">
                   {((job as any).subcategories).map((sub: any, index: number) => (
-                    <span key={sub.id || sub.name || index} className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm">
-                      {sub.name || sub}
+                    <span key={sub.id || sub.name || sub || index} className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm">
+                      {typeof sub === 'object' ? (sub.name || sub) : (typeof sub === 'number' ? getSubcategoryName(sub) : sub)}
                     </span>
                   ))}
                 </div>
