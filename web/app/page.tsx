@@ -273,7 +273,7 @@ export default function HomePage() {
       </section>
 
       {/* Categories Section */}
-      <section className="py-16 bg-gray-900">
+      <section className="py-16 bg-gradient-to-br from-slate-800 via-gray-900 to-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-center mb-12 text-white">AI Service Categories</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-stretch">
@@ -288,7 +288,7 @@ export default function HomePage() {
       </section>
 
       {/* Features Section */}
-      <section className="bg-gray-900 py-16">
+      <section className="bg-gradient-to-r from-gray-800 via-slate-900 to-gray-800 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-center mb-12 text-white">Why Choose Neurolancer?</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -324,7 +324,7 @@ export default function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="text-white py-16 bg-gray-900">
+      <section className="text-white py-16 bg-gradient-to-br from-teal-900 via-slate-900 to-blue-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
           <p className="text-xl mb-8">Join thousands of clients and freelancers in the AI marketplace</p>
