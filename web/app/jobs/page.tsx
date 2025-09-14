@@ -364,15 +364,18 @@ export default function JobsPage() {
                         <p className="text-gray-700 dark:text-gray-300 mb-4 line-clamp-3">{job.description}</p>
                         
                         {/* Subcategories */}
-                        {((job as any).subcategories) && Array.isArray((job as any).subcategories) && ((job as any).subcategories).length > 0 && (
+                        {((job as any).subcategories) && Array.isArray((job as any).subcategories) && ((job as any).subcategories).length > 0 && allSubcategories.length > 0 && (
                           <div className="mb-3">
                             <div className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Subcategories:</div>
                             <div className="flex flex-wrap gap-2">
-                              {((job as any).subcategories).slice(0, 3).map((sub: any, index: number) => (
-                                <span key={sub.id || sub.name || sub || index} className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-1 rounded text-xs">
-                                  {typeof sub === 'object' ? (sub.name || sub) : (typeof sub === 'number' ? getSubcategoryName(sub) : sub)}
-                                </span>
-                              ))}
+                              {((job as any).subcategories).slice(0, 3).map((sub: any, index: number) => {
+                                const subcategoryName = typeof sub === 'object' ? (sub.name || 'Unknown') : (typeof sub === 'number' ? getSubcategoryName(sub) : String(sub));
+                                return (
+                                  <span key={sub.id || sub.name || sub || index} className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-1 rounded text-xs">
+                                    {subcategoryName}
+                                  </span>
+                                );
+                              })}
                               {((job as any).subcategories).length > 3 && (
                                 <span className="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-2 py-1 rounded text-xs">
                                   +{((job as any).subcategories).length - 3} more

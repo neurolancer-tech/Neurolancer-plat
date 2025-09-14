@@ -159,12 +159,15 @@ export default function JobDetailPage() {
                       {job.category?.name || 'Uncategorized'}
                     </span>
                     {/* Subcategories */}
-                    {((job as any).subcategories) && Array.isArray((job as any).subcategories) && ((job as any).subcategories).length > 0 && (
-                      ((job as any).subcategories).slice(0, 2).map((sub: any, index: number) => (
-                        <span key={sub.id || sub.name || sub || index} className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs">
-                          {typeof sub === 'object' ? (sub.name || sub) : (typeof sub === 'number' ? getSubcategoryName(sub) : sub)}
-                        </span>
-                      ))
+                    {((job as any).subcategories) && Array.isArray((job as any).subcategories) && ((job as any).subcategories).length > 0 && allSubcategories.length > 0 && (
+                      ((job as any).subcategories).slice(0, 2).map((sub: any, index: number) => {
+                        const subcategoryName = typeof sub === 'object' ? (sub.name || 'Unknown') : (typeof sub === 'number' ? getSubcategoryName(sub) : String(sub));
+                        return (
+                          <span key={sub.id || sub.name || sub || index} className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs">
+                            {subcategoryName}
+                          </span>
+                        );
+                      })
                     )}
                     {((job as any).subcategories) && Array.isArray((job as any).subcategories) && ((job as any).subcategories).length > 2 && (
                       <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs">
@@ -185,15 +188,18 @@ export default function JobDetailPage() {
             </div>
 
             {/* Subcategories */}
-            {((job as any).subcategories) && Array.isArray((job as any).subcategories) && ((job as any).subcategories).length > 0 && (
+            {((job as any).subcategories) && Array.isArray((job as any).subcategories) && ((job as any).subcategories).length > 0 && allSubcategories.length > 0 && (
               <div className="card p-6 mb-6">
                 <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Subcategories</h3>
                 <div className="flex flex-wrap gap-2">
-                  {((job as any).subcategories).map((sub: any, index: number) => (
-                    <span key={sub.id || sub.name || sub || index} className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm">
-                      {typeof sub === 'object' ? (sub.name || sub) : (typeof sub === 'number' ? getSubcategoryName(sub) : sub)}
-                    </span>
-                  ))}
+                  {((job as any).subcategories).map((sub: any, index: number) => {
+                    const subcategoryName = typeof sub === 'object' ? (sub.name || 'Unknown') : (typeof sub === 'number' ? getSubcategoryName(sub) : String(sub));
+                    return (
+                      <span key={sub.id || sub.name || sub || index} className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm">
+                        {subcategoryName}
+                      </span>
+                    );
+                  })}
                 </div>
               </div>
             )}
