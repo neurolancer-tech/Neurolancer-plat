@@ -137,11 +137,11 @@ export default function FloatingChatbot() {
             color: "from-purple-500 to-purple-600"
           },
           {
-            title: "Learn More",
-            description: "Explore our platform",
-            action: "/courses",
-            icon: "🎓",
-            color: "from-indigo-500 to-indigo-600"
+            title: "Find Freelancers",
+            description: "Connect with AI experts",
+            action: "/freelancers",
+            icon: "👥",
+            color: "from-green-500 to-green-600"
           }
         ];
       }
@@ -262,15 +262,7 @@ export default function FloatingChatbot() {
       });
     }
 
-    if (lowerContent.includes('learn') || lowerContent.includes('course') || lowerContent.includes('skill')) {
-      cards.push({
-        title: "Learn AI",
-        description: "Take courses to improve your skills",
-        action: "/courses",
-        icon: "🎓",
-        color: "from-indigo-500 to-indigo-600"
-      });
-    }
+
 
     if (lowerContent.includes('dashboard') || lowerContent.includes('account') || lowerContent.includes('profile')) {
       cards.push({

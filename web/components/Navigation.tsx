@@ -88,11 +88,7 @@ export default function Navigation() {
               <Link href="/freelancers" className="text-white hover:text-gray-200 transition-colors">
                 Freelancers
               </Link>
-{(!user || profile?.user_type === 'freelancer') && (
-              <Link href="/courses" className="text-white hover:text-gray-200 transition-colors">
-                Learn AI
-              </Link>
-            )}
+
               {/* Admin Dashboard Button */}
               {user?.email === 'kbrian1237@gmail.com' && (
                 <Link href="/admin" className="bg-gradient-to-r from-red-500 to-red-600 text-white px-3 py-2 rounded-lg hover:from-red-600 hover:to-red-500 hover:shadow-lg transition-all duration-300 text-sm font-medium">
@@ -206,12 +202,7 @@ export default function Navigation() {
                           <Link href="/my-proposals" className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                             My Proposals
                           </Link>
-                          <Link href="/my-courses" className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                            My Courses
-                          </Link>
-                          <Link href="/create-course" className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                            Create Course
-                          </Link>
+
                         </>
                       )}
                       <Link href="/orders" className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
@@ -345,14 +336,7 @@ export default function Navigation() {
                       </svg>
                       Freelancers
                     </Link>
-{(!user || profile?.user_type === 'freelancer') && (
-                      <Link href="/courses" onClick={() => setShowMobileMenu(false)} className="flex items-center px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-[#0D9E86] rounded-md transition-colors">
-                        <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                        </svg>
-                        Learn AI
-                      </Link>
-                    )}
+
 
                   </div>
 
@@ -444,18 +428,7 @@ export default function Navigation() {
                         </svg>
                         My Proposals
                       </Link>
-                      <Link href="/my-courses" onClick={() => setShowMobileMenu(false)} className="flex items-center px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-[#0D9E86] rounded-md transition-colors">
-                        <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                        </svg>
-                        My Courses
-                      </Link>
-                      <Link href="/create-course" onClick={() => setShowMobileMenu(false)} className="flex items-center px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-[#0D9E86] rounded-md transition-colors">
-                        <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                        </svg>
-                        Create Course
-                      </Link>
+
                     </div>
                   )}
 

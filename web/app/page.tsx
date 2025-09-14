@@ -44,7 +44,7 @@ function CategoryCard({ title, icon, description, subcategories, subtitle, index
       {/* Modal */}
       {showModal && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black bg-opacity-50 z-[99999] flex items-center justify-center p-4"
           onClick={handleBackdropClick}
         >
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full max-h-[80vh] overflow-y-auto">
@@ -268,9 +268,6 @@ export default function HomePage() {
             </button>
             <button onClick={() => window.location.href='/jobs'} className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-8 py-3 rounded-lg font-semibold hover:from-emerald-600 hover:to-green-500 hover:shadow-lg transition-all duration-300">
               Post a Job
-            </button>
-            <button onClick={() => window.location.href='/courses'} className="bg-gradient-to-r from-orange-500 to-red-600 text-white px-8 py-3 rounded-lg font-semibold hover:from-red-600 hover:to-orange-500 hover:shadow-lg transition-all duration-300">
-              Learn AI
             </button>
           </div>
         </div>

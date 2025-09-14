@@ -188,7 +188,7 @@ export default function MessagesPage() {
 
     loadConversations();
     
-    // Add AI Assistant conversation if not exists
+    // Add AI Assistant conversation - always present
     const addAIAssistant = () => {
       const aiConversation = {
         id: -1, // Special ID for AI assistant
@@ -215,16 +215,15 @@ export default function MessagesPage() {
         }
       };
       
+      // Always ensure AI Assistant is at the top of conversations
       setConversations(prev => {
-        const hasAI = prev.some(conv => conv.id === -1);
-        if (!hasAI) {
-          return [aiConversation, ...prev];
-        }
-        return prev;
+        const withoutAI = prev.filter(conv => conv.id !== -1);
+        return [aiConversation, ...withoutAI];
       });
     };
     
-    setTimeout(addAIAssistant, 500);
+    // Add AI Assistant immediately and after each conversation load
+    addAIAssistant();
     
     // Initialize AI messages after chatbot loads conversation
     const initializeAiMessages = async () => {
@@ -392,7 +391,35 @@ export default function MessagesPage() {
   const loadConversations = async () => {
     try {
       const response = await api.get('/conversations/');
-      setConversations(response.data.results || response.data);
+      const conversations = response.data.results || response.data;
+      
+      // Always ensure AI Assistant is at the top
+      const aiConversation = {
+        id: -1,
+        name: 'Neurolancer AI Assistant',
+        participants: [{
+          id: -1,
+          first_name: 'Neurolancer',
+          last_name: 'AI',
+          username: 'neurolancer_ai',
+          profile_picture: null,
+          avatar_type: 'default',
+          selected_avatar: 'ai',
+          google_photo_url: null
+        }],
+        conversation_type: 'direct' as const,
+        last_message: {
+          content: 'Hello! I\'m your AI assistant. How can I help you today?',
+          created_at: new Date().toISOString(),
+          sender: {
+            id: -1,
+            first_name: 'Neurolancer',
+            last_name: 'AI'
+          }
+        }
+      };
+      
+      setConversations([aiConversation, ...conversations]);
     } catch (error) {
       console.error('Error loading conversations:', error);
       console.error('Error details:', (error as any).response?.data);
