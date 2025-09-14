@@ -44,10 +44,11 @@ function CategoryCard({ title, icon, description, subcategories, subtitle, index
       {/* Modal */}
       {showModal && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-[99999] flex items-center justify-center p-4"
+          className="fixed inset-0 z-[99999] flex items-center justify-center p-4"
           onClick={handleBackdropClick}
         >
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full max-h-[80vh] overflow-y-auto">
+          <div className="absolute inset-0 bg-black bg-opacity-50 z-[99999]"></div>
+          <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full max-h-[80vh] overflow-y-auto z-[100000]">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-3">

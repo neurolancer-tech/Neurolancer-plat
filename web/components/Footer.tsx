@@ -131,11 +131,6 @@ const Footer = () => {
                       <span className="w-2 h-2 bg-teal-500 rounded-full mr-3 group-hover:bg-teal-400"></span>Find Experts
                     </Link>
                   </li>
-                  <li>
-                    <Link href="/courses" className="text-gray-300 hover:text-teal-400 transition-colors duration-200 flex items-center group">
-                      <span className="w-2 h-2 bg-teal-500 rounded-full mr-3 group-hover:bg-teal-400"></span>Learn AI
-                    </Link>
-                  </li>
                 </>
               )}
 
@@ -181,11 +176,6 @@ const Footer = () => {
                   <li>
                     <Link href="/my-proposals" className="text-gray-300 hover:text-teal-400 transition-colors duration-200 flex items-center group">
                       <span className="w-2 h-2 bg-teal-500 rounded-full mr-3 group-hover:bg-teal-400"></span>My Proposals
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/courses" className="text-gray-300 hover:text-teal-400 transition-colors duration-200 flex items-center group">
-                      <span className="w-2 h-2 bg-teal-500 rounded-full mr-3 group-hover:bg-teal-400"></span>Learn AI
                     </Link>
                   </li>
                 </>
