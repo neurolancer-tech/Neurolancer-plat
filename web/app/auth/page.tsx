@@ -776,7 +776,7 @@ function AuthContent() {
 
                   <button
                     type="submit"
-                    disabled={loading || (formData.password && formData.confirmPassword && formData.password !== formData.confirmPassword)}
+                    disabled={loading || Boolean(formData.password && formData.confirmPassword && formData.password !== formData.confirmPassword)}
                     className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 sm:py-3 rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:transform-none font-medium text-sm sm:text-base"
                   >
                     {loading ? (
