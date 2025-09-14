@@ -77,6 +77,8 @@ export default function JobsPage() {
       setJobs(response.data.results || response.data);
     } catch (error) {
       console.error('Error loading jobs:', error);
+      // Set empty array so page shows "No jobs found" instead of loading forever
+      setJobs([]);
     }
   };
 
