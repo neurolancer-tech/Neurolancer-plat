@@ -189,8 +189,16 @@ function AuthContent() {
         return;
       }
       
-      // User has a role, go to dashboard (onboarding will be handled there if needed)
-      console.log('User has user_type, going to dashboard');
+      // Check if profile needs completion
+      if (is_new_user || !updatedProfile.profile_completed) {
+        console.log('Profile needs completion, redirecting to complete-profile');
+        toast.success('Welcome to Neurolancer! Please complete your profile.');
+        router.push('/auth/complete-profile');
+        return;
+      }
+      
+      // User has completed profile, go to dashboard
+      console.log('User has completed profile, going to dashboard');
       toast.success('Successfully signed in with Google!');
       router.push('/dashboard');
     } catch (error: any) {
@@ -353,10 +361,10 @@ function AuthContent() {
         if (profile) setProfile(profile);
       }
       
-      const successMsg = (data as any)?.message || 'Registration successful! Please check your email to verify your account.';
+      const successMsg = (data as any)?.message || 'Registration successful!';
       toast.success(successMsg);
-      // Regular users go to login page (no onboarding redirect)
-      router.push('/auth?tab=login');
+      // Redirect to profile completion
+      router.push('/auth/complete-profile');
     } catch (error: any) {
       const errorMsg = (error as any).response?.data?.username?.[0] || 
                       (error as any).response?.data?.email?.[0] || 
