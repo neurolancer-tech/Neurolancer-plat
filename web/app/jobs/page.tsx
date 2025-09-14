@@ -43,15 +43,9 @@ export default function JobsPage() {
   const isFreelancer = profile?.user_type === 'freelancer' || profile?.user_type === 'both';
 
   useEffect(() => {
-    const loadData = async () => {
-      await Promise.all([
-        loadCategories(),
-        loadAllSubcategories(),
-        loadJobs()
-      ]);
-      setLoading(false);
-    };
-    loadData();
+    loadCategories();
+    loadJobs();
+    loadAllSubcategories();
   }, []);
 
   useEffect(() => {
@@ -77,8 +71,8 @@ export default function JobsPage() {
       setJobs(response.data.results || response.data);
     } catch (error) {
       console.error('Error loading jobs:', error);
-      // Set empty array so page shows "No jobs found" instead of loading forever
-      setJobs([]);
+    } finally {
+      setLoading(false);
     }
   };
 
