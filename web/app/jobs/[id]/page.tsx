@@ -34,17 +34,80 @@ export default function JobDetailPage() {
   }, [jobId]);
 
   const loadAllSubcategories = async () => {
-    try {
-      const response = await api.get('/subcategories/');
-      setAllSubcategories(response.data.results || response.data);
-    } catch (error) {
-      console.error('Error loading subcategories:', error);
-    }
+    // API endpoint not available, skip loading
+    console.log('Subcategories API not available, using fallback display');
   };
 
   const getSubcategoryName = (subcategoryId: number) => {
-    const subcategory = allSubcategories.find(sub => sub.id === subcategoryId);
-    return subcategory?.name || `Subcategory ${subcategoryId}`;
+    const subcategoryMap: { [key: number]: string } = {
+      // AI Development & Engineering (1-10)
+      1: 'Machine Learning Development',
+      2: 'Deep Learning Models',
+      3: 'Natural Language Processing',
+      4: 'Computer Vision',
+      5: 'AI Model Optimization',
+      6: 'Reinforcement Learning',
+      7: 'AI Research & Development',
+      8: 'AI Algorithm Development',
+      9: 'AI System Architecture',
+      10: 'AI Testing & Validation',
+      // Data & Model Management (11-20)
+      11: 'Data Annotation & Labeling',
+      12: 'Data Cleaning & Preprocessing',
+      13: 'Data Pipeline Development',
+      14: 'Model Training & Tuning',
+      15: 'Model Deployment & Monitoring',
+      16: 'MLOps & DevOps',
+      17: 'Data Visualization',
+      18: 'Statistical Analysis',
+      19: 'Database Management',
+      20: 'Big Data Processing',
+      // AI Ethics, Law & Governance (21-30)
+      21: 'AI Ethics & Bias Auditing',
+      22: 'AI Policy & Regulation',
+      23: 'AI Safety & Security',
+      24: 'AI Compliance & Standards',
+      25: 'AI Risk Assessment',
+      26: 'AI Transparency & Explainability',
+      27: 'AI Privacy & Data Protection',
+      28: 'AI Legal Consulting',
+      29: 'AI Governance Framework',
+      30: 'AI Impact Assessment',
+      // AI Integration & Support (31-40)
+      31: 'AI Integration & Implementation',
+      32: 'AI Consulting & Strategy',
+      33: 'AI Training & Education',
+      34: 'AI Technical Writing',
+      35: 'AI Project Management',
+      36: 'AI Quality Assurance',
+      37: 'AI Customer Support',
+      38: 'AI Sales & Marketing',
+      39: 'AI Business Analysis',
+      40: 'AI Product Management',
+      // Creative & Industry-Specific AI (41-50)
+      41: 'AI Content Creation',
+      42: 'AI Art & Design',
+      43: 'AI Music & Audio',
+      44: 'AI Gaming & Entertainment',
+      45: 'AI Healthcare Applications',
+      46: 'AI Finance & Trading',
+      47: 'AI Automotive & Robotics',
+      48: 'AI Agriculture & Environment',
+      49: 'AI Education Technology',
+      50: 'AI Social Media & Marketing',
+      // AI Operations in New Markets (51-60)
+      51: 'AI Startup Consulting',
+      52: 'AI Investment Analysis',
+      53: 'AI Market Research',
+      54: 'AI Competitive Intelligence',
+      55: 'AI Business Development',
+      56: 'AI Partnership Strategy',
+      57: 'AI Innovation Management',
+      58: 'AI Venture Capital',
+      59: 'AI Technology Transfer',
+      60: 'AI Ecosystem Development'
+    };
+    return subcategoryMap[subcategoryId] || `Subcategory ${subcategoryId}`;
   };
 
   const loadJobDetails = async () => {
