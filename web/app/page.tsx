@@ -1,7 +1,6 @@
 'use client';
 
 import Navigation from '@/components/Navigation';
-import NeuralNetworkBackground from '@/components/NeuralNetworkBackground';
 import { useState, useEffect } from 'react';
 
 
@@ -44,12 +43,10 @@ function CategoryCard({ title, icon, description, subcategories, subtitle, index
       {/* Modal */}
       {showModal && (
         <div 
-          className="fixed inset-0 flex items-center justify-center p-4"
-          style={{ zIndex: 2147483647 }}
+          className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
           onClick={handleBackdropClick}
         >
-          <div className="absolute inset-0 bg-black bg-opacity-50"></div>
-          <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full max-h-[80vh] overflow-y-auto z-10">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full max-h-[80vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-3">
@@ -276,10 +273,8 @@ export default function HomePage() {
       </section>
 
       {/* Categories Section */}
-      <section className="relative py-16 overflow-hidden bg-gray-900">
-        <NeuralNetworkBackground />
-        <div className="absolute inset-0 bg-gradient-to-br from-teal-500/10 via-blue-500/5 to-purple-500/10 z-10"></div>
-        <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-16 bg-gray-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-center mb-12 text-white">AI Service Categories</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-stretch">
             <AIDevCard />
@@ -293,10 +288,8 @@ export default function HomePage() {
       </section>
 
       {/* Features Section */}
-      <section className="relative bg-gray-900 py-16 overflow-hidden">
-        <NeuralNetworkBackground />
-        <div className="absolute inset-0 bg-gradient-to-br from-teal-500/10 via-blue-500/5 to-purple-500/10 z-10"></div>
-        <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="bg-gray-900 py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-center mb-12 text-white">Why Choose Neurolancer?</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center">
@@ -331,11 +324,8 @@ export default function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="relative text-white py-16 overflow-hidden bg-gray-900">
-        <NeuralNetworkBackground />
-        <div className="absolute inset-0 bg-gradient-to-br from-teal-500/20 via-blue-500/10 to-purple-500/20 z-10"></div>
-        
-        <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <section className="text-white py-16 bg-gray-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
           <p className="text-xl mb-8">Join thousands of clients and freelancers in the AI marketplace</p>
           <div className="flex justify-center space-x-4">
