@@ -39,16 +39,9 @@ export default function CoursesPage() {
   const coursesPerPage = 9;
 
   useEffect(() => {
-    const profile = getProfile();
-    if (profile && profile.user_type !== 'freelancer' && profile.user_type !== 'both') {
-      toast.error('Access denied. Learning resources are for freelancers only.');
-      router.push('/gigs');
-      return;
-    }
-
     loadCategories();
     loadCourses();
-  }, [router]);
+  }, []);
 
   useEffect(() => {
     if (filters.category) {
