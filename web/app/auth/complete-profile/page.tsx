@@ -104,7 +104,8 @@ export default function CompleteProfilePage() {
       const profileData = {
         ...formData,
         phone_number: `${selectedCountry?.phone}${formData.phone_number}`,
-        phone_verified: phoneVerification.step === 'verified'
+        phone_verified: phoneVerification.step === 'verified',
+        experience_level: formData.experience_level as 'entry' | 'intermediate' | 'expert'
       };
       
       await completeProfile(profileData);
