@@ -85,7 +85,7 @@ export default function JobsPage() {
       const response = await api.get('/subcategories/');
       setAllSubcategories(response.data.results || response.data);
     } catch (error) {
-      console.error('Error loading all subcategories:', error);
+      console.error('Error loading subcategories, using static mapping:', error);
     }
   };
 
@@ -95,11 +95,27 @@ export default function JobsPage() {
       const response = await api.get(`/subcategories/?category=${categoryId}`);
       setSubcategories(response.data.results || response.data);
     } catch (error) {
-      console.error('Error loading subcategories:', error);
-      setSubcategories([]);
+      console.error('Error loading subcategories, using static mapping:', error);
+      // Fallback to static subcategories
+      const staticSubs = getStaticSubcategories(parseInt(categoryId));
+      setSubcategories(staticSubs);
     } finally {
       setSubcategoriesLoading(false);
     }
+  };
+
+  const getStaticSubcategories = (categoryId: number) => {
+    const ranges: { [key: number]: { start: number; end: number } } = {
+      1: { start: 1, end: 10 }, 2: { start: 11, end: 20 }, 3: { start: 21, end: 30 },
+      4: { start: 31, end: 40 }, 5: { start: 41, end: 50 }, 6: { start: 51, end: 60 }
+    };
+    const range = ranges[categoryId];
+    if (!range) return [];
+    const subs = [];
+    for (let i = range.start; i <= range.end; i++) {
+      subs.push({ id: i, category: categoryId, name: getSubcategoryName(i), description: '', created_at: '' });
+    }
+    return subs;
   };
 
   const getSubcategoryName = (subcategoryId: number) => {
