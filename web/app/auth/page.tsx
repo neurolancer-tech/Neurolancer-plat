@@ -190,7 +190,8 @@ function AuthContent() {
       }
       
       // Check if profile needs completion
-      if (is_new_user || !updatedProfile.profile_completed) {
+      const requiresCompletion = response.data.requires_completion || is_new_user || !updatedProfile.profile_completed;
+      if (requiresCompletion) {
         console.log('Profile needs completion, redirecting to complete-profile');
         toast.success('Welcome to Neurolancer! Please complete your profile.');
         router.push('/auth/complete-profile');
@@ -363,7 +364,7 @@ function AuthContent() {
       
       const successMsg = (data as any)?.message || 'Registration successful!';
       toast.success(successMsg);
-      // Redirect to profile completion
+      // Redirect to profile completion for all new registrations
       router.push('/auth/complete-profile');
     } catch (error: any) {
       const errorMsg = (error as any).response?.data?.username?.[0] || 
@@ -383,8 +384,8 @@ function AuthContent() {
           setAuthToken(token);
           setUser(user);
           if (profile) setProfile(profile);
-          toast.success('Account created! Please verify your email.');
-          router.push('/verify-email');
+          toast.success('Account created! Please complete your profile.');
+          router.push('/auth/complete-profile');
           return;
         }
       } catch (_) {

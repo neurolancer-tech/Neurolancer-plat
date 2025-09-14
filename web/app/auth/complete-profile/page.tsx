@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { auth } from '@/lib/firebase';
 import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
 import { getProfile, updateProfile } from '@/lib/auth';
+import { completeProfile } from '@/lib/profile';
 import Navigation from '@/components/Navigation';
 import toast from 'react-hot-toast';
 
@@ -99,15 +100,23 @@ export default function CompleteProfilePage() {
     setSubmitting(true);
     
     try {
-      const updatedProfile = {
-        ...profile,
+      // Send profile data to backend API
+      const profileData = {
         ...formData,
         phone_number: `${selectedCountry?.phone}${formData.phone_number}`,
-        phone_verified: true,
-        profile_completed: true
+        phone_verified: phoneVerification.step === 'verified'
       };
       
-      await updateProfile(updatedProfile);
+      await completeProfile(profileData);
+      
+      // Update local profile
+      const updatedProfile = {
+        ...profile,
+        ...profileData,
+        profile_completed: true
+      };
+      updateProfile(updatedProfile);
+      
       toast.success('Profile completed successfully!');
       router.push('/dashboard');
     } catch (error: any) {
