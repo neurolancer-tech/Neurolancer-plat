@@ -81,41 +81,42 @@ export default function JobsPage() {
   };
 
   const loadAllSubcategories = async () => {
-    try {
-      const response = await api.get('/subcategories/');
-      setAllSubcategories(response.data.results || response.data);
-    } catch (error) {
-      console.error('Error loading subcategories, using static mapping:', error);
-    }
+    // API endpoint not available, skip loading
+    console.log('Subcategories API not available, using fallback display');
   };
 
   const loadSubcategories = async (categoryId: string) => {
     setSubcategoriesLoading(true);
-    try {
-      const response = await api.get(`/subcategories/?category=${categoryId}`);
-      setSubcategories(response.data.results || response.data);
-    } catch (error) {
-      console.error('Error loading subcategories, using static mapping:', error);
-      // Fallback to static subcategories
-      const staticSubs = getStaticSubcategories(parseInt(categoryId));
-      setSubcategories(staticSubs);
-    } finally {
-      setSubcategoriesLoading(false);
-    }
+    // Generate static subcategories based on category
+    const categorySubcategories = getSubcategoriesForCategory(parseInt(categoryId));
+    setSubcategories(categorySubcategories);
+    setSubcategoriesLoading(false);
   };
 
-  const getStaticSubcategories = (categoryId: number) => {
-    const ranges: { [key: number]: { start: number; end: number } } = {
-      1: { start: 1, end: 10 }, 2: { start: 11, end: 20 }, 3: { start: 21, end: 30 },
-      4: { start: 31, end: 40 }, 5: { start: 41, end: 50 }, 6: { start: 51, end: 60 }
+  const getSubcategoriesForCategory = (categoryId: number) => {
+    const subcategoryRanges: { [key: number]: { start: number; end: number } } = {
+      1: { start: 1, end: 10 },   // AI Development & Engineering
+      2: { start: 11, end: 20 },  // Data & Model Management
+      3: { start: 21, end: 30 },  // AI Ethics, Law & Governance
+      4: { start: 31, end: 40 },  // AI Integration & Support
+      5: { start: 41, end: 50 },  // Creative & Industry-Specific AI
+      6: { start: 51, end: 60 }   // AI Operations in New Markets
     };
-    const range = ranges[categoryId];
+    
+    const range = subcategoryRanges[categoryId];
     if (!range) return [];
-    const subs = [];
+    
+    const subcategories = [];
     for (let i = range.start; i <= range.end; i++) {
-      subs.push({ id: i, category: categoryId, name: getSubcategoryName(i), description: '', created_at: '' });
+      subcategories.push({
+        id: i,
+        category: categoryId,
+        name: getSubcategoryName(i),
+        description: '',
+        created_at: ''
+      });
     }
-    return subs;
+    return subcategories;
   };
 
   const getSubcategoryName = (subcategoryId: number) => {
@@ -201,8 +202,9 @@ export default function JobsPage() {
       
       const matchesCategory = !filters.category || (job.category?.id?.toString() === filters.category);
       
+      // Skip subcategory filter if job doesn't have subcategories or if no subcategory filter is set
       const matchesSubcategory = !filters.subcategory || 
-        (!((job as any).subcategories) || // Show jobs without subcategories when no filter is applied
+        (!((job as any).subcategories) || // If job has no subcategories, skip this filter
          (Array.isArray((job as any).subcategories) && ((job as any).subcategories).some((sub: any) => {
            const subId = typeof sub === 'object' ? sub.id : sub;
            return subId?.toString() === filters.subcategory;
