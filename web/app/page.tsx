@@ -307,10 +307,10 @@ export default function HomePage() {
       </section>
 
       {/* Categories Section */}
-      <section className="relative py-16 overflow-hidden">
+      <section className="relative py-16 overflow-hidden bg-gray-900">
         <NeuralNetworkBackground />
-        <div className="absolute inset-0 bg-gradient-to-br from-teal-500/10 via-blue-500/5 to-purple-500/10"></div>
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="absolute inset-0 bg-gradient-to-br from-teal-500/10 via-blue-500/5 to-purple-500/10 z-10"></div>
+        <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-center mb-12 text-white">AI Service Categories</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <AIDevCard />
@@ -324,10 +324,10 @@ export default function HomePage() {
       </section>
 
       {/* Features Section */}
-      <section className="relative bg-white dark:bg-gray-800 py-16 overflow-hidden">
+      <section className="relative bg-gray-900 py-16 overflow-hidden">
         <NeuralNetworkBackground />
-        <div className="absolute inset-0 bg-gradient-to-br from-teal-500/10 via-blue-500/5 to-purple-500/10"></div>
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="absolute inset-0 bg-gradient-to-br from-teal-500/10 via-blue-500/5 to-purple-500/10 z-10"></div>
+        <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-center mb-12 text-white">Why Choose Neurolancer?</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center">
@@ -362,7 +362,7 @@ export default function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="relative text-white py-16 overflow-hidden">
+      <section className="relative text-white py-16 overflow-hidden bg-gray-900">
         <NeuralNetworkBackground />
         <div className="absolute inset-0 bg-gradient-to-br from-teal-500/20 via-blue-500/10 to-purple-500/20 z-10"></div>
         

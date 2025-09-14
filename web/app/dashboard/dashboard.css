@@ -67,7 +67,7 @@
 }
 
 .neon-glow {
-  box-shadow: 0 0 20px rgba(13, 158, 134, 0.5);
+  box-shadow: 0 0 10px rgba(13, 158, 134, 0.3);
 }
 
 /* Chart container animations */
@@ -195,7 +195,7 @@
 
 .card-hover:hover {
   transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 20px 40px rgba(20, 184, 166, 0.2), 0 0 30px rgba(20, 184, 166, 0.1);
+  box-shadow: 0 20px 40px rgba(20, 184, 166, 0.1), 0 0 15px rgba(20, 184, 166, 0.05);
 }
 
 /* Line clamp utilities */
