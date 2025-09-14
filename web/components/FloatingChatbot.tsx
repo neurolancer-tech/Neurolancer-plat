@@ -324,6 +324,34 @@ export default function FloatingChatbot() {
 
   const handleActionClick = (action: string) => {
     if (action.startsWith('form:')) {
+      if (!currentUser) {
+        // Show login message for guest users
+        const loginMessage: ChatMessage = {
+          id: Date.now(),
+          content: "🔐 **Please log in to continue**\n\nYou need to be logged in to create jobs, gigs, or projects. Please sign in or create an account to get started.",
+          sender: 'ai',
+          timestamp: new Date(),
+          actionCards: [
+            {
+              title: "Login",
+              description: "Sign in to your account",
+              action: "/auth?mode=login",
+              icon: "🔑",
+              color: "from-blue-500 to-blue-600"
+            },
+            {
+              title: "Register",
+              description: "Create a new account",
+              action: "/auth?mode=register",
+              icon: "📝",
+              color: "from-green-500 to-green-600"
+            }
+          ]
+        };
+        setMessages(prev => [...prev, loginMessage]);
+        return;
+      }
+      
       const formId = action.replace('form:', '');
       if (formId === 'create-job') {
         setActiveForm(jobCreationForm);
