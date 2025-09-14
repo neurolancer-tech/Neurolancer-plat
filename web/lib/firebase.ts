@@ -4,7 +4,7 @@ import { getAnalytics } from "firebase/analytics";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCtgr5jKrpNLr9MhmGUCibnpI0ZgyOgKOk",
-  authDomain: "neurolancer-9aee7.firebaseapp.com",
+  authDomain: "neurolancer.work",
   projectId: "neurolancer-9aee7",
   storageBucket: "neurolancer-9aee7.firebasestorage.app",
   messagingSenderId: "731943476565",
