@@ -20,14 +20,38 @@ export default function FreelancersPage() {
     maxRate: '',
     rating: '',
     minLikes: '',
+    category: '',
+    subcategory: '',
     sortBy: 'rating'
   });
+  const [categories, setCategories] = useState<any[]>([]);
+  const [subcategories, setSubcategories] = useState<any[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const freelancersPerPage = 9;
 
   useEffect(() => {
     loadFreelancers();
+    loadCategories();
   }, []);
+
+  const loadCategories = async () => {
+    try {
+      const response = await api.get('/categories-with-subcategories/');
+      setCategories(response.data);
+    } catch (error) {
+      console.error('Error loading categories:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (filters.category) {
+      const selectedCategory = categories.find(cat => cat.id.toString() === filters.category);
+      setSubcategories(selectedCategory?.subcategories || []);
+    } else {
+      setSubcategories([]);
+    }
+    setFilters(prev => ({ ...prev, subcategory: '' }));
+  }, [filters.category, categories]);
 
   const loadFreelancers = async () => {
     try {
@@ -51,9 +75,35 @@ export default function FreelancersPage() {
       const matchesRating = !filters.rating || (freelancer.rating || 0) >= parseFloat(filters.rating);
       const matchesMinLikes = !filters.minLikes || ((freelancer.likes_count || 0) >= parseInt(filters.minLikes));
       
-      return matchesSearch && matchesSkills && matchesMinRate && matchesMaxRate && matchesRating && matchesMinLikes;
+      // Category and subcategory filtering based on onboarding data
+      let matchesCategory = true;
+      let matchesSubcategory = true;
+      
+      if (filters.category || filters.subcategory) {
+        const onboardingData = (freelancer as any).onboarding_response;
+        if (onboardingData?.interested_subcategories) {
+          if (filters.category) {
+            const categorySubcategories = categories.find(cat => cat.id.toString() === filters.category)?.subcategories || [];
+            const categorySubcategoryIds = categorySubcategories.map((sub: any) => sub.id);
+            matchesCategory = onboardingData.interested_subcategories.some((sub: any) => 
+              categorySubcategoryIds.includes(sub.id)
+            );
+          }
+          
+          if (filters.subcategory) {
+            matchesSubcategory = onboardingData.interested_subcategories.some((sub: any) => 
+              sub.id.toString() === filters.subcategory
+            );
+          }
+        } else {
+          matchesCategory = false;
+          matchesSubcategory = false;
+        }
+      }
+      
+      return matchesSearch && matchesSkills && matchesMinRate && matchesMaxRate && matchesRating && matchesMinLikes && matchesCategory && matchesSubcategory;
     });
-  }, [freelancers, filters]);
+  }, [freelancers, filters, categories]);
 
   const sortedFreelancers = useMemo(() => {
     const arr = [...filteredFreelancers];
@@ -188,6 +238,40 @@ export default function FreelancersPage() {
                 />
               </div>
 
+              <div className="mb-3">
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
+                <select
+                  value={filters.category}
+                  onChange={(e) => setFilters({...filters, category: e.target.value})}
+                  className="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:text-white"
+                >
+                  <option value="">All Categories</option>
+                  {categories.map(category => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {subcategories.length > 0 && (
+                <div className="mb-3">
+                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Subcategory</label>
+                  <select
+                    value={filters.subcategory}
+                    onChange={(e) => setFilters({...filters, subcategory: e.target.value})}
+                    className="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:text-white"
+                  >
+                    <option value="">All Subcategories</option>
+                    {subcategories.map(subcategory => (
+                      <option key={subcategory.id} value={subcategory.id}>
+                        {subcategory.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               <button
                 onClick={() => setFilters({
                   search: '',
@@ -196,6 +280,8 @@ export default function FreelancersPage() {
                   maxRate: '',
                   rating: '',
                   minLikes: '',
+                  category: '',
+                  subcategory: '',
                   sortBy: 'rating'
                 })}
                 className="w-full text-primary py-1.5 px-3 text-sm rounded-lg border border-primary hover:bg-primary hover:text-white transition-colors"
@@ -285,6 +371,24 @@ export default function FreelancersPage() {
                             ))}
                           </div>
                         </div>
+
+                        {(freelancer as any).onboarding_response?.interested_subcategories && (freelancer as any).onboarding_response.interested_subcategories.length > 0 && (
+                          <div className="mb-4">
+                            <div className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Expertise:</div>
+                            <div className="flex flex-wrap gap-1">
+                              {(freelancer as any).onboarding_response.interested_subcategories.slice(0, 2).map((sub: any) => (
+                                <span key={sub.id} className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs rounded">
+                                  {sub.name.length > 30 ? sub.name.substring(0, 30) + '...' : sub.name}
+                                </span>
+                              ))}
+                              {(freelancer as any).onboarding_response.interested_subcategories.length > 2 && (
+                                <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-xs rounded">
+                                  +{(freelancer as any).onboarding_response.interested_subcategories.length - 2} more
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        )}
 
                         <div className="flex space-x-2">
                           <Link href={`/freelancer/${freelancer.user.id}`} className="flex-1 btn-primary text-center text-sm py-2">

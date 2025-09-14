@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import api from '../lib/api';
 
 interface OnboardingModalProps {
@@ -29,10 +29,31 @@ export default function OnboardingModal({ isOpen, userType, onComplete }: Onboar
     education_level: '',
     work_preference: '',
     availability: '',
-    rate_expectation: ''
+    rate_expectation: '',
+    
+    // Subcategory fields
+    interested_subcategory_ids: [] as number[]
   });
 
-  const totalSteps = 3;
+  const [categories, setCategories] = useState<any[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+
+  const totalSteps = 4;
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchCategories();
+    }
+  }, [isOpen]);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await api.get('/categories-with-subcategories/');
+      setCategories(response.data);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -53,6 +74,36 @@ export default function OnboardingModal({ isOpen, userType, onComplete }: Onboar
       ...formData,
       [field]: newArray
     });
+    
+    // Update selected categories for subcategory filtering
+    if (field === 'project_types' || field === 'specialization') {
+      setSelectedCategories(newArray);
+    }
+  };
+
+  const handleSubcategoryToggle = (subcategoryId: number) => {
+    const currentIds = formData.interested_subcategory_ids;
+    const newIds = currentIds.includes(subcategoryId)
+      ? currentIds.filter(id => id !== subcategoryId)
+      : [...currentIds, subcategoryId];
+    
+    setFormData({
+      ...formData,
+      interested_subcategory_ids: newIds
+    });
+  };
+
+  const getFilteredSubcategories = () => {
+    if (selectedCategories.length === 0) return [];
+    
+    return categories.filter(category => {
+      const categoryKey = category.name.toLowerCase().replace(/\s+/g, '_').replace(/&/g, '').replace(/__+/g, '_');
+      return selectedCategories.some(selected => {
+        const selectedKey = selected.replace(/_/g, ' ').toLowerCase();
+        const categoryName = category.name.toLowerCase();
+        return categoryName.includes(selectedKey) || selectedKey.includes(categoryName.split(' ')[0]);
+      });
+    }).flatMap(category => category.subcategories || []);
   };
 
   const nextStep = () => {
@@ -74,6 +125,7 @@ export default function OnboardingModal({ isOpen, userType, onComplete }: Onboar
         ...formData,
         project_types: JSON.stringify(formData.project_types),
         specialization: JSON.stringify(formData.specialization),
+        interested_subcategory_ids: formData.interested_subcategory_ids,
         is_completed: true
       };
 
@@ -334,6 +386,60 @@ export default function OnboardingModal({ isOpen, userType, onComplete }: Onboar
     </div>
   );
 
+  const renderSubcategoryStep = () => {
+    const filteredSubcategories = getFilteredSubcategories();
+    
+    return (
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+          Select Your Areas of Interest
+        </h2>
+        <p className="text-sm text-gray-600 dark:text-gray-400">
+          Choose specific subcategories that match your interests or expertise.
+        </p>
+        
+        {filteredSubcategories.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-gray-500 dark:text-gray-400">
+              Please select categories in the previous step to see available subcategories.
+            </p>
+          </div>
+        ) : (
+          <div className="max-h-96 overflow-y-auto space-y-4">
+            {categories.filter(category => {
+              const categoryKey = category.name.toLowerCase().replace(/\s+/g, '_').replace(/&/g, '').replace(/__+/g, '_');
+              return selectedCategories.some(selected => {
+                const selectedKey = selected.replace(/_/g, ' ').toLowerCase();
+                const categoryName = category.name.toLowerCase();
+                return categoryName.includes(selectedKey) || selectedKey.includes(categoryName.split(' ')[0]);
+              });
+            }).map(category => (
+              <div key={category.id} className="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
+                <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-3 flex items-center">
+                  <span className="mr-2">{category.icon}</span>
+                  {category.name}
+                </h3>
+                <div className="grid grid-cols-1 gap-2">
+                  {(category.subcategories || []).map((subcategory: any) => (
+                    <label key={subcategory.id} className="flex items-start p-2 border border-gray-200 dark:border-gray-600 rounded cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">
+                      <input
+                        type="checkbox"
+                        checked={formData.interested_subcategory_ids.includes(subcategory.id)}
+                        onChange={() => handleSubcategoryToggle(subcategory.id)}
+                        className="mr-3 mt-1 text-blue-500"
+                      />
+                      <span className="text-sm text-gray-900 dark:text-gray-100">{subcategory.name}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const renderFreelancerStep3 = () => (
     <div className="space-y-4">
       <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Help us personalize your experience</h2>
@@ -367,14 +473,16 @@ export default function OnboardingModal({ isOpen, userType, onComplete }: Onboar
       switch (currentStep) {
         case 1: return renderClientStep1();
         case 2: return renderClientStep2();
-        case 3: return renderClientStep3();
+        case 3: return renderSubcategoryStep();
+        case 4: return renderClientStep3();
         default: return renderClientStep1();
       }
     } else {
       switch (currentStep) {
         case 1: return renderFreelancerStep1();
         case 2: return renderFreelancerStep2();
-        case 3: return renderFreelancerStep3();
+        case 3: return renderSubcategoryStep();
+        case 4: return renderFreelancerStep3();
         default: return renderFreelancerStep1();
       }
     }
@@ -400,7 +508,7 @@ export default function OnboardingModal({ isOpen, userType, onComplete }: Onboar
           {/* Progress Steps */}
           <div className="flex items-center justify-center mb-4 sm:mb-6 flex-shrink-0">
             <div className="flex items-center space-x-2 sm:space-x-4">
-              {[1, 2, 3].map((step) => (
+              {[1, 2, 3, 4].map((step) => (
                 <div key={step} className="flex items-center">
                   <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-medium ${
                     step < currentStep ? 'bg-green-500 text-white' :
@@ -409,7 +517,7 @@ export default function OnboardingModal({ isOpen, userType, onComplete }: Onboar
                   }`}>
                     {step < currentStep ? '✓' : step}
                   </div>
-                  {step < 3 && <div className="w-8 sm:w-12 h-px bg-gray-300 dark:bg-gray-600 mx-1 sm:mx-2"></div>}
+                  {step < 4 && <div className="w-8 sm:w-12 h-px bg-gray-300 dark:bg-gray-600 mx-1 sm:mx-2"></div>}
                 </div>
               ))}
             </div>

@@ -959,6 +959,19 @@ export default function ProfilePage() {
                             <p className="text-white font-medium">{onboardingData.goals}</p>
                           </div>
                         )}
+                        
+                        {(onboardingData as any).interested_subcategories && (onboardingData as any).interested_subcategories.length > 0 && (
+                          <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 p-4 rounded-lg text-white">
+                            <label className="block text-sm font-medium text-indigo-100 mb-2">Areas of Interest</label>
+                            <div className="flex flex-wrap gap-2">
+                              {(onboardingData as any).interested_subcategories.map((sub: any) => (
+                                <span key={sub.id} className="bg-white/20 px-2 py-1 rounded text-xs">
+                                  {sub.name}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     ) : null}
                     
@@ -1000,6 +1013,19 @@ export default function ProfilePage() {
                           <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-4 rounded-lg text-white">
                             <label className="block text-sm font-medium text-green-100 mb-1">Career Goals</label>
                             <p className="text-white font-medium">{onboardingData.goals}</p>
+                          </div>
+                        )}
+                        
+                        {(onboardingData as any).interested_subcategories && (onboardingData as any).interested_subcategories.length > 0 && (
+                          <div className="bg-gradient-to-br from-teal-500 to-teal-600 p-4 rounded-lg text-white">
+                            <label className="block text-sm font-medium text-teal-100 mb-2">Areas of Expertise</label>
+                            <div className="flex flex-wrap gap-2">
+                              {(onboardingData as any).interested_subcategories.map((sub: any) => (
+                                <span key={sub.id} className="bg-white/20 px-2 py-1 rounded text-xs">
+                                  {sub.name}
+                                </span>
+                              ))}
+                            </div>
                           </div>
                         )}
                       </div>
