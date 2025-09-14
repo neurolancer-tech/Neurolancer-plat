@@ -7,8 +7,6 @@ import Navigation from '@/components/Navigation';
 import Avatar from '@/components/Avatar';
 import LikeButton from '@/components/LikeButton';
 import { Gig, Category } from '@/types';
-import { Metadata } from 'next';
-
 interface Subcategory {
   id: number;
   category: number;
@@ -19,22 +17,6 @@ interface Subcategory {
 import api from '@/lib/api';
 import Pagination from '@/components/Pagination';
 import { getProfile } from '@/lib/auth';
-
-export const metadata: Metadata = {
-  title: 'AI Gigs - Find Expert AI Services | Neurolancer',
-  description: 'Browse thousands of AI gigs from expert freelancers. Find machine learning, computer vision, NLP, and data science services. Get your AI project done by professionals.',
-  keywords: 'AI gigs, machine learning services, computer vision, NLP services, data science, AI freelancers, artificial intelligence projects',
-  openGraph: {
-    title: 'AI Gigs - Find Expert AI Services | Neurolancer',
-    description: 'Browse thousands of AI gigs from expert freelancers. Find machine learning, computer vision, NLP, and data science services.',
-    type: 'website',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'AI Gigs - Find Expert AI Services | Neurolancer',
-    description: 'Browse thousands of AI gigs from expert freelancers. Find machine learning, computer vision, NLP, and data science services.',
-  },
-};
 
 
 export default function GigsPage() {

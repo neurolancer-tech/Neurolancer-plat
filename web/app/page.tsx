@@ -3,16 +3,7 @@
 import Navigation from '@/components/Navigation';
 import NeuralNetworkBackground from '@/components/NeuralNetworkBackground';
 import { useState, useEffect } from 'react';
-import { Metadata } from 'next';
 
-export const metadata: Metadata = {
-  title: 'Find Top AI Experts & Freelancers',
-  description: 'Connect with skilled professionals specializing in artificial intelligence, machine learning, and cutting-edge technology solutions. Browse AI gigs, post jobs, and find the perfect AI expert for your project.',
-  openGraph: {
-    title: 'Find Top AI Experts & Freelancers | Neurolancer',
-    description: 'Connect with skilled professionals specializing in artificial intelligence, machine learning, and cutting-edge technology solutions.',
-  },
-};
 
 function CategoryCard({ title, icon, description, subcategories, subtitle, index }: {
   title: string;

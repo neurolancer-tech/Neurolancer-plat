@@ -9,17 +9,7 @@ import { Job, Category } from '@/types';
 import { getProfile } from '@/lib/auth';
 import api from '@/lib/api';
 import Pagination from '@/components/Pagination';
-import { Metadata } from 'next';
 
-export const metadata: Metadata = {
-  title: 'AI Jobs - Find Artificial Intelligence Projects',
-  description: 'Browse AI and machine learning job opportunities. Find projects in neural networks, deep learning, NLP, computer vision, and more. Post your AI job or apply as a freelancer.',
-  keywords: ['AI jobs', 'machine learning jobs', 'artificial intelligence projects', 'neural network jobs', 'deep learning freelance'],
-  openGraph: {
-    title: 'AI Jobs - Find Artificial Intelligence Projects | Neurolancer',
-    description: 'Browse AI and machine learning job opportunities. Find projects in neural networks, deep learning, NLP, computer vision, and more.',
-  },
-};
 
 interface Subcategory {
   id: number;

@@ -10,8 +10,6 @@ import { getProfile, isAuthenticated } from '@/lib/auth';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import Pagination from '@/components/Pagination';
-import { Metadata } from 'next';
-
 interface Subcategory {
   id: number;
   category: number;
@@ -19,22 +17,6 @@ interface Subcategory {
   description: string;
   created_at: string;
 }
-
-export const metadata: Metadata = {
-  title: 'AI Courses - Learn Machine Learning & AI Skills | Neurolancer',
-  description: 'Master AI skills with expert-led courses. Learn machine learning, deep learning, computer vision, NLP, and data science. Advance your AI career with comprehensive training.',
-  keywords: 'AI courses, machine learning training, deep learning courses, computer vision learning, NLP courses, data science education, AI certification, AI skills',
-  openGraph: {
-    title: 'AI Courses - Learn Machine Learning & AI Skills | Neurolancer',
-    description: 'Master AI skills with expert-led courses. Learn machine learning, deep learning, computer vision, NLP, and data science.',
-    type: 'website',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'AI Courses - Learn Machine Learning & AI Skills | Neurolancer',
-    description: 'Master AI skills with expert-led courses. Learn machine learning, deep learning, computer vision, NLP, and data science.',
-  },
-};
 
 export default function CoursesPage() {
   const router = useRouter();
