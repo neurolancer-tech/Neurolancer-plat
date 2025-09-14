@@ -282,20 +282,22 @@ export default function FloatingChatbot() {
     e.preventDefault();
     if (!newMessage.trim()) return;
 
+    const messageContent = newMessage.trim();
+    setNewMessage('');
+
     const userMessage: ChatMessage = {
       id: Date.now(),
-      content: newMessage,
+      content: messageContent,
       sender: 'user',
       timestamp: new Date()
     };
 
     setMessages(prev => [...prev, userMessage]);
-    setNewMessage('');
     setIsTyping(true);
 
     try {
-      const aiResponse = await chatbot.sendMessage(newMessage);
-      const actionCards = generateActionCards(newMessage + ' ' + aiResponse);
+      const aiResponse = await chatbot.sendMessage(messageContent);
+      const actionCards = generateActionCards(messageContent + ' ' + aiResponse);
 
       const aiMessage: ChatMessage = {
         id: Date.now() + 1,
