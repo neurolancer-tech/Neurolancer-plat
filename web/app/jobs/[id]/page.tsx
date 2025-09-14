@@ -34,8 +34,12 @@ export default function JobDetailPage() {
   }, [jobId]);
 
   const loadAllSubcategories = async () => {
-    // API endpoint not available, skip loading
-    console.log('Subcategories API not available, using fallback display');
+    try {
+      const response = await api.get('/subcategories/');
+      setAllSubcategories(response.data.results || response.data);
+    } catch (error) {
+      console.error('Error loading subcategories:', error);
+    }
   };
 
   const getSubcategoryName = (subcategoryId: number) => {

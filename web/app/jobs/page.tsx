@@ -81,42 +81,25 @@ export default function JobsPage() {
   };
 
   const loadAllSubcategories = async () => {
-    // API endpoint not available, skip loading
-    console.log('Subcategories API not available, using fallback display');
+    try {
+      const response = await api.get('/subcategories/');
+      setAllSubcategories(response.data.results || response.data);
+    } catch (error) {
+      console.error('Error loading all subcategories:', error);
+    }
   };
 
   const loadSubcategories = async (categoryId: string) => {
     setSubcategoriesLoading(true);
-    // Generate static subcategories based on category
-    const categorySubcategories = getSubcategoriesForCategory(parseInt(categoryId));
-    setSubcategories(categorySubcategories);
-    setSubcategoriesLoading(false);
-  };
-
-  const getSubcategoriesForCategory = (categoryId: number) => {
-    const subcategoryRanges: { [key: number]: { start: number; end: number } } = {
-      1: { start: 1, end: 10 },   // AI Development & Engineering
-      2: { start: 11, end: 20 },  // Data & Model Management
-      3: { start: 21, end: 30 },  // AI Ethics, Law & Governance
-      4: { start: 31, end: 40 },  // AI Integration & Support
-      5: { start: 41, end: 50 },  // Creative & Industry-Specific AI
-      6: { start: 51, end: 60 }   // AI Operations in New Markets
-    };
-    
-    const range = subcategoryRanges[categoryId];
-    if (!range) return [];
-    
-    const subcategories = [];
-    for (let i = range.start; i <= range.end; i++) {
-      subcategories.push({
-        id: i,
-        category: categoryId,
-        name: getSubcategoryName(i),
-        description: '',
-        created_at: ''
-      });
+    try {
+      const response = await api.get(`/subcategories/?category=${categoryId}`);
+      setSubcategories(response.data.results || response.data);
+    } catch (error) {
+      console.error('Error loading subcategories:', error);
+      setSubcategories([]);
+    } finally {
+      setSubcategoriesLoading(false);
     }
-    return subcategories;
   };
 
   const getSubcategoryName = (subcategoryId: number) => {
@@ -202,13 +185,11 @@ export default function JobsPage() {
       
       const matchesCategory = !filters.category || (job.category?.id?.toString() === filters.category);
       
-      // Skip subcategory filter if job doesn't have subcategories or if no subcategory filter is set
       const matchesSubcategory = !filters.subcategory || 
-        (!((job as any).subcategories) || // If job has no subcategories, skip this filter
-         (Array.isArray((job as any).subcategories) && ((job as any).subcategories).some((sub: any) => {
-           const subId = typeof sub === 'object' ? sub.id : sub;
-           return subId?.toString() === filters.subcategory;
-         })));
+        (((job as any).subcategories) && Array.isArray((job as any).subcategories) && ((job as any).subcategories).some((sub: any) => {
+          const subId = typeof sub === 'object' ? sub.id : sub;
+          return subId?.toString() === filters.subcategory;
+        }));
       
       const matchesExperience = !filters.experienceLevel || job.experience_level === filters.experienceLevel;
       const matchesJobType = !filters.jobType || job.job_type === filters.jobType;
