@@ -8,6 +8,23 @@ import LikeButton from '@/components/LikeButton';
 import { UserProfile } from '@/types';
 import api from '@/lib/api';
 import Pagination from '@/components/Pagination';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'AI Freelancers - Hire Expert AI Professionals | Neurolancer',
+  description: 'Find and hire top AI freelancers and experts. Browse profiles of machine learning engineers, data scientists, computer vision specialists, and NLP experts.',
+  keywords: 'AI freelancers, machine learning engineers, data scientists, computer vision experts, NLP specialists, AI professionals, hire AI talent',
+  openGraph: {
+    title: 'AI Freelancers - Hire Expert AI Professionals | Neurolancer',
+    description: 'Find and hire top AI freelancers and experts. Browse profiles of machine learning engineers, data scientists, and AI specialists.',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'AI Freelancers - Hire Expert AI Professionals | Neurolancer',
+    description: 'Find and hire top AI freelancers and experts. Browse profiles of machine learning engineers, data scientists, and AI specialists.',
+  },
+};
 
 export default function FreelancersPage() {
   const [freelancers, setFreelancers] = useState<UserProfile[]>([]);
