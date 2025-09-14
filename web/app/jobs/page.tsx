@@ -316,10 +316,10 @@ export default function JobsPage() {
                               <div className="flex items-center">
                                 <Link href={`/clients/${job.client?.id || ''}`} className="flex items-center">
                                   <Avatar
-                                    src={job.client?.profile_picture}
-                                    avatarType={(job.client?.avatar_type as "upload" | "avatar" | "google") || 'avatar'}
-                                    selectedAvatar={job.client?.selected_avatar}
-                                    googlePhotoUrl={job.client?.google_photo_url}
+                                    src={(job.client as any)?.profile_picture}
+                                    avatarType={((job.client as any)?.avatar_type as "upload" | "avatar" | "google") || 'avatar'}
+                                    selectedAvatar={(job.client as any)?.selected_avatar}
+                                    googlePhotoUrl={(job.client as any)?.google_photo_url}
                                     size="sm"
                                     alt={job.client?.first_name || 'Client'}
                                     className="mr-2"
