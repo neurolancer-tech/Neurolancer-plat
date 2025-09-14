@@ -54,7 +54,22 @@ export default function FloatingChatbot() {
   const currentUser = getProfile();
 
   useEffect(() => {
-    // Initialize with welcome message
+    // Load messages from localStorage
+    const savedMessages = localStorage.getItem('neurolancer-chat-messages');
+    if (savedMessages) {
+      try {
+        const parsedMessages = JSON.parse(savedMessages).map((msg: any) => ({
+          ...msg,
+          timestamp: new Date(msg.timestamp)
+        }));
+        setMessages(parsedMessages);
+        return;
+      } catch (error) {
+        console.error('Error loading saved messages:', error);
+      }
+    }
+
+    // Initialize with welcome message if no saved messages
     const getWelcomeCards = () => {
       if (currentUser?.user_type === 'freelancer') {
         return [
@@ -144,6 +159,8 @@ export default function FloatingChatbot() {
 
   useEffect(() => {
     scrollToBottom();
+    // Save messages to localStorage
+    localStorage.setItem('neurolancer-chat-messages', JSON.stringify(messages));
   }, [messages]);
 
   const scrollToBottom = () => {
@@ -367,14 +384,16 @@ export default function FloatingChatbot() {
   };
 
   const clearChat = () => {
-    setMessages([{
+    const newMessages = [{
       id: 1,
       content: "Chat cleared! How can I help you today?",
       sender: 'ai',
       timestamp: new Date()
-    }]);
+    }];
+    setMessages(newMessages);
     setActiveForm(null);
     setFormData({});
+    localStorage.setItem('neurolancer-chat-messages', JSON.stringify(newMessages));
   };
 
   return (
