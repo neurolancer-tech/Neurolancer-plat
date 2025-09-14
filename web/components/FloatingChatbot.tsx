@@ -140,7 +140,7 @@ export default function FloatingChatbot() {
       actionCards: getWelcomeCards()
     };
     setMessages([welcomeMessage]);
-  }, [currentUser]);
+  }, []);
 
   useEffect(() => {
     scrollToBottom();
