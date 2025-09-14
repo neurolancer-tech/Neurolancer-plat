@@ -1,5 +1,7 @@
 # Onboarding Subcategories Usage Guide
 
+> Complete implementation guide for subcategory selection in onboarding
+
 ## Overview
 The onboarding system now supports subcategory selection, allowing users to specify their interests in specific AI subcategories during the onboarding process.
 
