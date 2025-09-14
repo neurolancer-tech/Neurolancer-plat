@@ -53,6 +53,15 @@ export const isAuthenticated = (): boolean => {
   return !!getAuthToken() && !!getUser();
 };
 
+export const updateProfile = (profileData: Partial<UserProfile>): void => {
+  if (typeof window === 'undefined') return;
+  const currentProfile = getProfile();
+  if (currentProfile) {
+    const updatedProfile = { ...currentProfile, ...profileData };
+    setProfile(updatedProfile);
+  }
+};
+
 export const logout = (): void => {
   if (typeof window === 'undefined') return;
   removeAuthToken();
