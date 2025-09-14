@@ -296,12 +296,15 @@ export default function HomePage() {
             Connect with skilled professionals specializing in artificial intelligence, 
             machine learning, and cutting-edge technology solutions.
           </p>
-          <div className="flex justify-center space-x-4">
+          <div className="flex flex-wrap justify-center gap-4">
             <button onClick={() => window.location.href='/gigs'} className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-3 rounded-lg font-semibold hover:from-purple-600 hover:to-blue-500 hover:shadow-lg transition-all duration-300">
               Browse Gigs
             </button>
             <button onClick={() => window.location.href='/jobs'} className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-8 py-3 rounded-lg font-semibold hover:from-emerald-600 hover:to-green-500 hover:shadow-lg transition-all duration-300">
               Post a Job
+            </button>
+            <button onClick={() => window.location.href='/courses'} className="bg-gradient-to-r from-orange-500 to-red-600 text-white px-8 py-3 rounded-lg font-semibold hover:from-red-600 hover:to-orange-500 hover:shadow-lg transition-all duration-300">
+              Learn AI
             </button>
           </div>
         </div>
