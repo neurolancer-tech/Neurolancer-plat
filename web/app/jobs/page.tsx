@@ -43,9 +43,15 @@ export default function JobsPage() {
   const isFreelancer = profile?.user_type === 'freelancer' || profile?.user_type === 'both';
 
   useEffect(() => {
-    loadCategories();
-    loadJobs();
-    loadAllSubcategories();
+    const loadData = async () => {
+      await Promise.all([
+        loadCategories(),
+        loadAllSubcategories(),
+        loadJobs()
+      ]);
+      setLoading(false);
+    };
+    loadData();
   }, []);
 
   useEffect(() => {
@@ -71,8 +77,6 @@ export default function JobsPage() {
       setJobs(response.data.results || response.data);
     } catch (error) {
       console.error('Error loading jobs:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -372,7 +376,7 @@ export default function JobsPage() {
                                 let subcategoryName;
                                 if (typeof sub === 'object' && sub.name) {
                                   subcategoryName = sub.name;
-                                } else if (typeof sub === 'number' && allSubcategories.length > 0) {
+                                } else if (typeof sub === 'number') {
                                   subcategoryName = getSubcategoryName(sub);
                                 } else {
                                   subcategoryName = String(sub);

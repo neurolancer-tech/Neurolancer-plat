@@ -24,8 +24,13 @@ export default function JobDetailPage() {
   useEffect(() => {
     setIsLoggedIn(isAuthenticated());
     setUserProfile(getProfile());
-    loadJobDetails();
-    loadAllSubcategories();
+    const loadData = async () => {
+      await Promise.all([
+        loadAllSubcategories(),
+        loadJobDetails()
+      ]);
+    };
+    loadData();
   }, [jobId]);
 
   const loadAllSubcategories = async () => {
@@ -164,7 +169,7 @@ export default function JobDetailPage() {
                         let subcategoryName;
                         if (typeof sub === 'object' && sub.name) {
                           subcategoryName = sub.name;
-                        } else if (typeof sub === 'number' && allSubcategories.length > 0) {
+                        } else if (typeof sub === 'number') {
                           subcategoryName = getSubcategoryName(sub);
                         } else {
                           subcategoryName = String(sub);
@@ -203,7 +208,7 @@ export default function JobDetailPage() {
                     let subcategoryName;
                     if (typeof sub === 'object' && sub.name) {
                       subcategoryName = sub.name;
-                    } else if (typeof sub === 'number' && allSubcategories.length > 0) {
+                    } else if (typeof sub === 'number') {
                       subcategoryName = getSubcategoryName(sub);
                     } else {
                       subcategoryName = String(sub);
