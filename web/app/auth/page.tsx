@@ -9,6 +9,48 @@ import api from '../../lib/api';
 import { setAuthToken, setUser, setProfile } from '../../lib/auth';
 import { signInWithGoogle, getGoogleRedirectResult } from '../../lib/firebase';
 
+interface PasswordStrength {
+  score: number;
+  label: string;
+  color: string;
+  suggestions: string[];
+}
+
+const calculatePasswordStrength = (password: string): PasswordStrength => {
+  let score = 0;
+  const suggestions: string[] = [];
+
+  if (password.length >= 8) score += 1;
+  else suggestions.push('At least 8 characters');
+
+  if (/[a-z]/.test(password)) score += 1;
+  else suggestions.push('Add lowercase letters');
+
+  if (/[A-Z]/.test(password)) score += 1;
+  else suggestions.push('Add uppercase letters');
+
+  if (/\d/.test(password)) score += 1;
+  else suggestions.push('Add numbers');
+
+  if (/[^\w\s]/.test(password)) score += 1;
+  else suggestions.push('Add special characters');
+
+  const strengthLevels = [
+    { label: 'Very Weak', color: 'bg-red-500' },
+    { label: 'Weak', color: 'bg-orange-500' },
+    { label: 'Fair', color: 'bg-yellow-500' },
+    { label: 'Good', color: 'bg-blue-500' },
+    { label: 'Strong', color: 'bg-green-500' }
+  ];
+
+  return {
+    score,
+    label: strengthLevels[score]?.label || 'Very Weak',
+    color: strengthLevels[score]?.color || 'bg-red-500',
+    suggestions
+  };
+};
+
 function AuthContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -25,6 +67,10 @@ function AuthContent() {
     userType: 'client'
   });
 
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState<PasswordStrength>({ score: 0, label: '', color: '', suggestions: [] });
+
   useEffect(() => {
     const tab = searchParams.get('tab');
     if (tab === 'login') {
@@ -33,10 +79,16 @@ function AuthContent() {
   }, [searchParams]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [name]: value
     });
+
+    // Calculate password strength for signup
+    if (name === 'password' && activeTab === 'signup') {
+      setPasswordStrength(calculatePasswordStrength(value));
+    }
   };
 
   // Handle redirect result on page load
@@ -341,7 +393,7 @@ function AuthContent() {
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-[#F6F6EB] via-white to-[#E8F5F3] dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
+      <div className="min-h-screen bg-gradient-to-br from-[#F6F6EB] via-white to-[#E8F5F3] dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex flex-col justify-center py-6 sm:py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
         {/* Background Animation */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-40 -right-40 w-80 h-80 bg-[#0D9E86] rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
@@ -350,23 +402,23 @@ function AuthContent() {
         </div>
 
         <div className="relative z-10">
-          <div className="sm:mx-auto sm:w-full sm:max-w-md">
-            <Link href="/" className="flex justify-center mb-8">
+          <div className="sm:mx-auto sm:w-full sm:max-w-md lg:max-w-lg">
+            <Link href="/" className="flex justify-center mb-6 sm:mb-8">
               <div className="px-3 py-2 rounded-lg" style={{backgroundColor: '#0D9E86'}}>
                 <Image
                   src="/assets/Neurolancer-logo/vector/default-monochrome-white.svg"
                   alt="Neurolancer"
                   width={120}
                   height={32}
-                  className="h-8 w-auto"
+                  className="h-6 sm:h-8 w-auto"
                 />
               </div>
             </Link>
             <div className="text-center animate-fade-in">
-              <h2 className="text-4xl font-extrabold text-gray-900 dark:text-gray-100 mb-2">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 dark:text-gray-100 mb-2">
                 {activeTab === 'login' ? 'Welcome back!' : 'Join Neurolancer'}
               </h2>
-              <p className="text-gray-600 dark:text-gray-400 text-lg">
+              <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base lg:text-lg">
                 {activeTab === 'login' 
                   ? 'Sign in to continue your AI journey' 
                   : 'Start your AI freelance journey today'
@@ -375,26 +427,26 @@ function AuthContent() {
             </div>
           </div>
 
-          <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-            <div className="card py-8 px-4 shadow-2xl sm:rounded-2xl sm:px-10">
+          <div className="mt-6 sm:mt-8 sm:mx-auto sm:w-full sm:max-w-md lg:max-w-lg">
+            <div className="card py-6 sm:py-8 px-4 sm:px-6 lg:px-10 shadow-2xl sm:rounded-2xl">
               {/* Tab Navigation */}
-              <div className="flex mb-8 bg-gray-100 dark:bg-gray-700 rounded-xl p-1">
+              <div className="flex mb-6 sm:mb-8 bg-gray-100 dark:bg-gray-700 rounded-xl p-1">
                 <button
                   onClick={() => setActiveTab('signup')}
-                  className={`flex-1 py-3 px-4 text-center font-medium rounded-lg transition-all duration-200 ${
+                  className={`flex-1 py-2 sm:py-3 px-2 sm:px-4 text-center font-medium rounded-lg transition-all duration-200 text-sm sm:text-base ${
                     activeTab === 'signup'
                       ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg transform scale-105'
-                      : 'text-gray-600 hover:text-gray-800'
+                      : 'text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100'
                   }`}
                 >
                   Sign Up
                 </button>
                 <button
                   onClick={() => setActiveTab('login')}
-                  className={`flex-1 py-3 px-4 text-center font-medium rounded-lg transition-all duration-200 ${
+                  className={`flex-1 py-2 sm:py-3 px-2 sm:px-4 text-center font-medium rounded-lg transition-all duration-200 text-sm sm:text-base ${
                     activeTab === 'login'
                       ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg transform scale-105'
-                      : 'text-gray-600 hover:text-gray-800'
+                      : 'text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100'
                   }`}
                 >
                   Sign In
@@ -405,9 +457,9 @@ function AuthContent() {
               <button
                 onClick={handleGoogleSignIn}
                 disabled={loading}
-                className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 mb-6 disabled:opacity-50"
+                className="w-full flex items-center justify-center px-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 mb-4 sm:mb-6 disabled:opacity-50 text-sm sm:text-base"
               >
-                <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                   <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
                   <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
@@ -416,18 +468,18 @@ function AuthContent() {
                 Continue with Google
               </button>
 
-              <div className="relative mb-6">
+              <div className="relative mb-4 sm:mb-6">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300" />
+                  <div className="w-full border-t border-gray-300 dark:border-gray-600" />
                 </div>
-                <div className="relative flex justify-center text-sm">
+                <div className="relative flex justify-center text-xs sm:text-sm">
                   <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">Or continue with email</span>
                 </div>
               </div>
 
               {/* Login Form */}
               {activeTab === 'login' && (
-                <form onSubmit={handleLogin} className="space-y-6 animate-slide-in">
+                <form onSubmit={handleLogin} className="space-y-4 sm:space-y-6 animate-slide-in">
                   <div>
                     <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Username or Email
@@ -439,7 +491,7 @@ function AuthContent() {
                       required
                       value={formData.username}
                       onChange={handleInputChange}
-                      className="input-field"
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm sm:text-base"
                       placeholder="Enter your username or email"
                     />
                   </div>
@@ -451,28 +503,46 @@ function AuthContent() {
                       </label>
                       <Link 
                         href="/forgot-password" 
-                        className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 transition-colors"
+                        className="text-xs sm:text-sm text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 transition-colors"
                       >
                         Forgot password?
                       </Link>
                     </div>
-                    <input
-                      id="password"
-                      name="password"
-                      type="password"
-                      required
-                      value={formData.password}
-                      onChange={handleInputChange}
-                      className="input-field"
-                      placeholder="Enter your password"
-                      autoComplete="current-password"
-                    />
+                    <div className="relative">
+                      <input
+                        id="password"
+                        name="password"
+                        type={showPassword ? 'text' : 'password'}
+                        required
+                        value={formData.password}
+                        onChange={handleInputChange}
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm sm:text-base"
+                        placeholder="Enter your password"
+                        autoComplete="current-password"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                      >
+                        {showPassword ? (
+                          <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                          </svg>
+                        ) : (
+                          <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                        )}
+                      </button>
+                    </div>
                   </div>
 
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-3 rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:transform-none font-medium"
+                    className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 sm:py-3 rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:transform-none font-medium text-sm sm:text-base"
                   >
                     {loading ? (
                       <div className="flex items-center justify-center">
@@ -488,14 +558,14 @@ function AuthContent() {
 
               {/* Signup Form */}
               {activeTab === 'signup' && (
-                <form onSubmit={handleSignup} className="space-y-6 animate-slide-in">
+                <form onSubmit={handleSignup} className="space-y-4 sm:space-y-6 animate-slide-in">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-3">I want to:</label>
-                    <div className="grid grid-cols-2 gap-3">
-                      <label className={`flex items-center p-3 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">I want to:</label>
+                    <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                      <label className={`flex items-center p-2 sm:p-3 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
                         formData.userType === 'client' 
-                          ? 'border-blue-500 bg-blue-50 text-blue-600' 
-                          : 'border-gray-200 hover:border-gray-300'
+                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' 
+                          : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
                       }`}>
                         <input
                           type="radio"
@@ -506,14 +576,14 @@ function AuthContent() {
                           className="sr-only"
                         />
                         <div className="text-center w-full">
-                          <div className="text-2xl mb-1">🎯</div>
-                          <div className="text-sm font-medium">Hire AI experts</div>
+                          <div className="text-xl sm:text-2xl mb-1">🎯</div>
+                          <div className="text-xs sm:text-sm font-medium">Hire AI experts</div>
                         </div>
                       </label>
-                      <label className={`flex items-center p-3 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
+                      <label className={`flex items-center p-2 sm:p-3 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
                         formData.userType === 'freelancer' 
-                          ? 'border-green-500 bg-green-50 text-green-600' 
-                          : 'border-gray-200 hover:border-gray-300'
+                          ? 'border-green-500 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' 
+                          : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
                       }`}>
                         <input
                           type="radio"
@@ -524,16 +594,16 @@ function AuthContent() {
                           className="sr-only"
                         />
                         <div className="text-center w-full">
-                          <div className="text-2xl mb-1">🚀</div>
-                          <div className="text-sm font-medium">Work as freelancer</div>
+                          <div className="text-xl sm:text-2xl mb-1">🚀</div>
+                          <div className="text-xs sm:text-sm font-medium">Work as freelancer</div>
                         </div>
                       </label>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div>
-                      <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
+                      <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         First Name
                       </label>
                       <input
@@ -543,12 +613,12 @@ function AuthContent() {
                         required
                         value={formData.firstName}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm sm:text-base"
                         placeholder="John"
                       />
                     </div>
                     <div>
-                      <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
+                      <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Last Name
                       </label>
                       <input
@@ -558,14 +628,14 @@ function AuthContent() {
                         required
                         value={formData.lastName}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm sm:text-base"
                         placeholder="Doe"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Email Address
                     </label>
                     <input
@@ -575,13 +645,13 @@ function AuthContent() {
                       required
                       value={formData.email}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm sm:text-base"
                       placeholder="john@example.com"
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Username
                     </label>
                     <input
@@ -591,49 +661,123 @@ function AuthContent() {
                       required
                       value={formData.username}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm sm:text-base"
                       placeholder="johndoe"
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Password
                     </label>
-                    <input
-                      id="password"
-                      name="password"
-                      type="password"
-                      required
-                      value={formData.password}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
-                      placeholder="Minimum 8 characters"
-                      autoComplete="new-password"
-                    />
+                    <div className="relative">
+                      <input
+                        id="password"
+                        name="password"
+                        type={showPassword ? 'text' : 'password'}
+                        required
+                        value={formData.password}
+                        onChange={handleInputChange}
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm sm:text-base"
+                        placeholder="Minimum 8 characters"
+                        autoComplete="new-password"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                      >
+                        {showPassword ? (
+                          <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                          </svg>
+                        ) : (
+                          <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+                    
+                    {/* Password Strength Indicator */}
+                    {formData.password && (
+                      <div className="mt-2">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-xs text-gray-600 dark:text-gray-400">Password strength:</span>
+                          <span className={`text-xs font-medium ${
+                            passwordStrength.score <= 1 ? 'text-red-600' :
+                            passwordStrength.score <= 2 ? 'text-orange-600' :
+                            passwordStrength.score <= 3 ? 'text-yellow-600' :
+                            passwordStrength.score <= 4 ? 'text-blue-600' :
+                            'text-green-600'
+                          }`}>
+                            {passwordStrength.label}
+                          </span>
+                        </div>
+                        <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                          <div 
+                            className={`h-2 rounded-full transition-all duration-300 ${passwordStrength.color}`}
+                            style={{ width: `${(passwordStrength.score / 5) * 100}%` }}
+                          />
+                        </div>
+                        {passwordStrength.suggestions.length > 0 && (
+                          <div className="mt-1">
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                              {passwordStrength.suggestions.slice(0, 2).join(', ')}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   <div>
-                    <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Confirm Password
                     </label>
-                    <input
-                      id="confirmPassword"
-                      name="confirmPassword"
-                      type="password"
-                      required
-                      value={formData.confirmPassword}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
-                      placeholder="Confirm your password"
-                      autoComplete="new-password"
-                    />
+                    <div className="relative">
+                      <input
+                        id="confirmPassword"
+                        name="confirmPassword"
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        required
+                        value={formData.confirmPassword}
+                        onChange={handleInputChange}
+                        className={`w-full px-3 sm:px-4 py-2 sm:py-3 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm sm:text-base ${
+                          formData.confirmPassword && formData.password !== formData.confirmPassword
+                            ? 'border-red-300 focus:ring-red-500'
+                            : 'border-gray-300 dark:border-gray-600 focus:ring-green-500'
+                        }`}
+                        placeholder="Confirm your password"
+                        autoComplete="new-password"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                      >
+                        {showConfirmPassword ? (
+                          <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                          </svg>
+                        ) : (
+                          <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+                    {formData.confirmPassword && formData.password !== formData.confirmPassword && (
+                      <p className="mt-1 text-xs text-red-600">Passwords do not match</p>
+                    )}
                   </div>
 
                   <button
                     type="submit"
-                    disabled={loading}
-                    className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-3 rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:transform-none font-medium"
+                    disabled={loading || (formData.password && formData.confirmPassword && formData.password !== formData.confirmPassword)}
+                    className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 sm:py-3 rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:transform-none font-medium text-sm sm:text-base"
                   >
                     {loading ? (
                       <div className="flex items-center justify-center">
@@ -647,14 +791,14 @@ function AuthContent() {
                 </form>
               )}
 
-              <div className="mt-6 text-center">
-                <p className="text-xs text-gray-500">
+              <div className="mt-4 sm:mt-6 text-center">
+                <p className="text-xs text-gray-500 dark:text-gray-400">
                   By joining, you agree to our{' '}
-                  <Link href="/terms" className="text-blue-600 hover:underline">
+                  <Link href="/terms" className="text-blue-600 dark:text-blue-400 hover:underline">
                     Terms of Service
                   </Link>{' '}
                   and{' '}
-                  <Link href="/privacy" className="text-blue-600 hover:underline">
+                  <Link href="/privacy" className="text-blue-600 dark:text-blue-400 hover:underline">
                     Privacy Policy
                   </Link>
                 </p>
