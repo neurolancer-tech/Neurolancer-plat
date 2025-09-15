@@ -355,7 +355,7 @@ export default function CompleteProfilePage() {
       updateProfile(updatedProfile);
       
       toast.success('Profile completed successfully!');
-      router.push('/dashboard');
+      router.push('/role-selection');
     } catch (error: any) {
       toast.error('Failed to update profile');
     } finally {

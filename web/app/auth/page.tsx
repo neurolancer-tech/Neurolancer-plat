@@ -6,7 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { toast } from 'react-hot-toast';
 import api from '../../lib/api';
-import { setAuthToken, setUser, setProfile } from '../../lib/auth';
+import { setAuthToken, setUser, setProfile, isProfileComplete } from '../../lib/auth';
 import { signInWithGoogle, getGoogleRedirectResult } from '../../lib/firebase';
 
 interface PasswordStrength {
@@ -66,6 +66,8 @@ function AuthContent() {
     lastName: '',
     userType: 'client'
   });
+
+  const [loginRole, setLoginRole] = useState<'client' | 'freelancer'>('client');
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -177,38 +179,28 @@ function AuthContent() {
       setUser(backendUser);
       setProfile(updatedProfile);
       
-      // Check if user needs role selection (no user_type set)
-      if (!updatedProfile.user_type || updatedProfile.user_type === '') {
-        console.log('User has no user_type, redirecting to role selection');
-        if (is_new_user) {
-          toast.success('Welcome to Neurolancer! Account created successfully.');
-        } else {
-          toast.success('Successfully signed in with Google!');
-        }
-        router.push('/role-selection');
-        return;
-      }
-      
-      // Check if profile needs completion
-      // Backend uses 'phone' field, check for empty values
-      const requiresCompletion = response.data.requires_completion || 
-                                is_new_user || 
-                                !updatedProfile.phone ||
-                                updatedProfile.phone === '' ||
-                                !updatedProfile.country ||
-                                updatedProfile.country === '' ||
-                                !updatedProfile.city ||
-                                updatedProfile.city === '';
-      
-      if (requiresCompletion) {
+      // Check if profile needs completion first
+      if (!isProfileComplete()) {
         console.log('Profile needs completion, redirecting to complete-profile');
-        toast.success('Welcome to Neurolancer! Please complete your profile.');
+        if (is_new_user) {
+          toast.success('Welcome to Neurolancer! Please complete your profile.');
+        } else {
+          toast.success('Please complete your profile to continue.');
+        }
         router.push('/auth/complete-profile');
         return;
       }
       
-      // User has completed profile, go to dashboard
-      console.log('User has completed profile, going to dashboard');
+      // Check if user needs role selection (no user_type set)
+      if (!updatedProfile.user_type || updatedProfile.user_type === '') {
+        console.log('User has no user_type, redirecting to role selection');
+        toast.success('Please select your role to continue.');
+        router.push('/role-selection');
+        return;
+      }
+      
+      // User has completed profile and has role, go to dashboard
+      console.log('User has completed profile and role, going to dashboard');
       toast.success('Successfully signed in with Google!');
       router.push('/dashboard');
     } catch (error: any) {
@@ -308,30 +300,33 @@ function AuthContent() {
 
       const { user, token, profile, requires_completion } = response.data;
       
+      // Update profile with selected role
+      const updatedProfile = { ...profile, user_type: loginRole };
+      
       setAuthToken(token);
       setUser(user);
-      setProfile(profile);
+      setProfile(updatedProfile);
       
-      toast.success('Login successful!');
+      // Update role on backend
+      try {
+        await api.patch('/profile/update/', {
+          user_type: loginRole
+        });
+      } catch (roleError) {
+        console.log('Role update failed, but continuing with login');
+      }
       
-      // Check if profile needs completion
-      // Backend uses 'phone' field, check for empty values
-      const needsCompletion = requires_completion || 
-                             !profile?.phone || 
-                             profile?.phone === '' ||
-                             !profile?.country || 
-                             profile?.country === '' ||
-                             !profile?.city || 
-                             profile?.city === '';
+      toast.success(`Welcome back! Signed in as ${loginRole}.`);
       
-      if (needsCompletion) {
+      // Check if profile needs completion first
+      if (!isProfileComplete()) {
         console.log('Profile needs completion, redirecting to complete-profile');
         router.push('/auth/complete-profile');
         return;
       }
       
       // Profile is complete, go to dashboard
-      console.log('Profile is complete, redirecting to dashboard');
+      console.log('Profile is complete, going to dashboard');
       router.push('/dashboard');
     } catch (error: any) {
       toast.error((error as any).response?.data?.error || 'Login failed');
@@ -530,6 +525,43 @@ function AuthContent() {
               {/* Login Form */}
               {activeTab === 'login' && (
                 <form onSubmit={handleLogin} className="space-y-4 sm:space-y-6 animate-slide-in">
+                  {/* Role Selection for Login */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Sign in as:</label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setLoginRole('client')}
+                        className={`p-3 border-2 rounded-lg transition-all duration-200 ${
+                          loginRole === 'client' 
+                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' 
+                            : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
+                        }`}
+                      >
+                        <div className="text-center">
+                          <div className="text-2xl mb-1">🎯</div>
+                          <div className="text-sm font-medium">Client</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">Hire freelancers</div>
+                        </div>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setLoginRole('freelancer')}
+                        className={`p-3 border-2 rounded-lg transition-all duration-200 ${
+                          loginRole === 'freelancer' 
+                            ? 'border-green-500 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' 
+                            : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
+                        }`}
+                      >
+                        <div className="text-center">
+                          <div className="text-2xl mb-1">🚀</div>
+                          <div className="text-sm font-medium">Freelancer</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">Find work</div>
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+
                   <div>
                     <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Username or Email

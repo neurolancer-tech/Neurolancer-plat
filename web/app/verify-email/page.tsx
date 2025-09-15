@@ -40,7 +40,7 @@ function VerifyEmailContent() {
     } catch (error: any) {
       if (error.response?.data?.error?.includes('expired')) {
         setStatus('expired');
-        setMessage('Verification link has expired');
+        setMessage('Please verify your email');
       } else {
         setStatus('error');
         setMessage(error.response?.data?.error || 'Verification failed');
@@ -147,7 +147,7 @@ function VerifyEmailContent() {
                 <p className="text-gray-600 dark:text-gray-400 mb-4">{message}</p>
                 <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
                   <p className="text-sm text-red-700 dark:text-red-400">
-                    The verification link may be invalid or corrupted. Please try requesting a new one.
+                    Please verify your email by clicking the link in your inbox or request a new one.
                   </p>
                 </div>
               </div>

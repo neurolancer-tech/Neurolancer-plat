@@ -62,6 +62,24 @@ export const updateProfile = (profileData: Partial<UserProfile>): void => {
   }
 };
 
+export const isProfileComplete = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  const profile = getProfile();
+  if (!profile) return false;
+  
+  // Check if essential profile fields are filled
+  const requiredFields = [
+    'phone_number',
+    'country', 
+    'phone_verified'
+  ];
+  
+  return requiredFields.every(field => {
+    const value = profile[field as keyof UserProfile];
+    return value !== null && value !== undefined && value !== '';
+  }) && profile.phone_verified === true;
+};
+
 export const logout = (): void => {
   if (typeof window === 'undefined') return;
   removeAuthToken();
