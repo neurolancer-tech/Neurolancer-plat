@@ -6,7 +6,7 @@ import Navigation from '@/components/Navigation';
 import Avatar from '@/components/Avatar';
 import { isAuthenticated } from '@/lib/auth';
 import api from '@/lib/api';
-import { profileApi, FreelancerProfile } from '@/lib/profileApi';
+import { profileApi, FreelancerProfile as ProfessionalFreelancerProfile } from '@/lib/profileApi';
 import toast from 'react-hot-toast';
 
 interface FreelancerProfile {
@@ -65,7 +65,7 @@ export default function FreelancerDetailsPage() {
   const params = useParams();
   const router = useRouter();
   const [freelancer, setFreelancer] = useState<FreelancerProfile | null>(null);
-  const [professionalProfile, setProfessionalProfile] = useState<FreelancerProfile | null>(null);
+  const [professionalProfile, setProfessionalProfile] = useState<ProfessionalFreelancerProfile | null>(null);
   const [gigs, setGigs] = useState<Gig[]>([]);
   const [skillBadges, setSkillBadges] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
