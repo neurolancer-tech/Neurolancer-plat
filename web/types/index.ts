@@ -24,6 +24,19 @@ export interface UserProfile {
   avatar_type?: string;
   selected_avatar?: string;
   google_photo_url?: string;
+  // Enhanced auth fields
+  phone_number?: string;
+  phone_verified?: boolean;
+  country?: string;
+  state?: string;
+  city?: string;
+  address?: string;
+  experience_level?: 'entry' | 'intermediate' | 'expert';
+  availability?: 'full-time' | 'part-time' | 'contract' | 'freelance';
+  date_of_birth?: string;
+  profile_completed?: boolean;
+  email_verified?: boolean;
+  auth_provider?: string;
 }
 
 export interface Category {
