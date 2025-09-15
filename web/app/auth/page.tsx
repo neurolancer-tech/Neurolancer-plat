@@ -190,7 +190,13 @@ function AuthContent() {
       }
       
       // Check if profile needs completion
-      const requiresCompletion = response.data.requires_completion || is_new_user || !updatedProfile.profile_completed;
+      // Backend uses different field names: phone (not phone_number), no profile_completed field
+      const requiresCompletion = response.data.requires_completion || 
+                                is_new_user || 
+                                !updatedProfile.phone ||
+                                !updatedProfile.country ||
+                                !updatedProfile.city;
+      
       if (requiresCompletion) {
         console.log('Profile needs completion, redirecting to complete-profile');
         toast.success('Welcome to Neurolancer! Please complete your profile.');
@@ -284,7 +290,7 @@ function AuthContent() {
         password: formData.password
       });
 
-      const { user, token, profile } = response.data;
+      const { user, token, profile, requires_completion } = response.data;
       
       setAuthToken(token);
       setUser(user);
@@ -292,7 +298,21 @@ function AuthContent() {
       
       toast.success('Login successful!');
       
-      // Go directly to dashboard (onboarding will be handled there if needed)
+      // Check if profile needs completion
+      // Backend uses different field names: phone (not phone_number), no profile_completed field
+      const needsCompletion = requires_completion || 
+                             !profile?.phone || 
+                             !profile?.country || 
+                             !profile?.city;
+      
+      if (needsCompletion) {
+        console.log('Profile needs completion, redirecting to complete-profile');
+        router.push('/auth/complete-profile');
+        return;
+      }
+      
+      // Profile is complete, go to dashboard
+      console.log('Profile is complete, redirecting to dashboard');
       router.push('/dashboard');
     } catch (error: any) {
       toast.error((error as any).response?.data?.error || 'Login failed');
@@ -364,7 +384,9 @@ function AuthContent() {
       
       const successMsg = (data as any)?.message || 'Registration successful!';
       toast.success(successMsg);
-      // Redirect to profile completion for all new registrations
+      
+      // All new registrations need profile completion
+      console.log('New registration successful, redirecting to complete-profile');
       router.push('/auth/complete-profile');
     } catch (error: any) {
       const errorMsg = (error as any).response?.data?.username?.[0] || 
@@ -502,6 +524,7 @@ function AuthContent() {
                       onChange={handleInputChange}
                       className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm sm:text-base"
                       placeholder="Enter your username or email"
+                      autoComplete="username"
                     />
                   </div>
 
@@ -624,6 +647,7 @@ function AuthContent() {
                         onChange={handleInputChange}
                         className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm sm:text-base"
                         placeholder="John"
+                        autoComplete="given-name"
                       />
                     </div>
                     <div>
@@ -639,6 +663,7 @@ function AuthContent() {
                         onChange={handleInputChange}
                         className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm sm:text-base"
                         placeholder="Doe"
+                        autoComplete="family-name"
                       />
                     </div>
                   </div>
@@ -656,6 +681,7 @@ function AuthContent() {
                       onChange={handleInputChange}
                       className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm sm:text-base"
                       placeholder="john@example.com"
+                      autoComplete="email"
                     />
                   </div>
 
@@ -672,6 +698,7 @@ function AuthContent() {
                       onChange={handleInputChange}
                       className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm sm:text-base"
                       placeholder="johndoe"
+                      autoComplete="username"
                     />
                   </div>
 

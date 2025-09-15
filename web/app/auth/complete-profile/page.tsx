@@ -6,6 +6,7 @@ import { auth } from '@/lib/firebase';
 import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
 import { getProfile, updateProfile } from '@/lib/auth';
 import { completeProfile } from '@/lib/profile';
+import api from '@/lib/api';
 import Navigation from '@/components/Navigation';
 import toast from 'react-hot-toast';
 
@@ -68,9 +69,14 @@ export default function CompleteProfilePage() {
     }
 
     try {
+      const fullPhoneNumber = `${selectedCountry.phone}${formData.phone_number}`;
+      await api.post('/auth/send-phone-verification/', {
+        phone_number: fullPhoneNumber
+      });
       setPhoneVerification(prev => ({ ...prev, step: 'verify' }));
       toast.success('Verification code sent to your phone');
     } catch (error: any) {
+      console.error('Phone verification error:', error);
       toast.error('Failed to send verification code');
     }
   };
@@ -82,9 +88,13 @@ export default function CompleteProfilePage() {
     }
 
     try {
+      await api.post('/auth/verify-phone/', {
+        code: phoneVerification.verificationCode
+      });
       setPhoneVerification(prev => ({ ...prev, step: 'verified' }));
       toast.success('Phone number verified successfully');
     } catch (error: any) {
+      console.error('Phone verification error:', error);
       toast.error('Invalid verification code');
     }
   };
@@ -103,7 +113,7 @@ export default function CompleteProfilePage() {
       // Send profile data to backend API
       const profileData = {
         ...formData,
-        phone_number: `${selectedCountry?.phone}${formData.phone_number}`,
+        phone: `${selectedCountry?.phone}${formData.phone}`,
         phone_verified: phoneVerification.step === 'verified',
         experience_level: formData.experience_level as 'entry' | 'intermediate' | 'expert'
       };
@@ -190,8 +200,8 @@ export default function CompleteProfilePage() {
                     </span>
                     <input
                       type="tel"
-                      value={formData.phone_number}
-                      onChange={(e) => setFormData(prev => ({ ...prev, phone_number: e.target.value }))}
+                      value={formData.phone}
+                      onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
                       className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-r-md focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:text-white"
                       placeholder="1234567890"
                       required
@@ -206,7 +216,7 @@ export default function CompleteProfilePage() {
                   type="button"
                   onClick={sendVerificationCode}
                   className="mt-4 btn-secondary"
-                  disabled={!formData.phone_number || !selectedCountry}
+                  disabled={!formData.phone || !selectedCountry}
                 >
                   Send Verification Code
                 </button>
