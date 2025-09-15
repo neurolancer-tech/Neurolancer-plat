@@ -259,7 +259,7 @@ export default function CompleteProfilePage() {
     try {
       const fullPhoneNumber = `${selectedCountry.phone}${formData.phone_number}`;
       await api.post('/auth/send-phone-verification/', {
-        phone: fullPhoneNumber
+        phone_number: fullPhoneNumber
       });
       setPhoneVerification(prev => ({ ...prev, step: 'verify' }));
       toast.success('Verification code sent to your phone');
@@ -289,12 +289,6 @@ export default function CompleteProfilePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (phoneVerification.step !== 'verified') {
-      toast.error('Please verify your phone number first');
-      return;
-    }
-
     setSubmitting(true);
     
     try {
@@ -536,7 +530,7 @@ export default function CompleteProfilePage() {
               
               <button
                 type="submit"
-                disabled={submitting || phoneVerification.step !== 'verified'}
+                disabled={submitting}
                 className="btn-primary"
               >
                 {submitting ? 'Completing...' : 'Complete Profile'}

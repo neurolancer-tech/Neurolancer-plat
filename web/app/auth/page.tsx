@@ -250,8 +250,21 @@ function AuthContent() {
               toast.success('Successfully registered with Google!');
               router.push('/role-selection');
             } else {
-              toast.success('Successfully signed in with Google!');
-              router.push('/dashboard');
+              // Check profile completion in retry as well
+              const retryRequiresCompletion = !updatedProfile.phone ||
+                                            updatedProfile.phone === '' ||
+                                            !updatedProfile.country ||
+                                            updatedProfile.country === '' ||
+                                            !updatedProfile.city ||
+                                            updatedProfile.city === '';
+              
+              if (retryRequiresCompletion) {
+                toast.success('Welcome! Please complete your profile.');
+                router.push('/auth/complete-profile');
+              } else {
+                toast.success('Successfully signed in with Google!');
+                router.push('/dashboard');
+              }
             }
             setLoading(false);
           } catch (retryError: any) {
