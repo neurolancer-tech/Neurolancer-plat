@@ -159,8 +159,8 @@ export default function ClientDetailsPage() {
                             <span className="font-medium text-gray-900 dark:text-gray-100">{professionalProfile?.total_projects_posted || 0}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-gray-600 dark:text-gray-400">Active Projects:</span>
-                            <span className="font-medium text-green-600">{professionalProfile?.active_projects || 0}</span>
+                            <span className="text-gray-600 dark:text-gray-400">Active Orders:</span>
+                            <span className="font-medium text-green-600">{data.active_orders || 0}</span>
                           </div>
                         </div>
                       </div>
@@ -175,8 +175,8 @@ export default function ClientDetailsPage() {
                           <div className="flex justify-between">
                             <span className="text-gray-600 dark:text-gray-400">Budget Range:</span>
                             <span className="font-medium text-gray-900 dark:text-gray-100">
-                              {professionalProfile?.project_budget_range ? 
-                                professionalProfile.project_budget_range.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) : 
+                              {professionalProfile?.typical_budget ? 
+                                professionalProfile.typical_budget.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) : 
                                 'Not specified'
                               }
                             </span>
@@ -217,61 +217,42 @@ export default function ClientDetailsPage() {
                               <div>
                                 <span className="text-gray-600 dark:text-gray-400 block text-sm">Budget Range</span>
                                 <span className="font-medium text-green-600">
-                                  {professionalProfile.project_budget_range.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                  {professionalProfile.typical_budget?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'Not specified'}
                                 </span>
                               </div>
                               <div>
                                 <span className="text-gray-600 dark:text-gray-400 block text-sm">Communication</span>
                                 <span className="font-medium text-gray-900 dark:text-gray-100">
-                                  {professionalProfile.communication_preferences || 'Not specified'}
+                                  Not specified
                                 </span>
                               </div>
                             </div>
                           </div>
                         </div>
 
-                        {professionalProfile.company_description && (
+
+
+                        {professionalProfile.project_types && (
                           <div>
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">About the Company</h3>
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Project Types</h3>
                             <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-xl">
-                              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{professionalProfile.company_description}</p>
+                              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{professionalProfile.project_types}</p>
                             </div>
                           </div>
                         )}
 
-                        {professionalProfile.preferred_project_types && (
-                          <div>
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Preferred Project Types</h3>
-                            <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-xl">
-                              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{professionalProfile.preferred_project_types}</p>
-                            </div>
-                          </div>
-                        )}
-
-                        {(professionalProfile.website_url || professionalProfile.linkedin_url) && (
+                        {professionalProfile.website_url && (
                           <div>
                             <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Company Links</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              {professionalProfile.website_url && (
-                                <a href={professionalProfile.website_url} target="_blank" rel="noopener noreferrer" 
-                                   className="flex items-center space-x-3 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">
-                                  <span className="text-blue-500">🌐</span>
-                                  <div>
-                                    <p className="font-medium text-gray-900 dark:text-gray-100">Company Website</p>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400">Visit website</p>
-                                  </div>
-                                </a>
-                              )}
-                              {professionalProfile.linkedin_url && (
-                                <a href={professionalProfile.linkedin_url} target="_blank" rel="noopener noreferrer" 
-                                   className="flex items-center space-x-3 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">
-                                  <span className="text-blue-600">💼</span>
-                                  <div>
-                                    <p className="font-medium text-gray-900 dark:text-gray-100">LinkedIn</p>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400">Company page</p>
-                                  </div>
-                                </a>
-                              )}
+                              <a href={professionalProfile.website_url} target="_blank" rel="noopener noreferrer" 
+                                 className="flex items-center space-x-3 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">
+                                <span className="text-blue-500">🌐</span>
+                                <div>
+                                  <p className="font-medium text-gray-900 dark:text-gray-100">Company Website</p>
+                                  <p className="text-sm text-gray-600 dark:text-gray-400">Visit website</p>
+                                </div>
+                              </a>
                             </div>
                           </div>
                         )}
