@@ -266,11 +266,25 @@ export default function CompleteProfilePage() {
     }
   };
 
-  // Get country flag emoji
-  const getCountryFlag = (countryCode: string) => {
-    if (!countryCode || countryCode.length !== 2) return '🌍';
-    return String.fromCodePoint(
-      ...countryCode.toUpperCase().split('').map(char => 0x1F1E6 + char.charCodeAt(0) - 65)
+  // Get country flag image
+  const getFlagUrl = (countryCode: string) => {
+    if (!countryCode || countryCode.length !== 2) return null;
+    return `https://flagcdn.com/24x18/${countryCode.toLowerCase()}.png`;
+  };
+
+  const CountryFlag = ({ countryCode, className = "w-6 h-4" }: { countryCode: string; className?: string }) => {
+    const flagUrl = getFlagUrl(countryCode);
+    if (!flagUrl) return <span className="text-xs">🌍</span>;
+    
+    return (
+      <img 
+        src={flagUrl} 
+        alt={`${countryCode} flag`}
+        className={`inline-block ${className}`}
+        onError={(e) => {
+          e.currentTarget.style.display = 'none';
+        }}
+      />
     );
   };
 
@@ -396,7 +410,7 @@ export default function CompleteProfilePage() {
                     <option value="">Select Country</option>
                     {countries.map(country => (
                       <option key={country.code} value={country.code}>
-                        {getCountryFlag(country.code)} {country.name} ({country.phone})
+                        {country.name} ({country.phone})
                       </option>
                     ))}
                   </select>
@@ -407,8 +421,9 @@ export default function CompleteProfilePage() {
                     Phone Number
                   </label>
                   <div className="flex">
-                    <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-600 text-gray-500 dark:text-gray-400 text-sm">
-                      {selectedCountry && getCountryFlag(selectedCountry.code)} {selectedCountry?.phone || '+1'}
+                    <span className="inline-flex items-center gap-2 px-3 rounded-l-md border border-r-0 border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-600 text-gray-500 dark:text-gray-400 text-sm">
+                      {selectedCountry && <CountryFlag countryCode={selectedCountry.code} className="w-5 h-3" />}
+                      {selectedCountry?.phone || '+1'}
                     </span>
                     <input
                       type="tel"
