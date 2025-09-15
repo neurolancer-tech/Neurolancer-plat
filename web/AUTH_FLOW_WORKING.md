@@ -2,7 +2,7 @@
 
 ## 🎯 Status: FULLY FUNCTIONAL
 
-The authentication system is now working correctly with the production backend at `https://neurolancer.onrender.com`.
+The authentication system is now working correctly with the production backend at `https://neurolancer-plat.onrender.com`.
 
 ## 🔐 Test Results with Admin Credentials
 

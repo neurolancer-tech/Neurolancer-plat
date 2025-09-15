@@ -182,7 +182,7 @@ def google_oauth_callback(request):
 
 ### 1. Test Profile Completion
 ```bash
-curl -X POST http://localhost:8000/api/auth/complete-profile/ \
+curl -X POST ${NEXT_PUBLIC_API_URL:-http://localhost:8000/api}/auth/complete-profile/ \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -196,12 +196,12 @@ curl -X POST http://localhost:8000/api/auth/complete-profile/ \
 ### 2. Test Phone Verification
 ```bash
 # Send code
-curl -X POST http://localhost:8000/api/auth/send-phone-verification/ \
+curl -X POST ${NEXT_PUBLIC_API_URL:-http://localhost:8000/api}/auth/send-phone-verification/ \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -d '{"phone_number": "+1234567890"}'
 
 # Verify code  
-curl -X POST http://localhost:8000/api/auth/verify-phone/ \
+curl -X POST ${NEXT_PUBLIC_API_URL:-http://localhost:8000/api}/auth/verify-phone/ \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -d '{"code": "123456"}'
 ```

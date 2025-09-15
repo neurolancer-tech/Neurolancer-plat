@@ -169,7 +169,7 @@ node scripts/check-login-response.js
 
 ### Environment Variables
 ```bash
-NEXT_PUBLIC_API_URL=https://neurolancer.onrender.com/api
+NEXT_PUBLIC_API_URL=https://neurolancer-plat.onrender.com/api
 NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=pk_test_...
 ```
 

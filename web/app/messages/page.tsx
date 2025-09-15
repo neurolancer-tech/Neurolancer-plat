@@ -674,7 +674,7 @@ ${messageContent}`;
         if (replyTo && replyTo.attachment_url && replyTo.attachment_type === 'image') {
           const getFileUrl = (url: string) => {
             if (url.startsWith('http')) return url;
-            return `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${url.startsWith('/') ? url : '/' + url}`;
+            return `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:8000'}${url.startsWith('/') ? url : '/' + url}`;
           };
           const imageUrl = getFileUrl(replyTo.attachment_url);
           aiResponse = await chatbot.analyzeImage(imageUrl, aiQuery);
@@ -755,7 +755,7 @@ ${aiResponse}`;
       try {
         const getFileUrl = (url: string) => {
           if (url.startsWith('http')) return url;
-          return `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${url.startsWith('/') ? url : '/' + url}`;
+          return `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:8000'}${url.startsWith('/') ? url : '/' + url}`;
         };
         const imageUrl = getFileUrl(imageMessage.attachment_url!);
         const aiResponse = await chatbot.analyzeImage(imageUrl);
@@ -1201,7 +1201,7 @@ ${aiResponse}`;
                                         {(() => {
                                           const getFileUrl = (url: string) => {
                                             if (url.startsWith('http')) return url;
-                                            return `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${url.startsWith('/') ? url : '/' + url}`;
+                                            return `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:8000'}${url.startsWith('/') ? url : '/' + url}`;
                                           };
                                           const fileUrl = getFileUrl(message.attachment_url!);
                                           

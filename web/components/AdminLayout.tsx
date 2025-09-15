@@ -137,7 +137,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
               {/* Django Admin Link */}
               <button
-                onClick={() => window.open('https://neurolancer.onrender.com/admin/', '_blank')}
+                onClick={() => window.open(`${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}/admin/`, '_blank')}
                 className="px-3 py-2 text-sm font-medium text-white bg-[#FF8559] hover:bg-[#e6754f] rounded-lg transition-colors"
               >
                 Django Admin

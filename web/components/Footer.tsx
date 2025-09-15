@@ -31,7 +31,7 @@ const Footer = () => {
 
     setIsLoading(true);
     try {
-      const response = await fetch('https://neurolancer.onrender.com/api/newsletter/subscribe/', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/newsletter/subscribe/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

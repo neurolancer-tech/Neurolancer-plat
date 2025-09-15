@@ -38,7 +38,8 @@ export const useWebSocket = (conversationId?: number): WebSocketHookReturn => {
     try {
       setConnectionStatus('connecting');
       // Try WebSocket endpoint
-      const wsUrl = `wss://neurolancer.onrender.com/ws/messages/?token=${token}`;
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '').replace('https://', '') || '';
+      const wsUrl = `wss://${baseUrl}/ws/messages/?token=${token}`;
       console.log(`Attempting WebSocket connection to: ${wsUrl}`);
       
       const newSocket = new WebSocket(wsUrl);

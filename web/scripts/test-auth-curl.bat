@@ -2,7 +2,8 @@
 echo 🧪 Testing Authentication Endpoints with curl...
 echo.
 
-set API_URL=https://neurolancer.onrender.com/api
+set API_URL=%NEXT_PUBLIC_API_URL%
+if "%API_URL%"=="" set API_URL=https://neurolancer-plat.onrender.com/api
 
 echo 📡 Testing Backend Connectivity...
 curl -s -o nul -w "Backend Status: %%{http_code}\n" %API_URL%/auth/test-endpoint/

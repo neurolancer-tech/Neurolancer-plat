@@ -132,7 +132,7 @@ console.log('- POST /api/auth/verify-phone/');
 console.log('- GET /api/auth/profile/');
 
 console.log('\n✨ Next Steps:');
-console.log('1. Backend is running on https://neurolancer.onrender.com');
+console.log(`1. Backend is running on ${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'https://neurolancer-plat.onrender.com'}`);
 console.log('2. Test API endpoints with curl or Postman');
 console.log('3. Verify CORS settings allow frontend domain');
 console.log('4. Check database migrations are applied');

@@ -585,15 +585,15 @@ npm run dev
 
 ### **Environment Configuration**
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:8000/api
+NEXT_PUBLIC_API_URL=https://neurolancer-plat.onrender.com/api
 NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=pk_test_...
 NEXT_PUBLIC_GOOGLE_CLIENT_ID=your_google_client_id
 ```
 
 ### **Access Points**
 - **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:8000/api
-- **Admin Panel**: http://localhost:8000/admin
+- **Backend API**: https://neurolancer-plat.onrender.com/api
+- **Admin Panel**: https://neurolancer-plat.onrender.com/admin
 
 ## 📱 **Responsive Design & Accessibility**
 

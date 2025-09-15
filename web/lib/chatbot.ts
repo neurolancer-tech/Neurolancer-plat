@@ -280,7 +280,7 @@ Please provide a helpful response as Neurolancer AI assistant. Use markdown form
     try {
       const token = localStorage.getItem('token');
       if (token) {
-        await fetch('http://localhost:8000/api/ai/conversation/clear/', {
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'}/ai/conversation/clear/`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Token ${token}`,

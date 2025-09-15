@@ -36,9 +36,10 @@ export default function Avatar({
     
     if (avatarType === 'upload' && src) {
       if (src.startsWith('http')) return src;
-      if (src.startsWith('/media/')) return `https://neurolancer.onrender.com${src}`;
-      if (src.startsWith('media/')) return `https://neurolancer.onrender.com/${src}`;
-      return `https://neurolancer.onrender.com${src}`;
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
+      if (src.startsWith('/media/')) return `${baseUrl}${src}`;
+      if (src.startsWith('media/')) return `${baseUrl}/${src}`;
+      return `${baseUrl}${src}`;
     }
     
     

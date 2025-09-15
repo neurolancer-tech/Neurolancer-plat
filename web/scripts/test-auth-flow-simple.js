@@ -7,7 +7,7 @@
 
 const https = require('https');
 
-const API_BASE = 'https://neurolancer.onrender.com/api';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://neurolancer-plat.onrender.com/api';
 
 // Helper function to make HTTP requests
 function makeRequest(method, path, data = null, headers = {}) {
