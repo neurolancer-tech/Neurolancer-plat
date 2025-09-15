@@ -16,13 +16,15 @@ The backend is now configured with your Twilio credentials and ready to send rea
 pip install twilio==9.3.7
 ```
 
-### 3. Django Settings: ✅ CONFIGURED
+### 3. Environment Variables: ✅ CONFIGURED
 ```python
-# Already added to settings.py:
-TWILIO_ACCOUNT_SID = 'AC465354************'
-TWILIO_AUTH_TOKEN = '60555d5f************'
-TWILIO_VERIFY_SERVICE_SID = 'VAff7eb4************'
+# Settings now use environment variables:
+TWILIO_ACCOUNT_SID = config('TWILIO_ACCOUNT_SID', default=None)
+TWILIO_AUTH_TOKEN = config('TWILIO_AUTH_TOKEN', default=None)
+TWILIO_VERIFY_SERVICE_SID = config('TWILIO_VERIFY_SERVICE_SID', default=None)
 ```
+
+**📋 See RENDER_ENV_VARIABLES.md for the exact values to add to Render**
 
 ### 4. Deploy and Test
 ```bash

@@ -249,9 +249,13 @@ EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='bgoyyonrlmejkqlm')
 DEFAULT_FROM_EMAIL = 'Neurolancer <noreply@neurolancer.com>'
 
 # Twilio SMS settings
-TWILIO_ACCOUNT_SID = config('TWILIO_ACCOUNT_SID', default='AC4653544a6db70c90d9924d7b506b0864')
-TWILIO_AUTH_TOKEN = config('TWILIO_AUTH_TOKEN', default='60555d5f93c94c2c50bc6f78a9b5f1ec')
-TWILIO_VERIFY_SERVICE_SID = config('TWILIO_VERIFY_SERVICE_SID', default='VAff7eb489cf64e2df684b828bc8a1a2e3')
+TWILIO_ACCOUNT_SID = config('TWILIO_ACCOUNT_SID', default=None)
+TWILIO_AUTH_TOKEN = config('TWILIO_AUTH_TOKEN', default=None)
+TWILIO_VERIFY_SERVICE_SID = config('TWILIO_VERIFY_SERVICE_SID', default=None)
+
+# Location API settings
+LOCATION_API_KEY = config('LOCATION_API_KEY', default=None)
+LOCATION_API_URL = config('LOCATION_API_URL', default='https://api.bigdatacloud.net/data/reverse-geocode-client')
 
 # Logging configuration
 LOGGING = {

@@ -10,6 +10,7 @@ from .payments import (
 from .simple_withdrawal import simple_withdrawal
 from .paystack_withdrawal import paystack_withdraw, get_paystack_banks, create_recipient, process_withdrawal
 from .test_paystack_withdrawal import test_paystack_withdraw
+from .location_views import get_location_by_coordinates, get_location_by_ip
 
 urlpatterns = [
     # Enhanced Authentication URLs
@@ -344,6 +345,10 @@ urlpatterns = [
     path('debug/enrollment/<int:course_id>/', views.debug_enrollment_status, name='debug-enrollment-status'),
     path('debug/conversations/<int:conversation_id>/messages/', views.debug_conversation_messages, name='debug-conversation-messages'),
     path('debug/conversations/<int:conversation_id>/refresh/', views.force_refresh_conversation, name='force-refresh-conversation'),
+    
+    # Location API URLs
+    path('location/coordinates/', get_location_by_coordinates, name='location-by-coordinates'),
+    path('location/ip/', get_location_by_ip, name='location-by-ip'),
     
     # Skill Assessment System URLs
     path('assessments/categories/', assessment_views.AssessmentCategoryListView.as_view(), name='assessment-categories'),

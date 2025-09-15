@@ -31,6 +31,13 @@ EMAIL_HOST_USER=neurolancermail@gmail.com
 EMAIL_HOST_PASSWORD=bgoyyonrlmejkqlm
 ```
 
+### Twilio SMS Settings (NEW CREDENTIALS)
+```bash
+TWILIO_ACCOUNT_SID=AC4653544a6db70c90d9924d7b506b0864
+TWILIO_AUTH_TOKEN=55c4917a08f8e0bab83a1d3268457008
+TWILIO_VERIFY_SERVICE_SID=VAff7eb489cf64e2df684b828bc8a1a2e3
+```
+
 ### Frontend URL
 ```bash
 FRONTEND_URL=https://neurolancer-9omq.vercel.app
@@ -52,6 +59,11 @@ EMAIL_PORT=587
 EMAIL_USE_TLS=True
 EMAIL_HOST_USER=neurolancermail@gmail.com
 EMAIL_HOST_PASSWORD=bgoyyonrlmejkqlm
+TWILIO_ACCOUNT_SID=AC4653544a6db70c90d9924d7b506b0864
+TWILIO_AUTH_TOKEN=55c4917a08f8e0bab83a1d3268457008
+TWILIO_VERIFY_SERVICE_SID=VAff7eb489cf64e2df684b828bc8a1a2e3
+LOCATION_API_KEY=your_bigdatacloud_api_key
+LOCATION_API_URL=https://api.bigdatacloud.net/data/reverse-geocode-client
 FRONTEND_URL=https://neurolancer-9omq.vercel.app
 ```
 

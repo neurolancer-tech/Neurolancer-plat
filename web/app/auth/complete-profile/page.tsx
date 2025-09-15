@@ -8,6 +8,8 @@ import { getProfile, updateProfile } from '@/lib/auth';
 import { completeProfile } from '@/lib/profile';
 import api from '@/lib/api';
 import Navigation from '@/components/Navigation';
+import LocationSelector from '@/components/LocationSelector';
+import { LocationData } from '@/lib/location';
 import toast from 'react-hot-toast';
 
 const countries = [
@@ -445,40 +447,33 @@ export default function CompleteProfilePage() {
                 Location Information
               </h3>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {formData.country === 'US' && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      State
-                    </label>
-                    <select
-                      value={formData.state}
-                      onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:text-white"
-                      required
-                    >
-                      <option value="">Select State</option>
-                      {usStates.map(state => (
-                        <option key={state.code} value={state.code}>
-                          {state.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    City
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.city}
-                    onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:text-white"
-                    required
-                  />
-                </div>
+              <LocationSelector 
+                onLocationChange={(location: LocationData) => {
+                  if (location.success) {
+                    setFormData(prev => ({
+                      ...prev,
+                      country: location.country || '',
+                      state: location.state || '',
+                      city: location.city || ''
+                    }));
+                  }
+                }}
+                showAutoDetect={true}
+                className="mb-4"
+              />
+              
+              {/* Manual City Input */}
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  City (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={formData.city}
+                  onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:text-white"
+                  placeholder="Enter your city"
+                />
               </div>
             </div>
 
