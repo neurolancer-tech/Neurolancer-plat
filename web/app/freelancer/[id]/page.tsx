@@ -390,24 +390,24 @@ export default function FreelancerDetailsPage() {
                 </div>
 
                 {/* Education */}
-                {(professionalProfile?.education || freelancer.education) && (
+                {freelancer.education && (
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Education</h3>
                     <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
                       <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line">
-                        {professionalProfile?.education || freelancer.education}
+                        {freelancer.education}
                       </p>
                     </div>
                   </div>
                 )}
 
                 {/* Certifications */}
-                {(professionalProfile?.certifications || freelancer.certifications) && (
+                {freelancer.certifications && (
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Certifications</h3>
                     <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
                       <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line">
-                        {professionalProfile?.certifications || freelancer.certifications}
+                        {freelancer.certifications}
                       </p>
                     </div>
                   </div>
