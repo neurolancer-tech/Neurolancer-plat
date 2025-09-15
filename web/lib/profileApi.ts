@@ -52,12 +52,38 @@ export const profileApi = {
   },
 
   async createFreelancerProfile(data: Partial<FreelancerProfile>): Promise<FreelancerProfile> {
-    const response = await api.post('/profiles/freelancer/', data);
+    // Clean the data to only include valid fields
+    const cleanData = {
+      title: data.title || '',
+      bio: data.bio || '',
+      hourly_rate: data.hourly_rate || 0,
+      skills: data.skills || '',
+      experience_years: data.experience_years || 0,
+      portfolio_url: data.portfolio_url || '',
+      github_url: data.github_url || '',
+      linkedin_url: data.linkedin_url || '',
+      availability: data.availability || 'freelance'
+    };
+    
+    const response = await api.post('/profiles/freelancer/', cleanData);
     return response.data.profile || response.data;
   },
 
   async updateFreelancerProfile(data: Partial<FreelancerProfile>): Promise<FreelancerProfile> {
-    const response = await api.put('/profiles/freelancer/', data);
+    // Clean the data to only include valid fields
+    const cleanData = {
+      title: data.title || '',
+      bio: data.bio || '',
+      hourly_rate: data.hourly_rate || 0,
+      skills: data.skills || '',
+      experience_years: data.experience_years || 0,
+      portfolio_url: data.portfolio_url || '',
+      github_url: data.github_url || '',
+      linkedin_url: data.linkedin_url || '',
+      availability: data.availability || 'freelance'
+    };
+    
+    const response = await api.put('/profiles/freelancer/', cleanData);
     return response.data.profile || response.data;
   },
 

@@ -147,10 +147,10 @@ export default function FreelancersPage() {
 
   const filteredFreelancers = useMemo(() => {
     return freelancers.filter(freelancer => {
-      const matchesSearch = freelancer.user.first_name.toLowerCase().includes(filters.search.toLowerCase()) ||
-                           freelancer.user.last_name.toLowerCase().includes(filters.search.toLowerCase()) ||
-                           freelancer.bio.toLowerCase().includes(filters.search.toLowerCase());
-      const matchesSkills = !filters.skills || freelancer.skills.toLowerCase().includes(filters.skills.toLowerCase());
+      const matchesSearch = (freelancer.user.first_name || '').toLowerCase().includes(filters.search.toLowerCase()) ||
+                           (freelancer.user.last_name || '').toLowerCase().includes(filters.search.toLowerCase()) ||
+                           (freelancer.bio || '').toLowerCase().includes(filters.search.toLowerCase());
+      const matchesSkills = !filters.skills || (freelancer.skills || '').toLowerCase().includes(filters.skills.toLowerCase());
       const matchesMinRate = !filters.minRate || ((freelancer.hourly_rate || 0) >= parseFloat(filters.minRate));
       const matchesMaxRate = !filters.maxRate || ((freelancer.hourly_rate || 0) <= parseFloat(filters.maxRate));
       const matchesRating = !filters.rating || (freelancer.rating || 0) >= parseFloat(filters.rating);
