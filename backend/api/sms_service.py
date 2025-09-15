@@ -21,18 +21,19 @@ class SMSService:
             dict: Response with success status and verification code
         """
         try:
-            # Generate 6-digit verification code
-            verification_code = ''.join(random.choices(string.digits, k=6))
-            
-            # Try to use Twilio Verify if credentials are available
+            # Get Twilio credentials from settings
             twilio_sid = getattr(settings, 'TWILIO_ACCOUNT_SID', None)
             twilio_token = getattr(settings, 'TWILIO_AUTH_TOKEN', None)
             
-            if twilio_sid and twilio_token:
-                return cls._send_twilio_sms(phone_number, verification_code, twilio_sid, twilio_token, None)
+            logger.info(f"Twilio SID configured: {bool(twilio_sid)}")
+            logger.info(f"Twilio Token configured: {bool(twilio_token)}")
+            
+            if twilio_sid and twilio_token and twilio_sid != 'your_account_sid' and twilio_token != 'your_auth_token':
+                return cls._send_twilio_sms(phone_number, twilio_sid, twilio_token)
             else:
                 # Fallback to mock for development
-                logger.warning("Twilio credentials not configured, using mock SMS")
+                logger.warning("Twilio credentials not properly configured, using mock SMS")
+                verification_code = ''.join(random.choices(string.digits, k=6))
                 return cls._send_mock_sms(phone_number, verification_code)
                 
         except Exception as e:
@@ -44,26 +45,29 @@ class SMSService:
             }
     
     @classmethod
-    def _send_twilio_sms(cls, phone_number: str, code: str, sid: str, token: str, from_phone: str) -> dict:
+    def _send_twilio_sms(cls, phone_number: str, sid: str, token: str) -> dict:
         """Send SMS using Twilio Verify API"""
         try:
             from twilio.rest import Client
+            from twilio.base.exceptions import TwilioRestException
             
             client = Client(sid, token)
             
             # Use Twilio Verify service
             verify_service_sid = getattr(settings, 'TWILIO_VERIFY_SERVICE_SID', 'VAff7eb489cf64e2df684b828bc8a1a2e3')
             
+            logger.info(f"Attempting to send SMS to {phone_number} using Verify Service {verify_service_sid}")
+            
             verification = client.verify.v2.services(verify_service_sid).verifications.create(
                 to=phone_number,
                 channel='sms'
             )
             
-            logger.info(f"Twilio Verify SMS sent to {phone_number}, Status: {verification.status}")
+            logger.info(f"Twilio Verify SMS sent to {phone_number}, Status: {verification.status}, SID: {verification.sid}")
             
             return {
                 'success': True,
-                'message': 'SMS sent successfully',
+                'message': 'SMS sent successfully via Twilio',
                 'session_info': f'twilio_verify_{phone_number}_{verification.sid}',
                 'provider': 'twilio_verify',
                 'verification_sid': verification.sid
@@ -71,10 +75,16 @@ class SMSService:
             
         except ImportError:
             logger.error("Twilio library not installed. Install with: pip install twilio")
-            return cls._send_mock_sms(phone_number, code)
+            verification_code = ''.join(random.choices(string.digits, k=6))
+            return cls._send_mock_sms(phone_number, verification_code)
+        except TwilioRestException as e:
+            logger.error(f"Twilio API error: {e.msg} (Code: {e.code})")
+            verification_code = ''.join(random.choices(string.digits, k=6))
+            return cls._send_mock_sms(phone_number, verification_code)
         except Exception as e:
             logger.error(f"Twilio Verify failed: {e}")
-            return cls._send_mock_sms(phone_number, code)
+            verification_code = ''.join(random.choices(string.digits, k=6))
+            return cls._send_mock_sms(phone_number, verification_code)
     
     @classmethod
     def _send_mock_sms(cls, phone_number: str, code: str) -> dict:
