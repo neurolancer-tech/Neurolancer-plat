@@ -394,8 +394,8 @@ export default function FreelancersPage() {
                           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                             {freelancer.user.first_name || freelancer.user.username} {freelancer.user.last_name}
                           </h3>
-                          {freelancer.title && (
-                            <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">{freelancer.title}</p>
+                          {(freelancer as any).title && (
+                            <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">{(freelancer as any).title}</p>
                           )}
                           <p className="text-sm text-gray-600 dark:text-gray-400">Freelancer</p>
                         </div>
