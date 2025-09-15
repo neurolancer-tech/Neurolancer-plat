@@ -28,6 +28,14 @@ export default function LocationSelector({
     }
   }, [showAutoDetect]);
 
+  // Get country flag emoji
+  const getCountryFlag = (countryCode: string) => {
+    if (!countryCode || countryCode.length !== 2) return '🌍';
+    return String.fromCodePoint(
+      ...countryCode.toUpperCase().split('').map(char => 0x1F1E6 + char.charCodeAt(0) - 65)
+    );
+  };
+
   const handleAutoDetect = async () => {
     setIsDetecting(true);
     try {
@@ -71,6 +79,7 @@ export default function LocationSelector({
                   <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
                 </svg>
                 <span className="text-sm font-medium text-blue-900">
+                  {location.country_code && getCountryFlag(location.country_code)} 
                   {location.city && `${location.city}, `}
                   {location.state && `${location.state}, `}
                   {location.country}
@@ -115,16 +124,23 @@ export default function LocationSelector({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Country
             </label>
-            <input
-              type="text"
-              value={manualCountry}
-              onChange={(e) => {
-                setManualCountry(e.target.value);
-                handleManualChange();
-              }}
-              placeholder="Enter country"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
+            <div className="relative">
+              <input
+                type="text"
+                value={manualCountry}
+                onChange={(e) => {
+                  setManualCountry(e.target.value);
+                  handleManualChange();
+                }}
+                placeholder="Enter country"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              {location?.country_code && (
+                <span className="absolute right-3 top-2 text-lg">
+                  {getCountryFlag(location.country_code)}
+                </span>
+              )}
+            </div>
           </div>
           
           <div>

@@ -244,7 +244,35 @@ export default function CompleteProfilePage() {
     }
     setProfile(userProfile);
     setLoading(false);
+    
+    // Auto-detect phone country code
+    autoDetectPhoneCountry();
   }, [router]);
+
+  // Auto-detect phone country based on location
+  const autoDetectPhoneCountry = async () => {
+    try {
+      const { LocationService } = await import('@/lib/location');
+      const result = await LocationService.autoDetectLocation();
+      if (result.success && result.country_code) {
+        const detectedCountry = countries.find(c => c.code === result.country_code);
+        if (detectedCountry) {
+          setSelectedCountry(detectedCountry);
+          setFormData(prev => ({ ...prev, country: detectedCountry.code }));
+        }
+      }
+    } catch (error) {
+      console.log('Phone country auto-detection failed:', error);
+    }
+  };
+
+  // Get country flag emoji
+  const getCountryFlag = (countryCode: string) => {
+    if (!countryCode || countryCode.length !== 2) return '🌍';
+    return String.fromCodePoint(
+      ...countryCode.toUpperCase().split('').map(char => 0x1F1E6 + char.charCodeAt(0) - 65)
+    );
+  };
 
   const handleCountryChange = (countryCode: string) => {
     const country = countries.find(c => c.code === countryCode);
@@ -368,7 +396,7 @@ export default function CompleteProfilePage() {
                     <option value="">Select Country</option>
                     {countries.map(country => (
                       <option key={country.code} value={country.code}>
-                        {country.name} ({country.phone})
+                        {getCountryFlag(country.code)} {country.name} ({country.phone})
                       </option>
                     ))}
                   </select>
@@ -380,7 +408,7 @@ export default function CompleteProfilePage() {
                   </label>
                   <div className="flex">
                     <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-600 text-gray-500 dark:text-gray-400 text-sm">
-                      {selectedCountry?.phone || '+1'}
+                      {selectedCountry && getCountryFlag(selectedCountry.code)} {selectedCountry?.phone || '+1'}
                     </span>
                     <input
                       type="tel"
@@ -456,6 +484,15 @@ export default function CompleteProfilePage() {
                       state: location.state || '',
                       city: location.city || ''
                     }));
+                    
+                    // Also update phone country if detected
+                    if (location.country_code) {
+                      const detectedCountry = countries.find(c => c.code === location.country_code);
+                      if (detectedCountry && !selectedCountry) {
+                        setSelectedCountry(detectedCountry);
+                        setFormData(prev => ({ ...prev, country: detectedCountry.code }));
+                      }
+                    }
                   }
                 }}
                 showAutoDetect={true}
