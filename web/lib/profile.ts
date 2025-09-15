@@ -1,7 +1,7 @@
 import api from './api';
 
 export interface ProfileData {
-  phone?: string;
+  phone_number?: string;
   country?: string;
   state?: string;
   city?: string;
@@ -28,7 +28,7 @@ export const completeProfile = async (profileData: ProfileData) => {
 export const sendPhoneVerification = async (phoneNumber: string) => {
   try {
     const response = await api.post('/auth/send-phone-verification/', {
-      phone: phoneNumber
+      phone_number: phoneNumber
     });
     return response.data;
   } catch (error) {
@@ -67,7 +67,7 @@ export const updateUserProfile = async (profileData: Partial<ProfileData>) => {
 
 export const validateProfileCompletion = (profile: any): boolean => {
   const requiredFields = [
-    'phone',
+    'phone_number',
     'country',
     'city',
     'experience_level'
@@ -78,7 +78,7 @@ export const validateProfileCompletion = (profile: any): boolean => {
 
 export const getProfileCompletionPercentage = (profile: any): number => {
   const allFields = [
-    'phone',
+    'phone_number',
     'country',
     'state',
     'city',

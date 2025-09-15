@@ -113,7 +113,7 @@ export default function CompleteProfilePage() {
       // Send profile data to backend API
       const profileData = {
         ...formData,
-        phone: `${selectedCountry?.phone}${formData.phone}`,
+        phone_number: `${selectedCountry?.phone}${formData.phone_number}`,
         phone_verified: phoneVerification.step === 'verified',
         experience_level: formData.experience_level as 'entry' | 'intermediate' | 'expert'
       };
@@ -200,8 +200,8 @@ export default function CompleteProfilePage() {
                     </span>
                     <input
                       type="tel"
-                      value={formData.phone}
-                      onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                      value={formData.phone_number}
+                      onChange={(e) => setFormData(prev => ({ ...prev, phone_number: e.target.value }))}
                       className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-r-md focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:text-white"
                       placeholder="1234567890"
                       required
@@ -216,7 +216,7 @@ export default function CompleteProfilePage() {
                   type="button"
                   onClick={sendVerificationCode}
                   className="mt-4 btn-secondary"
-                  disabled={!formData.phone || !selectedCountry}
+                  disabled={!formData.phone_number || !selectedCountry}
                 >
                   Send Verification Code
                 </button>
