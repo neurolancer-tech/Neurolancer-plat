@@ -17,8 +17,10 @@ from django.utils.html import strip_tags
 from django.conf import settings
 import uuid
 import secrets
+import random
+import string
 from .models import (
-    UserProfile, ProfessionalDocument, Category, Gig, Order, OrderDeliverable, Project, Task, TaskProposal,
+    UserProfile, ProfessionalDocument, Category, Subcategory, Gig, Order, OrderDeliverable, Project, Task, TaskProposal,
     Review, Message, Portfolio, Withdrawal, HelpRequest, Conversation, Team, GroupJoinRequest,
     Job, Proposal, Notification, UserVerification, SavedSearch, OnboardingResponse,
     Course, Lesson, Enrollment, SkillAssessment, AssessmentQuestion, AssessmentAttempt, SkillBadge, CourseReview,
@@ -28,7 +30,7 @@ from .models import (
 )
 from .serializers import (
     UserSerializer, UserProfileSerializer, ProfessionalDocumentSerializer, UserRegistrationSerializer, 
-    UserLoginSerializer, CategorySerializer, GigSerializer, GigListSerializer,
+    UserLoginSerializer, CategorySerializer, SubcategorySerializer, CategoryWithSubcategoriesSerializer, GigSerializer, GigListSerializer,
     OrderSerializer, OrderDeliverableSerializer, ProjectSerializer, ProjectDetailSerializer, TaskSerializer, TaskProposalSerializer,
     ReviewSerializer, MessageSerializer, PortfolioSerializer, WithdrawalSerializer, HelpRequestSerializer, 
     ConversationSerializer, TeamSerializer, GroupJoinRequestSerializer, GroupCreateSerializer,
@@ -41,7 +43,7 @@ from .serializers import (
     NotificationPreferenceSerializer, NotificationTemplateSerializer, NotificationWithPreferencesSerializer,
     ErrorLogSerializer, UserAnalyticsSerializer, PlatformAnalyticsSerializer, AnalyticsEventSerializer,
     ThirdPartyIntegrationSerializer, IntegrationSyncSerializer, AdminUserSerializer,
-    AIConversationSerializer, AIMessageSerializer
+    AIConversationSerializer, AIMessageSerializer, EnhancedUserSerializer, ProfileCompletionSerializer
 )
 from rest_framework import serializers
 
@@ -116,11 +118,11 @@ The Neurolancer Team
         import traceback
         traceback.print_exc()
 
-# Authentication Views
+# Enhanced Authentication Views
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 def register(request):
-    serializer = UserRegistrationSerializer(data=request.data)
+    serializer = UserRegistrationSerializer(data=request.data, context={'request': request})
     if serializer.is_valid():
         user = serializer.save()
         
@@ -137,12 +139,164 @@ def register(request):
         
         token, created = Token.objects.get_or_create(user=user)
         return Response({
-            'user': UserSerializer(user).data,
+            'user': EnhancedUserSerializer(user).data,
             'token': token.key,
-            'profile': UserProfileSerializer(user.userprofile).data,
-            'message': 'Registration successful. Please check your email to verify your account.'
+            'requires_completion': not profile.profile_completed,
+            'message': 'Registration successful. Please complete your profile.'
         }, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def complete_profile(request):
+    """Complete user profile with additional information"""
+    try:
+        profile = request.user.userprofile
+    except UserProfile.DoesNotExist:
+        profile = UserProfile.objects.create(user=request.user)
+    
+    serializer = ProfileCompletionSerializer(profile, data=request.data, partial=True)
+    
+    if serializer.is_valid():
+        serializer.save()
+        
+        return Response({
+            'message': 'Profile completed successfully',
+            'user': EnhancedUserSerializer(request.user).data
+        })
+    
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def send_phone_verification(request):
+    """Send phone verification code using Firebase"""
+    phone_number = request.data.get('phone_number')
+    
+    if not phone_number:
+        return Response({'error': 'Phone number required'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Validate phone number format (basic validation)
+    import re
+    phone_pattern = re.compile(r'^\+?[1-9]\d{1,14}$')
+    clean_phone = re.sub(r'[^\d+]', '', phone_number)
+    
+    if not phone_pattern.match(clean_phone):
+        return Response({
+            'error': 'Invalid phone number format. Please use international format (e.g., +1234567890)'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Ensure phone number starts with +
+    if not clean_phone.startswith('+'):
+        clean_phone = '+' + clean_phone
+    
+    try:
+        # Get or create user profile
+        profile, created = UserProfile.objects.get_or_create(
+            user=request.user,
+            defaults={'user_type': 'client'}
+        )
+        
+        # Use Firebase service to send verification code
+        from .firebase_service import FirebaseService
+        
+        result = FirebaseService.send_verification_code(clean_phone)
+        
+        if result['success']:
+            # Store verification info in user profile
+            profile.phone_number = clean_phone
+            profile.phone_verification_code = result.get('verification_code')
+            profile.phone_verification_expires = timezone.now() + timezone.timedelta(minutes=10)
+            profile.firebase_session_info = result.get('session_info')
+            profile.save()
+            
+            return Response({
+                'success': True,
+                'message': result['message'],
+                'session_info': result.get('session_info'),
+                'phone_number': clean_phone,
+                # Include verification code for testing (remove in production)
+                'verification_code': result.get('verification_code') if settings.DEBUG else None
+            })
+        else:
+            return Response({
+                'error': result.get('message', 'Failed to send verification code'),
+                'details': result.get('error')
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+    except Exception as e:
+        return Response({
+            'error': 'Internal server error',
+            'details': str(e) if settings.DEBUG else 'Please try again later'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def verify_phone_number(request):
+    """Verify phone number with Firebase verification code"""
+    code = request.data.get('code')
+    session_info = request.data.get('session_info')
+    
+    if not code:
+        return Response({'error': 'Verification code required'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        profile = request.user.userprofile
+    except UserProfile.DoesNotExist:
+        return Response({'error': 'Profile not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+    # Check if verification has expired
+    if (profile.phone_verification_expires and 
+        profile.phone_verification_expires < timezone.now()):
+        return Response({
+            'error': 'Verification code has expired. Please request a new code.'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        # Use Firebase service to verify the code
+        from .firebase_service import FirebaseService
+        
+        # Use session_info from request or fallback to stored session
+        verification_session = session_info or profile.firebase_session_info
+        
+        if not verification_session:
+            return Response({
+                'error': 'No verification session found. Please request a new code.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        result = FirebaseService.verify_phone_number(verification_session, code)
+        
+        if result['success'] and result['verified']:
+            # Mark phone as verified
+            profile.phone_verified = True
+            profile.phone_verification_code = None
+            profile.phone_verification_expires = None
+            profile.firebase_session_info = None
+            profile.save()
+            
+            return Response({
+                'success': True,
+                'message': 'Phone number verified successfully',
+                'phone_number': profile.phone_number,
+                'verified': True
+            })
+        else:
+            return Response({
+                'error': result.get('message', 'Invalid verification code'),
+                'verified': False
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
+    except Exception as e:
+        return Response({
+            'error': 'Verification failed',
+            'details': str(e) if settings.DEBUG else 'Please try again'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def get_user_profile(request):
+    """Get enhanced user profile"""
+    return Response(EnhancedUserSerializer(request.user).data)
 
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
@@ -151,6 +305,15 @@ def login_view(request):
     password = request.data.get('password')
     
     print(f"Login attempt for username: {username}")
+    print(f"Request data: {request.data}")
+    
+    # Basic validation
+    if not username or not password:
+        return Response({
+            'error': 'Username and password are required',
+            'username_provided': bool(username),
+            'password_provided': bool(password)
+        }, status=status.HTTP_400_BAD_REQUEST)
     
     serializer = UserLoginSerializer(data=request.data)
     if serializer.is_valid():
@@ -193,88 +356,110 @@ def login_view(request):
                 print(f"Direct password check result: {password_correct}")
         except User.DoesNotExist:
             print(f"User {username} does not exist")
+            # Try by email
+            try:
+                user = User.objects.get(email=username)
+                print(f"User found by email: {user.username}")
+            except User.DoesNotExist:
+                print(f"User {username} not found by username or email")
         
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return Response({
+        'error': 'Invalid credentials',
+        'details': serializer.errors
+    }, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 def google_auth(request):
-    """Handle Google OAuth authentication"""
-    uid = request.data.get('uid')
-    email = request.data.get('email')
-    first_name = request.data.get('first_name', '')
-    last_name = request.data.get('last_name', '')
-    photo_url = request.data.get('photo_url', '')
-    
-    if not uid or not email:
-        return Response({'error': 'UID and email are required'}, status=status.HTTP_400_BAD_REQUEST)
-    
-    # Check if user exists with this email
+    """Enhanced Google OAuth authentication"""
     try:
-        user = User.objects.get(email=email)
-        is_new_user = False
-    except User.DoesNotExist:
-        # Create new user
-        username = email.split('@')[0]
-        # Ensure unique username
-        counter = 1
-        original_username = username
-        while User.objects.filter(username=username).exists():
-            username = f"{original_username}{counter}"
-            counter += 1
+        print(f"Google auth request received: {request.data}")
         
-        user = User.objects.create_user(
-            username=username,
-            email=email,
-            first_name=first_name,
-            last_name=last_name
-        )
-        is_new_user = True
-    
-    # Get or create profile
-    profile, created = UserProfile.objects.get_or_create(
-        user=user,
-        defaults={
-            'user_type': 'client',
-            'bio': '',
-            'avatar_type': 'google' if photo_url else 'default',
-            'google_photo_url': photo_url or '',
-            'selected_avatar': 'user' if not photo_url else '',
-            'email_verified': True  # Google accounts are pre-verified
-        }
-    )
-    
-    # For new users, ensure they don't have a user_type set yet (to trigger selection)
-    if is_new_user and created:
-        profile.user_type = ''  # Clear user_type to force selection
-        profile.email_verified = True  # Google accounts are pre-verified
-        if photo_url:
-            profile.google_photo_url = photo_url
-            profile.avatar_type = 'google'
+        uid = request.data.get('uid')
+        email = request.data.get('email')
+        first_name = request.data.get('first_name', '')
+        last_name = request.data.get('last_name', '')
+        photo_url = request.data.get('photo_url', '')
+        
+        print(f"Google auth data: uid={uid}, email={email}, name={first_name} {last_name}")
+        
+        if not uid or not email:
+            print("Google auth error: Missing UID or email")
+            return Response({'error': 'UID and email are required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Get client IP for registration tracking
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            registration_ip = x_forwarded_for.split(',')[0]
         else:
-            profile.avatar_type = 'avatar'
-            profile.selected_avatar = 'user'  # Default neutral avatar
-        profile.save()
-    else:
-        # For existing users, ensure they have email_verified set and update photo if needed
-        profile.email_verified = True  # Google accounts are pre-verified
-        if photo_url and not profile.google_photo_url:
-            profile.google_photo_url = photo_url
-            if profile.avatar_type == 'default':
-                profile.avatar_type = 'google'
-        profile.save()
-    
-
-    
-    # Create or get token
-    token, created = Token.objects.get_or_create(user=user)
-    
-    return Response({
-        'user': UserSerializer(user).data,
-        'token': token.key,
-        'profile': UserProfileSerializer(profile).data,
-        'is_new_user': is_new_user
-    })
+            registration_ip = request.META.get('REMOTE_ADDR')
+        
+        # Check if user exists with this email
+        try:
+            user = User.objects.get(email=email)
+            is_new_user = False
+        except User.DoesNotExist:
+            # Create new user
+            username = email.split('@')[0]
+            # Ensure unique username
+            counter = 1
+            original_username = username
+            while User.objects.filter(username=username).exists():
+                username = f"{original_username}{counter}"
+                counter += 1
+            
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                first_name=first_name,
+                last_name=last_name
+            )
+            is_new_user = True
+        
+        # Get or create profile with enhanced fields
+        profile, created = UserProfile.objects.get_or_create(
+            user=user,
+            defaults={
+                'user_type': 'client',
+                'bio': '',
+                'avatar_type': 'google' if photo_url else 'avatar',
+                'google_photo_url': photo_url or '',
+                'selected_avatar': 'user' if not photo_url else '',
+                'email_verified': True,  # Google accounts are pre-verified
+                'google_id': uid,
+                'registration_ip': registration_ip
+            }
+        )
+        
+        # Update existing profile with Google data
+        if not created:
+            profile.email_verified = True
+            profile.google_id = uid
+            if photo_url and not profile.google_photo_url:
+                profile.google_photo_url = photo_url
+                if profile.avatar_type not in ['upload', 'google']:
+                    profile.avatar_type = 'google'
+            profile.save()
+        
+        # Create or get token
+        token, created = Token.objects.get_or_create(user=user)
+        
+        print(f"Google auth successful for user {user.username}")
+        
+        return Response({
+            'user': EnhancedUserSerializer(user).data,
+            'token': token.key,
+            'is_new_user': is_new_user,
+            'requires_completion': not profile.profile_completed
+        })
+        
+    except Exception as e:
+        print(f"Google auth error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return Response({
+            'error': f'Authentication failed: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
@@ -360,6 +545,21 @@ def check_email_verification(request):
     return Response({
         'email_verified': profile.email_verified,
         'email': request.user.email
+    })
+
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
+def check_email_exists(request):
+    """Check if email exists in the system"""
+    email = request.GET.get('email')
+    
+    if not email:
+        return Response({'error': 'Email parameter is required'}, status=400)
+    
+    exists = User.objects.filter(email=email).exists()
+    return Response({
+        'exists': exists,
+        'email': email
     })
 
 @api_view(['POST'])
@@ -576,11 +776,118 @@ def test_password_set(request):
             'password_set': True,
             'immediate_auth_test': bool(auth_test),
             'immediate_direct_test': direct_test,
-            'message': 'Password updated and tested'
+            'message': 'Password updated and tested',
+            'username': user.username,
+            'email': user.email
         })
         
     except User.DoesNotExist:
         return Response({'error': 'User not found'}, status=404)
+
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
+def quick_login_test(request):
+    """Quick login test with detailed debugging"""
+    username = request.data.get('username', '')
+    password = request.data.get('password', '')
+    
+    result = {
+        'input': {
+            'username': username,
+            'password_length': len(password),
+            'username_type': 'email' if '@' in username else 'username'
+        },
+        'validation': {
+            'username_provided': bool(username),
+            'password_provided': bool(password)
+        }
+    }
+    
+    if not username or not password:
+        result['error'] = 'Missing credentials'
+        return Response(result, status=400)
+    
+    # Try to find user
+    user = None
+    try:
+        if '@' in username:
+            user = User.objects.get(email=username)
+            result['user_found'] = 'by_email'
+        else:
+            user = User.objects.get(username=username)
+            result['user_found'] = 'by_username'
+    except User.DoesNotExist:
+        result['error'] = 'User not found'
+        return Response(result, status=400)
+    
+    # Test authentication
+    result['user_info'] = {
+        'username': user.username,
+        'email': user.email,
+        'is_active': user.is_active,
+        'has_usable_password': user.has_usable_password()
+    }
+    
+    # Test password
+    auth_result = authenticate(username=user.username, password=password)
+    direct_check = user.check_password(password)
+    
+    result['auth_tests'] = {
+        'authenticate_success': bool(auth_result),
+        'direct_check_success': direct_check
+    }
+    
+    if auth_result:
+        # Create token for successful login
+        token, created = Token.objects.get_or_create(user=user)
+        result['success'] = True
+        result['token'] = token.key
+        result['user'] = UserSerializer(user).data
+    else:
+        result['error'] = 'Authentication failed'
+    
+    return Response(result)
+
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
+def test_login_endpoint(request):
+    """Test endpoint to verify login functionality"""
+    return Response({
+        'message': 'Login endpoint is working',
+        'available_endpoints': [
+            'POST /api/auth/login/ - Standard login',
+            'POST /api/auth/debug-auth/ - Debug authentication',
+            'POST /api/auth/quick-login-test/ - Quick login test'
+        ]
+    })
+
+# Subcategory API Views
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
+def get_categories_with_subcategories(request):
+    """Get all categories with their subcategories"""
+    categories = Category.objects.prefetch_related('subcategories').all()
+    serializer = CategoryWithSubcategoriesSerializer(categories, many=True, context={'request': request})
+    return Response(serializer.data)
+
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
+def get_subcategories_by_category(request, category_id):
+    """Get subcategories for a specific category"""
+    try:
+        subcategories = Subcategory.objects.filter(category_id=category_id)
+        serializer = SubcategorySerializer(subcategories, many=True, context={'request': request})
+        return Response(serializer.data)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
+def get_all_subcategories(request):
+    """Get all subcategories"""
+    subcategories = Subcategory.objects.select_related('category').all()
+    serializer = SubcategorySerializer(subcategories, many=True, context={'request': request})
+    return Response(serializer.data)
 
 # Category Views
 class CategoryListView(generics.ListCreateAPIView):
@@ -4773,6 +5080,18 @@ def integration_sync_history(request, provider):
         )
 
 @api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def get_database_tables(request):
+    """Get list of all database tables"""
+    from django.db import connection
+    
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT tablename FROM pg_tables WHERE schemaname = 'public';")
+        tables = [row[0] for row in cursor.fetchall()]
+    
+    return Response({'tables': tables})
+
+@api_view(['GET'])
 @permission_classes([permissions.AllowAny])
 def available_integrations(request):
     """Get list of available integrations"""
@@ -4942,7 +5261,7 @@ def submit_contact_form(request):
         
         # Send HTML confirmation to user
         user_html = render_to_string('emails/contact_user.html', {
-            'name': name, 'subject': subject, 'message': message, 'frontend_url': settings.FRONTEND_URL
+            'name': name, 'subject': subject, 'message': message
         })
         user_text = strip_tags(user_html)
         
@@ -5000,7 +5319,7 @@ def submit_feedback_form(request):
         # Send HTML confirmation to user
         user_html = render_to_string('emails/feedback_user.html', {
             'name': name, 'feedback_type': feedback_type.replace('_', ' ').title(),
-            'rating': rating, 'message': message, 'frontend_url': settings.FRONTEND_URL
+            'rating': rating, 'message': message
         })
         user_text = strip_tags(user_html)
         
@@ -5458,3 +5777,36 @@ def debug_conversation_messages(request, conversation_id):
         
     except Conversation.DoesNotExist:
         return Response({'error': 'Conversation not found or no access'}, status=404)
+
+# Subcategory API Views
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
+def get_subcategories_by_category(request):
+    """Get subcategories for a specific category"""
+    from .models import Subcategory
+    from .serializers import SubcategorySerializer
+    
+    category_id = request.GET.get('category')
+    if not category_id:
+        return Response({'error': 'Category parameter is required'}, status=400)
+    
+    try:
+        subcategories = Subcategory.objects.filter(category_id=category_id)
+        serializer = SubcategorySerializer(subcategories, many=True)
+        return Response(serializer.data)
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
+def get_categories_with_subcategories(request):
+    """Get all categories with their subcategories"""
+    from .models import Category
+    from .serializers import CategorySerializer
+    
+    try:
+        categories = Category.objects.prefetch_related('subcategories').all()
+        serializer = CategorySerializer(categories, many=True)
+        return Response(serializer.data)
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)

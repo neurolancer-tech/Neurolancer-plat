@@ -18,6 +18,19 @@ class UserProfile(models.Model):
         ('prefer_not_to_say', 'Prefer not to say'),
     )
     
+    EXPERIENCE_LEVELS = (
+        ('entry', 'Entry Level'),
+        ('intermediate', 'Intermediate'),
+        ('expert', 'Expert'),
+    )
+    
+    AVAILABILITY_CHOICES = (
+        ('full-time', 'Full Time'),
+        ('part-time', 'Part Time'),
+        ('contract', 'Contract'),
+        ('freelance', 'Freelance'),
+    )
+    
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     user_type = models.CharField(max_length=10, choices=USER_TYPES, default='client')
     email_verified = models.BooleanField(default=False)
@@ -33,10 +46,38 @@ class UserProfile(models.Model):
     skills = models.TextField(blank=True, help_text="Comma-separated list of skills")
     hourly_rate = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     
+    # Enhanced Authentication Fields
+    # Phone Information
+    phone_number = models.CharField(max_length=20, blank=True, null=True)
+    phone_verified = models.BooleanField(default=False)
+    phone_verification_code = models.CharField(max_length=10, blank=True, null=True)
+    phone_verification_expires = models.DateTimeField(blank=True, null=True)
+    firebase_session_info = models.CharField(max_length=200, blank=True, null=True)
+    
+    # Location Information
+    country_code = models.CharField(max_length=2, blank=True, null=True, help_text="ISO country code")
+    state = models.CharField(max_length=50, blank=True, null=True)
+    timezone = models.CharField(max_length=50, blank=True, null=True)
+    
+    # Professional Information
+    experience_level = models.CharField(max_length=20, choices=EXPERIENCE_LEVELS, default='entry')
+    availability = models.CharField(max_length=20, choices=AVAILABILITY_CHOICES, default='full-time')
+    
     # Personal Information
     gender = models.CharField(max_length=20, choices=GENDER_CHOICES, blank=True)
+    date_of_birth = models.DateField(blank=True, null=True)
     
-    # Contact Details
+    # Profile Status
+    profile_completed = models.BooleanField(default=False)
+    
+    # OAuth Information
+    google_id = models.CharField(max_length=100, blank=True, null=True)
+    
+    # Metadata
+    last_login_ip = models.GenericIPAddressField(blank=True, null=True)
+    registration_ip = models.GenericIPAddressField(blank=True, null=True)
+    
+    # Contact Details (keeping existing fields for backward compatibility)
     phone = models.CharField(max_length=20, blank=True)
     address = models.TextField(blank=True)
     city = models.CharField(max_length=100, blank=True)
@@ -118,7 +159,6 @@ class Subcategory(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='subcategories')
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
-    is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -137,6 +177,7 @@ class Gig(models.Model):
 
     freelancer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='gigs')
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='gigs')
+    subcategories = models.ManyToManyField(Subcategory, blank=True, related_name='gigs')
     title = models.CharField(max_length=200)
     description = models.TextField()
     image = models.ImageField(upload_to='gig_images/', blank=True, null=True)
@@ -559,6 +600,7 @@ class Job(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField()
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='jobs')
+    subcategories = models.ManyToManyField(Subcategory, blank=True, related_name='jobs')
     budget_min = models.DecimalField(max_digits=10, decimal_places=2)
     budget_max = models.DecimalField(max_digits=10, decimal_places=2)
     deadline = models.DateTimeField()
@@ -703,7 +745,8 @@ class OnboardingResponse(models.Model):
     availability = models.CharField(max_length=50, blank=True, null=True)
     rate_expectation = models.CharField(max_length=50, blank=True, null=True)
     
-
+    # Subcategories of interest
+    interested_subcategories = models.ManyToManyField(Subcategory, blank=True, related_name='interested_users')
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -729,6 +772,7 @@ class Course(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField()
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='courses')
+    subcategories = models.ManyToManyField(Subcategory, blank=True, related_name='courses')
     instructor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='courses_taught')
     difficulty_level = models.CharField(max_length=15, choices=DIFFICULTY_LEVELS, default='beginner')
     duration_hours = models.IntegerField(help_text="Estimated course duration in hours")
@@ -815,6 +859,7 @@ class SkillAssessment(models.Model):
     description = models.TextField()
     skill_name = models.CharField(max_length=100)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='assessments')
+    subcategories = models.ManyToManyField(Subcategory, blank=True, related_name='assessments')
     difficulty_level = models.CharField(max_length=15, choices=Course.DIFFICULTY_LEVELS, default='beginner')
     time_limit_minutes = models.IntegerField(default=60)
     passing_score = models.IntegerField(default=70, help_text="Minimum score to pass (percentage)")
@@ -1512,6 +1557,7 @@ class Assessment(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField()
     category = models.ForeignKey(AssessmentCategory, on_delete=models.CASCADE)
+    subcategories = models.ManyToManyField(Subcategory, blank=True, related_name='new_assessments')
     difficulty_level = models.CharField(max_length=20, choices=DIFFICULTY_CHOICES)
     duration_minutes = models.IntegerField()  # Test duration
     passing_score = models.IntegerField()  # Minimum score to pass (%)

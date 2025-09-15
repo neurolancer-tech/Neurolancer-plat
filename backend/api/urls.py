@@ -2,7 +2,6 @@ from django.urls import path, include
 from . import views
 from . import views_payments
 from . import assessment_views
-from . import admin_views
 from .payments import (
     initialize_payment, verify_payment, paystack_webhook,
     get_banks, release_escrow,
@@ -13,25 +12,37 @@ from .paystack_withdrawal import paystack_withdraw, get_paystack_banks, create_r
 from .test_paystack_withdrawal import test_paystack_withdraw
 
 urlpatterns = [
-    # Authentication URLs
+    # Enhanced Authentication URLs
     path('auth/register/', views.register, name='register'),
     path('auth/login/', views.login_view, name='login'),
     path('auth/logout/', views.logout_view, name='logout'),
     path('auth/google/', views.google_auth, name='google-auth'),
     path('auth/profile/', views.profile, name='profile'),
+    path('auth/complete-profile/', views.complete_profile, name='complete-profile'),
+    path('auth/send-phone-verification/', views.send_phone_verification, name='send-phone-verification'),
+    path('auth/verify-phone/', views.verify_phone_number, name='verify-phone'),
+    path('auth/get-profile/', views.get_user_profile, name='get-user-profile'),
     path('auth/verify-email/', views.verify_email, name='verify-email'),
     path('auth/resend-verification/', views.resend_verification_email, name='resend-verification'),
     path('auth/check-verification/', views.check_email_verification, name='check-verification'),
+    path('auth/check-email/', views.check_email_exists, name='check-email'),
     path('auth/forgot-password/', views.forgot_password, name='forgot-password'),
     path('auth/reset-password/', views.reset_password, name='reset-password'),
     path('auth/validate-reset-token/', views.validate_reset_token, name='validate-reset-token'),
     path('auth/debug-auth/', views.debug_auth, name='debug-auth'),
     path('auth/list-users/', views.list_users, name='list-users'),
     path('auth/test-password-set/', views.test_password_set, name='test-password-set'),
+    path('auth/quick-login-test/', views.quick_login_test, name='quick-login-test'),
+    path('auth/test-endpoint/', views.test_login_endpoint, name='test-login-endpoint'),
     
     # Category URLs
     path('categories/', views.CategoryListView.as_view(), name='category-list'),
     path('categories/<int:pk>/', views.CategoryUpdateView.as_view(), name='category-update'),
+    
+    # Subcategory URLs
+    path('categories/with-subcategories/', views.get_categories_with_subcategories, name='categories-with-subcategories'),
+    path('categories/<int:category_id>/subcategories/', views.get_subcategories_by_category, name='subcategories-by-category'),
+    path('subcategories/', views.get_all_subcategories, name='all-subcategories'),
     
     # Gig URLs
     path('gigs/', views.GigListView.as_view(), name='gig-list'),
@@ -252,11 +263,8 @@ urlpatterns = [
     path('admin/gigs/<int:pk>/', views.AdminGigUpdateView.as_view(), name='admin-gig-update'),
     path('admin/orders/', views.AdminOrderListView.as_view(), name='admin-order-list'),
     path('admin/projects/', views.AdminProjectListView.as_view(), name='admin-project-list'),
-    path('admin/transactions/', admin_views.admin_transactions, name='admin-transactions'),
-    path('admin/transactions/<int:transaction_id>/', admin_views.update_transaction_status, name='admin-update-transaction'),
+    path('admin/transactions/', views.AdminTransactionListView.as_view(), name='admin-transaction-list'),
     path('admin/activity/', views.AdminActivityListView.as_view(), name='admin-activity-list'),
-    path('admin/transactions/', admin_views.admin_transactions, name='admin-transactions'),
-    path('admin/transactions/<int:transaction_id>/', admin_views.update_transaction_status, name='admin-update-transaction'),
     
     # Dispute Management URLs
     path('disputes/', views.DisputeListView.as_view(), name='dispute-list'),
@@ -329,6 +337,9 @@ urlpatterns = [
     path('ai/conversation/get/', views.get_ai_conversation, name='get-ai-conversation'),
     path('ai/conversation/clear/', views.clear_ai_conversation, name='clear-ai-conversation'),
     
+    # Database Debug URLs
+    path('debug/tables/', views.get_database_tables, name='get-database-tables'),
+    
     # Debug URLs
     path('debug/enrollment/<int:course_id>/', views.debug_enrollment_status, name='debug-enrollment-status'),
     path('debug/conversations/<int:conversation_id>/messages/', views.debug_conversation_messages, name='debug-conversation-messages'),
@@ -363,5 +374,7 @@ urlpatterns = [
     path('assessments/questions/', assessment_views.create_question, name='create-question'),
     path('assessments/question-options/', assessment_views.create_question_option, name='create-question-option'),
     path('assessments/questions/<int:question_id>/', assessment_views.delete_question, name='delete-question'),
+    
+
 ]
 

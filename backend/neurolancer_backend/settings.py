@@ -16,6 +16,7 @@ import dj_database_url
 from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
+# Trigger deployment refresh
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
@@ -53,6 +54,7 @@ if not DEBUG:
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
+    'api.middleware.SecurityHeadersMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -164,25 +166,53 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
-    "neurolancer.vercel.app",
-    "neurolancer-9ojlou01q-kbrian1237s-projects.vercel.app",
-    "neurolancer-5jxf-git-main-kbrian1237s-projects.vercel.app",
-    "neurolancer-5jxf-gkvw3kxh2-kbrian1237s-projects.vercel.app",
-    "neurolancer-9omq.vercel.app",
-  
+    "https://www.neurolancer.work",
+    "https://neurolancer-9omq.vercel.app",
+    "https://neurolancer-5jxf.vercel.app",
+    "https://neurolancer-5jxf-git-main-kbrian1237s-projects.vercel.app",
+    "https://neurolancer-5jxf-gkvw3kxh2-kbrian1237s-projects.vercel.app",
+    "https://neurolancer-git-main-kbrian1237s-projects.vercel.app",
+]
+
+# Additional CORS headers
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
 ]
 
 # WebSocket CORS settings
 ALLOWED_HOSTS = ['*']
 CORS_ALLOW_WEBSOCKETS = True
 
+# Security headers for OAuth
+SECURE_CROSS_ORIGIN_OPENER_POLICY = None
+SECURE_REFERRER_POLICY = 'same-origin'
+X_FRAME_OPTIONS = 'SAMEORIGIN'
+
 # CSRF settings
 CSRF_TRUSTED_ORIGINS = [
-    "neurolancer.vercel.app",
-    "neurolancer-9ojlou01q-kbrian1237s-projects.vercel.app",
-    "neurolancer-5jxf-git-main-kbrian1237s-projects.vercel.app",
-    "neurolancer-5jxf-gkvw3kxh2-kbrian1237s-projects.vercel.app",
-    "neurolancer-9omq.vercel.app",
+    "https://www.neurolancer.work",
+    "https://neurolancer-9omq.vercel.app",
+    "https://neurolancer-5jxf.vercel.app",
+    "https://neurolancer-5jxf-git-main-kbrian1237s-projects.vercel.app",
+    "https://neurolancer-5jxf-gkvw3kxh2-kbrian1237s-projects.vercel.app",
+    "https://neurolancer-git-main-kbrian1237s-projects.vercel.app",
 ]
 
 # REST Framework settings
@@ -201,7 +231,13 @@ REST_FRAMEWORK = {
 # Paystack settings
 PAYSTACK_SECRET_KEY = config('PAYSTACK_SECRET_KEY', default='sk_test_fd47bd1c9a97e30551cc3bb2def6d664d1671246')
 PAYSTACK_PUBLIC_KEY = config('PAYSTACK_PUBLIC_KEY', default='pk_test_ce9730c10c85c796d2382e48d8635c0dcb59dd1a')
-FRONTEND_URL = config('FRONTEND_URL', default='neurolancer-9omq.vercel.app')
+FRONTEND_URL = config('FRONTEND_URL', default='https://neurolancer.work')
+
+# Firebase settings
+FIREBASE_CREDENTIALS_PATH = config('FIREBASE_CREDENTIALS_PATH', default=None)
+FIREBASE_CREDENTIALS_JSON = config('FIREBASE_CREDENTIALS_JSON', default=None)
+FIREBASE_PROJECT_ID = config('FIREBASE_PROJECT_ID', default='neurolancer-app')
+FIREBASE_WEB_API_KEY = config('FIREBASE_WEB_API_KEY', default=None)
 
 # Email settings
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -209,7 +245,7 @@ EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
 EMAIL_PORT = int(config('EMAIL_PORT', default='587'))
 EMAIL_USE_TLS = config('EMAIL_USE_TLS', default='True') == 'True'
 EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='neurolancermail@gmail.com')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='pnsjebrkfbiddpim')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='bgoyyonrlmejkqlm')
 DEFAULT_FROM_EMAIL = 'Neurolancer <noreply@neurolancer.com>'
 
 # Logging configuration
