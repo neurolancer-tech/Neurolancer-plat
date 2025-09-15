@@ -28,7 +28,7 @@ export const completeProfile = async (profileData: ProfileData) => {
 export const sendPhoneVerification = async (phoneNumber: string) => {
   try {
     const response = await api.post('/auth/send-phone-verification/', {
-      phone_number: phoneNumber
+      phone: phoneNumber
     });
     return response.data;
   } catch (error) {
@@ -67,8 +67,8 @@ export const updateUserProfile = async (profileData: Partial<ProfileData>) => {
 
 export const validateProfileCompletion = (profile: any): boolean => {
   const requiredFields = [
-    'phone_number',
-    'country',
+    'phone',
+    'country', 
     'city',
     'experience_level'
   ];
@@ -78,9 +78,9 @@ export const validateProfileCompletion = (profile: any): boolean => {
 
 export const getProfileCompletionPercentage = (profile: any): number => {
   const allFields = [
-    'phone_number',
+    'phone',
     'country',
-    'state',
+    'state', 
     'city',
     'skills',
     'experience_level',

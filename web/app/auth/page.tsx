@@ -190,12 +190,15 @@ function AuthContent() {
       }
       
       // Check if profile needs completion
-      // Backend uses different field names: phone (not phone_number), no profile_completed field
+      // Backend uses 'phone' field, check for empty values
       const requiresCompletion = response.data.requires_completion || 
                                 is_new_user || 
                                 !updatedProfile.phone ||
+                                updatedProfile.phone === '' ||
                                 !updatedProfile.country ||
-                                !updatedProfile.city;
+                                updatedProfile.country === '' ||
+                                !updatedProfile.city ||
+                                updatedProfile.city === '';
       
       if (requiresCompletion) {
         console.log('Profile needs completion, redirecting to complete-profile');
@@ -299,11 +302,14 @@ function AuthContent() {
       toast.success('Login successful!');
       
       // Check if profile needs completion
-      // Backend uses different field names: phone (not phone_number), no profile_completed field
+      // Backend uses 'phone' field, check for empty values
       const needsCompletion = requires_completion || 
                              !profile?.phone || 
+                             profile?.phone === '' ||
                              !profile?.country || 
-                             !profile?.city;
+                             profile?.country === '' ||
+                             !profile?.city || 
+                             profile?.city === '';
       
       if (needsCompletion) {
         console.log('Profile needs completion, redirecting to complete-profile');
