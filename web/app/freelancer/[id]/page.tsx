@@ -241,17 +241,18 @@ export default function FreelancerDetailsPage() {
                 </p>
               )}
               
-              {professionalProfile?.availability_status && (
+              {professionalProfile?.availability && (
                 <div className="mb-4">
                   <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                    professionalProfile.availability_status === 'available' 
+                    professionalProfile.availability === 'freelance' 
                       ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                      : professionalProfile.availability_status === 'busy'
+                      : professionalProfile.availability === 'part_time'
                       ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                      : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                      : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
                   }`}>
-                    {professionalProfile.availability_status === 'available' ? '🟢 Available for work' :
-                     professionalProfile.availability_status === 'busy' ? '🟡 Currently busy' : '🔴 Not available'}
+                    {professionalProfile.availability === 'freelance' ? '🟢 Available for freelance' :
+                     professionalProfile.availability === 'part_time' ? '🟡 Part time' : 
+                     professionalProfile.availability === 'full_time' ? '🔵 Full time' : '🟠 Contract'}
                   </span>
                 </div>
               )}
@@ -437,11 +438,8 @@ export default function FreelancerDetailsPage() {
                           </div>
                           <div className="flex justify-between">
                             <span className="text-gray-600 dark:text-gray-400">Availability:</span>
-                            <span className={`font-medium ${
-                              professionalProfile.availability_status === 'available' ? 'text-green-600' :
-                              professionalProfile.availability_status === 'busy' ? 'text-yellow-600' : 'text-red-600'
-                            }`}>
-                              {professionalProfile.availability_status}
+                            <span className="font-medium text-gray-900 dark:text-gray-100">
+                              {professionalProfile.availability?.replace('_', ' ') || 'Not specified'}
                             </span>
                           </div>
                         </div>
@@ -479,12 +477,12 @@ export default function FreelancerDetailsPage() {
                       </div>
                     )}
 
-                    {(professionalProfile.portfolio_urls || professionalProfile.github_url || professionalProfile.linkedin_url || professionalProfile.website_url) && (
+                    {(professionalProfile.portfolio_url || professionalProfile.github_url || professionalProfile.linkedin_url) && (
                       <div>
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Professional Links</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {professionalProfile.portfolio_urls && (
-                            <a href={professionalProfile.portfolio_urls} target="_blank" rel="noopener noreferrer" 
+                          {professionalProfile.portfolio_url && (
+                            <a href={professionalProfile.portfolio_url} target="_blank" rel="noopener noreferrer" 
                                className="flex items-center space-x-3 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">
                               <span className="text-blue-500">🎨</span>
                               <div>
@@ -513,16 +511,7 @@ export default function FreelancerDetailsPage() {
                               </div>
                             </a>
                           )}
-                          {professionalProfile.website_url && (
-                            <a href={professionalProfile.website_url} target="_blank" rel="noopener noreferrer" 
-                               className="flex items-center space-x-3 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors">
-                              <span className="text-green-600">🌐</span>
-                              <div>
-                                <p className="font-medium text-gray-900 dark:text-gray-100">Website</p>
-                                <p className="text-sm text-gray-600 dark:text-gray-400">Personal website</p>
-                              </div>
-                            </a>
-                          )}
+
                         </div>
                       </div>
                     )}
