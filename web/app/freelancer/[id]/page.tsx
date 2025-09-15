@@ -6,6 +6,7 @@ import Navigation from '@/components/Navigation';
 import Avatar from '@/components/Avatar';
 import { isAuthenticated } from '@/lib/auth';
 import api from '@/lib/api';
+import { profileApi, FreelancerProfile } from '@/lib/profileApi';
 import toast from 'react-hot-toast';
 
 interface FreelancerProfile {
@@ -64,6 +65,7 @@ export default function FreelancerDetailsPage() {
   const params = useParams();
   const router = useRouter();
   const [freelancer, setFreelancer] = useState<FreelancerProfile | null>(null);
+  const [professionalProfile, setProfessionalProfile] = useState<FreelancerProfile | null>(null);
   const [gigs, setGigs] = useState<Gig[]>([]);
   const [skillBadges, setSkillBadges] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -91,6 +93,14 @@ export default function FreelancerDetailsPage() {
         ...profileResponse.data,
         completed_courses_count: coursesResponse.data.results?.length || 0
       };
+      
+      // Load professional profile
+      try {
+        const professionalProfileData = await profileApi.getFreelancerProfileById(Number(params.id));
+        setProfessionalProfile(professionalProfileData);
+      } catch (error) {
+        console.log('No professional profile found');
+      }
       
       setFreelancer(freelancerData);
       setGigs(gigsResponse.data.results || gigsResponse.data);
@@ -170,6 +180,7 @@ export default function FreelancerDetailsPage() {
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: '👤' },
+    { id: 'professional', label: 'Professional Profile', icon: '💼' },
     { id: 'gigs', label: 'Services', icon: '💼' },
     { id: 'badges', label: 'Skill Badges', icon: '🏆' },
     { id: 'documents', label: 'Documents', icon: '📄' },
@@ -219,13 +230,30 @@ export default function FreelancerDetailsPage() {
               <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                 {freelancer.user.first_name} {freelancer.user.last_name}
               </h1>
-              {freelancer.title && (
-                <p className="text-xl text-gray-600 dark:text-gray-400 mb-4">{freelancer.title}</p>
-              )}
-              {freelancer.bio && (
-                <p className="text-gray-700 dark:text-gray-300 leading-relaxed max-w-2xl mb-6">
-                  {freelancer.bio}
+              {(professionalProfile?.title || freelancer.title) && (
+                <p className="text-xl text-gray-600 dark:text-gray-400 mb-4">
+                  {professionalProfile?.title || freelancer.title}
                 </p>
+              )}
+              {(professionalProfile?.bio || freelancer.bio) && (
+                <p className="text-gray-700 dark:text-gray-300 leading-relaxed max-w-2xl mb-6">
+                  {professionalProfile?.bio || freelancer.bio}
+                </p>
+              )}
+              
+              {professionalProfile?.availability_status && (
+                <div className="mb-4">
+                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                    professionalProfile.availability_status === 'available' 
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                      : professionalProfile.availability_status === 'busy'
+                      ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                      : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                  }`}>
+                    {professionalProfile.availability_status === 'available' ? '🟢 Available for work' :
+                     professionalProfile.availability_status === 'busy' ? '🟡 Currently busy' : '🔴 Not available'}
+                  </span>
+                </div>
               )}
               
               {/* Stats */}
@@ -254,9 +282,9 @@ export default function FreelancerDetailsPage() {
                   <div className="text-xl font-bold text-green-500">👍 {freelancer.likes_count || 0}</div>
                   <div className="text-xs text-gray-600 dark:text-gray-400">Likes</div>
                 </div>
-                {freelancer.hourly_rate && (
+                {(professionalProfile?.hourly_rate || freelancer.hourly_rate) && (
                   <div className="text-center">
-                    <div className="text-xl font-bold text-blue-600">${freelancer.hourly_rate}/hr</div>
+                    <div className="text-xl font-bold text-blue-600">${professionalProfile?.hourly_rate || freelancer.hourly_rate}/hr</div>
                     <div className="text-xs text-gray-600 dark:text-gray-400">Rate</div>
                   </div>
                 )}
@@ -292,11 +320,11 @@ export default function FreelancerDetailsPage() {
               <div className="space-y-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   {/* Skills */}
-                  {freelancer.skills && (
+                  {(professionalProfile?.skills || freelancer.skills) && (
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Skills</h3>
                       <div className="flex flex-wrap gap-2">
-                        {freelancer.skills.split(',').map((skill, index) => (
+                        {(professionalProfile?.skills || freelancer.skills).split(',').map((skill, index) => (
                           <span
                             key={index}
                             className="bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium"
@@ -309,11 +337,11 @@ export default function FreelancerDetailsPage() {
                   )}
 
                   {/* Languages */}
-                  {freelancer.languages && (
+                  {(professionalProfile?.languages || freelancer.languages) && (
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Languages</h3>
                       <div className="flex flex-wrap gap-2">
-                        {freelancer.languages.split(',').map((language, index) => (
+                        {(professionalProfile?.languages || freelancer.languages).split(',').map((language, index) => (
                           <span
                             key={index}
                             className="bg-gradient-to-r from-green-100 to-blue-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium"
@@ -329,11 +357,13 @@ export default function FreelancerDetailsPage() {
                 {/* Experience & Stats */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   {/* Experience */}
-                  {freelancer.experience_years && (
+                  {(professionalProfile?.experience_years || freelancer.experience_years) && (
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Experience</h3>
                       <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-                        <p className="text-gray-700 dark:text-gray-300">{freelancer.experience_years} years of professional experience</p>
+                        <p className="text-gray-700 dark:text-gray-300">
+                          {professionalProfile?.experience_years || freelancer.experience_years} years of professional experience
+                        </p>
                       </div>
                     </div>
                   )}
@@ -359,22 +389,149 @@ export default function FreelancerDetailsPage() {
                 </div>
 
                 {/* Education */}
-                {freelancer.education && (
+                {(professionalProfile?.education || freelancer.education) && (
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Education</h3>
                     <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-                      <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line">{freelancer.education}</p>
+                      <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line">
+                        {professionalProfile?.education || freelancer.education}
+                      </p>
                     </div>
                   </div>
                 )}
 
                 {/* Certifications */}
-                {freelancer.certifications && (
+                {(professionalProfile?.certifications || freelancer.certifications) && (
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Certifications</h3>
                     <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-                      <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line">{freelancer.certifications}</p>
+                      <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line">
+                        {professionalProfile?.certifications || freelancer.certifications}
+                      </p>
                     </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Professional Profile Tab */}
+            {activeTab === 'professional' && (
+              <div className="space-y-8">
+                {professionalProfile ? (
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 p-6 rounded-xl">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Professional Details</h3>
+                        <div className="space-y-3">
+                          <div className="flex justify-between">
+                            <span className="text-gray-600 dark:text-gray-400">Title:</span>
+                            <span className="font-medium text-gray-900 dark:text-gray-100">{professionalProfile.title}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600 dark:text-gray-400">Hourly Rate:</span>
+                            <span className="font-medium text-green-600">${professionalProfile.hourly_rate}/hr</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600 dark:text-gray-400">Experience:</span>
+                            <span className="font-medium text-gray-900 dark:text-gray-100">{professionalProfile.experience_years} years</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600 dark:text-gray-400">Availability:</span>
+                            <span className={`font-medium ${
+                              professionalProfile.availability_status === 'available' ? 'text-green-600' :
+                              professionalProfile.availability_status === 'busy' ? 'text-yellow-600' : 'text-red-600'
+                            }`}>
+                              {professionalProfile.availability_status}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 p-6 rounded-xl">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Performance Stats</h3>
+                        <div className="space-y-3">
+                          <div className="flex justify-between">
+                            <span className="text-gray-600 dark:text-gray-400">Rating:</span>
+                            <span className="font-medium text-yellow-600">⭐ {professionalProfile.rating || '0.0'}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600 dark:text-gray-400">Reviews:</span>
+                            <span className="font-medium text-gray-900 dark:text-gray-100">{professionalProfile.total_reviews || 0}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600 dark:text-gray-400">Projects:</span>
+                            <span className="font-medium text-gray-900 dark:text-gray-100">{professionalProfile.completed_projects || 0}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600 dark:text-gray-400">Earnings:</span>
+                            <span className="font-medium text-green-600">${professionalProfile.total_earnings || '0.00'}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {professionalProfile.bio && (
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Professional Bio</h3>
+                        <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-xl">
+                          <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{professionalProfile.bio}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {(professionalProfile.portfolio_urls || professionalProfile.github_url || professionalProfile.linkedin_url || professionalProfile.website_url) && (
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Professional Links</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {professionalProfile.portfolio_urls && (
+                            <a href={professionalProfile.portfolio_urls} target="_blank" rel="noopener noreferrer" 
+                               className="flex items-center space-x-3 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">
+                              <span className="text-blue-500">🎨</span>
+                              <div>
+                                <p className="font-medium text-gray-900 dark:text-gray-100">Portfolio</p>
+                                <p className="text-sm text-gray-600 dark:text-gray-400">View work samples</p>
+                              </div>
+                            </a>
+                          )}
+                          {professionalProfile.github_url && (
+                            <a href={professionalProfile.github_url} target="_blank" rel="noopener noreferrer" 
+                               className="flex items-center space-x-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                              <span className="text-gray-700 dark:text-gray-300">💻</span>
+                              <div>
+                                <p className="font-medium text-gray-900 dark:text-gray-100">GitHub</p>
+                                <p className="text-sm text-gray-600 dark:text-gray-400">Code repositories</p>
+                              </div>
+                            </a>
+                          )}
+                          {professionalProfile.linkedin_url && (
+                            <a href={professionalProfile.linkedin_url} target="_blank" rel="noopener noreferrer" 
+                               className="flex items-center space-x-3 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">
+                              <span className="text-blue-600">💼</span>
+                              <div>
+                                <p className="font-medium text-gray-900 dark:text-gray-100">LinkedIn</p>
+                                <p className="text-sm text-gray-600 dark:text-gray-400">Professional network</p>
+                              </div>
+                            </a>
+                          )}
+                          {professionalProfile.website_url && (
+                            <a href={professionalProfile.website_url} target="_blank" rel="noopener noreferrer" 
+                               className="flex items-center space-x-3 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors">
+                              <span className="text-green-600">🌐</span>
+                              <div>
+                                <p className="font-medium text-gray-900 dark:text-gray-100">Website</p>
+                                <p className="text-sm text-gray-600 dark:text-gray-400">Personal website</p>
+                              </div>
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="text-center py-12">
+                    <div className="text-gray-400 text-6xl mb-4">💼</div>
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No Professional Profile</h3>
+                    <p className="text-gray-600 dark:text-gray-400">This freelancer hasn't completed their professional profile yet.</p>
                   </div>
                 )}
               </div>

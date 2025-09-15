@@ -7,6 +7,7 @@ import Avatar from '@/components/Avatar';
 import LikeButton from '@/components/LikeButton';
 import { UserProfile } from '@/types';
 import api from '@/lib/api';
+import { profileApi } from '@/lib/profileApi';
 import Pagination from '@/components/Pagination';
 
 
@@ -76,7 +77,21 @@ export default function FreelancersPage() {
   const loadFreelancers = async () => {
     try {
       const response = await api.get('/freelancers/');
-      setFreelancers(response.data.results || response.data);
+      const freelancersData = response.data.results || response.data;
+      
+      // Enhance with professional profiles
+      const enhancedFreelancers = await Promise.all(
+        freelancersData.map(async (freelancer: any) => {
+          try {
+            const professionalProfile = await profileApi.getFreelancerProfileById(freelancer.user.id);
+            return { ...freelancer, professionalProfile };
+          } catch {
+            return freelancer;
+          }
+        })
+      );
+      
+      setFreelancers(enhancedFreelancers);
     } catch (error) {
       console.error('Error loading freelancers:', error);
     } finally {
@@ -363,9 +378,23 @@ export default function FreelancersPage() {
                             <span className="font-medium">{freelancer.rating}</span>
                             <span className="text-gray-600 dark:text-gray-400 ml-1">({freelancer.total_reviews} reviews)</span>
                           </div>
-                          {freelancer.hourly_rate && (
+                          {(freelancer.professionalProfile?.hourly_rate || freelancer.hourly_rate) && (
                             <div className="text-center text-lg font-bold text-primary">
-                              ${freelancer.hourly_rate}/hr
+                              ${freelancer.professionalProfile?.hourly_rate || freelancer.hourly_rate}/hr
+                            </div>
+                          )}
+                          {freelancer.professionalProfile?.availability_status && (
+                            <div className="text-center mt-1">
+                              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                freelancer.professionalProfile.availability_status === 'available' 
+                                  ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                  : freelancer.professionalProfile.availability_status === 'busy'
+                                  ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                                  : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                              }`}>
+                                {freelancer.professionalProfile.availability_status === 'available' ? '🟢 Available' :
+                                 freelancer.professionalProfile.availability_status === 'busy' ? '🟡 Busy' : '🔴 Unavailable'}
+                              </span>
                             </div>
                           )}
                           <div className="flex justify-center mt-2">
@@ -379,18 +408,29 @@ export default function FreelancersPage() {
                           </div>
                         </div>
 
-                        <p className="text-gray-700 dark:text-gray-300 text-sm mb-4 line-clamp-3">{freelancer.bio}</p>
+                        <p className="text-gray-700 dark:text-gray-300 text-sm mb-4 line-clamp-3">
+                          {freelancer.professionalProfile?.bio || freelancer.bio}
+                        </p>
 
                         <div className="mb-4">
                           <div className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Skills:</div>
                           <div className="flex flex-wrap gap-1">
-                            {freelancer.skills.split(',').slice(0, 3).map((skill, index) => (
+                            {(freelancer.professionalProfile?.skills || freelancer.skills).split(',').slice(0, 3).map((skill, index) => (
                               <span key={index} className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs rounded">
                                 {skill.trim()}
                               </span>
                             ))}
                           </div>
                         </div>
+                        
+                        {freelancer.professionalProfile?.experience_years && (
+                          <div className="mb-4">
+                            <div className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Experience:</div>
+                            <div className="text-xs text-gray-600 dark:text-gray-400">
+                              {freelancer.professionalProfile.experience_years} years
+                            </div>
+                          </div>
+                        )}
 
                         {(freelancer as any).onboarding_response?.interested_subcategories && (freelancer as any).onboarding_response.interested_subcategories.length > 0 && (
                           <div className="mb-4">

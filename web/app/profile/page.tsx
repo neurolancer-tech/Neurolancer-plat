@@ -6,6 +6,8 @@ import Navigation from '@/components/Navigation';
 import Avatar from '@/components/Avatar';
 import AvatarSelector from '@/components/AvatarSelector';
 import OnboardingModal from '@/components/OnboardingModal';
+import FreelancerProfileForm from '@/components/FreelancerProfileForm';
+import ClientProfileForm from '@/components/ClientProfileForm';
 import { User, UserProfile } from '@/types';
 import { isAuthenticated, getUser, getProfile, setUser, setProfile } from '@/lib/auth';
 import api from '@/lib/api';
@@ -428,6 +430,7 @@ export default function ProfilePage() {
     { id: 'personal', label: 'Personal Info', icon: '👤' },
     { id: 'contact', label: 'Contact Details', icon: '📞' },
     { id: 'professional', label: 'Professional', icon: '💼' },
+    { id: 'profile-setup', label: 'Profile Setup', icon: '⚙️' },
     { id: 'documents', label: 'Documents', icon: '📄' },
     ...(profile?.user_type === 'freelancer' || profile?.user_type === 'both' ? [{ id: 'badges', label: 'Skill Badges', icon: '🏆' }] : []),
     { id: 'onboarding', label: 'Background', icon: '📋' },
@@ -892,6 +895,26 @@ export default function ProfilePage() {
                   </button>
                 </div>
               </form>
+            )}
+
+            {/* Profile Setup Tab */}
+            {activeTab === 'profile-setup' && (
+              <div className="space-y-8">
+                <div className="text-center mb-8">
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                    Professional Profile Setup
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    Complete your {profile?.user_type === 'freelancer' ? 'freelancer' : 'client'} profile to showcase your expertise
+                  </p>
+                </div>
+
+                {profile?.user_type === 'freelancer' ? (
+                  <FreelancerProfileForm />
+                ) : (
+                  <ClientProfileForm />
+                )}
+              </div>
             )}
 
             {/* Documents Tab */}

@@ -11,6 +11,7 @@ from .simple_withdrawal import simple_withdrawal
 from .paystack_withdrawal import paystack_withdraw, get_paystack_banks, create_recipient, process_withdrawal
 from .test_paystack_withdrawal import test_paystack_withdraw
 from .location_views import get_location_by_coordinates, get_location_by_ip
+from .profile_views import freelancer_profile_view, client_profile_view, public_freelancer_profiles
 
 urlpatterns = [
     # Enhanced Authentication URLs
@@ -349,6 +350,11 @@ urlpatterns = [
     # Location API URLs
     path('location/coordinates/', get_location_by_coordinates, name='location-by-coordinates'),
     path('location/ip/', get_location_by_ip, name='location-by-ip'),
+    
+    # Professional Profile URLs
+    path('profiles/freelancer/', freelancer_profile_view, name='freelancer-profile'),
+    path('profiles/client/', client_profile_view, name='client-profile'),
+    path('profiles/freelancers/public/', public_freelancer_profiles, name='public-freelancer-profiles'),
     
     # Skill Assessment System URLs
     path('assessments/categories/', assessment_views.AssessmentCategoryListView.as_view(), name='assessment-categories'),
