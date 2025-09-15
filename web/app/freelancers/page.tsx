@@ -88,17 +88,17 @@ export default function FreelancersPage() {
           // Try to get freelancer profile
           const professionalProfile = await profileApi.getFreelancerProfileById(user.id);
           
-          // Create freelancer object structure
+          // Create freelancer object structure using professional profile data
           const freelancerData = {
             id: user.id,
             user: user,
-            user_type: user.user_type || 'freelancer',
-            bio: user.bio || professionalProfile.bio || '',
-            skills: user.skills || professionalProfile.skills || '',
-            hourly_rate: user.hourly_rate || professionalProfile.hourly_rate || 0,
+            user_type: 'freelancer',
+            bio: professionalProfile.bio || user.bio || '',
+            skills: professionalProfile.skills || user.skills || '',
+            hourly_rate: professionalProfile.hourly_rate || user.hourly_rate || 0,
             total_earnings: user.total_earnings || 0,
-            rating: user.rating || 0,
-            total_reviews: user.total_reviews || 0,
+            rating: professionalProfile.rating || user.rating || 0,
+            total_reviews: professionalProfile.total_reviews || user.total_reviews || 0,
             likes_count: user.likes_count || 0,
             dislikes_count: user.dislikes_count || 0,
             profile_picture: user.profile_picture,
@@ -413,7 +413,7 @@ export default function FreelancersPage() {
                             className="mx-auto mb-3"
                           />
                           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                            {freelancer.user.first_name || freelancer.user.username} {freelancer.user.last_name || ''}
+                            {(freelancer as any).professionalProfile?.user_info?.first_name || freelancer.user.first_name || freelancer.user.username} {(freelancer as any).professionalProfile?.user_info?.last_name || freelancer.user.last_name || ''}
                           </h3>
                           <p className="text-sm text-gray-600 dark:text-gray-400">Freelancer</p>
                         </div>
@@ -424,9 +424,9 @@ export default function FreelancersPage() {
                             <span className="font-medium">{freelancer.rating}</span>
                             <span className="text-gray-600 dark:text-gray-400 ml-1">({freelancer.total_reviews} reviews)</span>
                           </div>
-                          {((freelancer as any).professionalProfile?.hourly_rate || freelancer.hourly_rate) && (
+                          {freelancer.hourly_rate > 0 && (
                             <div className="text-center text-lg font-bold text-primary">
-                              ${(freelancer as any).professionalProfile?.hourly_rate || freelancer.hourly_rate}/hr
+                              ${freelancer.hourly_rate}/hr
                             </div>
                           )}
                           {(freelancer as any).professionalProfile?.availability_status && (
@@ -455,21 +455,26 @@ export default function FreelancersPage() {
                         </div>
 
                         <p className="text-gray-700 dark:text-gray-300 text-sm mb-4 line-clamp-3">
-                          {(freelancer as any).professionalProfile?.bio || freelancer.bio}
+                          {freelancer.bio || 'No bio available'}
                         </p>
 
                         <div className="mb-4">
                           <div className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Skills:</div>
                           <div className="flex flex-wrap gap-1">
-                            {((freelancer as any).professionalProfile?.skills || freelancer.skills).split(',').slice(0, 3).map((skill: string, index: number) => (
+                            {(freelancer.skills || '').split(',').filter(skill => skill.trim()).slice(0, 3).map((skill: string, index: number) => (
                               <span key={index} className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs rounded">
                                 {skill.trim()}
                               </span>
                             ))}
+                            {!freelancer.skills && (
+                              <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-xs rounded italic">
+                                No skills listed
+                              </span>
+                            )}
                           </div>
                         </div>
                         
-                        {(freelancer as any).professionalProfile?.experience_years && (
+                        {(freelancer as any).professionalProfile?.experience_years > 0 && (
                           <div className="mb-4">
                             <div className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Experience:</div>
                             <div className="text-xs text-gray-600 dark:text-gray-400">
