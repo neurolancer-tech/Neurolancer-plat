@@ -21,7 +21,7 @@ export class LocationService {
     try {
       console.log('Fetching location by IP from:', `${API_BASE_URL}/api/location/ip/`);
       
-      const response = await fetch(`${API_BASE_URL}/api/location/ip/`, {
+      const response = await fetch(`${API_BASE_URL}/location/ip/`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -56,7 +56,7 @@ export class LocationService {
     try {
       console.log('Fetching location by coordinates:', latitude, longitude);
       
-      const response = await fetch(`${API_BASE_URL}/api/location/coordinates/`, {
+      const response = await fetch(`${API_BASE_URL}/location/coordinates/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -109,9 +109,9 @@ export class LocationService {
           resolve(result);
         },
         async (error) => {
-          console.warn('Geolocation error, falling back to IP:', error);
-          // Fallback to IP-based location
-          const result = await this.getLocationByIP();
+          console.warn('Geolocation error, falling back to client-side IP:', error);
+          // Fallback to client-side location
+          const result = await this.getClientSideLocation();
           resolve(result);
         },
         {
@@ -135,9 +135,9 @@ export class LocationService {
         return gpsResult;
       }
 
-      // Fallback to IP-based location
-      console.log('GPS failed, using IP-based location');
-      return await this.getLocationByIP();
+      // Fallback to direct client-side IP location
+      console.log('GPS failed, using client-side IP location');
+      return await this.getClientSideLocation();
       
     } catch (error) {
       console.error('Auto-detect location error:', error);
@@ -147,5 +147,70 @@ export class LocationService {
         message: 'Failed to detect location'
       };
     }
+  }
+
+  /**
+   * Get location using client-side free APIs directly
+   */
+  static async getClientSideLocation(): Promise<LocationData> {
+    const services = [
+      {
+        url: 'https://ipapi.co/json/',
+        parser: (data: any) => ({
+          success: true,
+          country: data.country_name || '',
+          country_code: data.country_code || '',
+          state: data.region || '',
+          city: data.city || '',
+          ip_address: data.ip || ''
+        })
+      },
+      {
+        url: 'http://ip-api.com/json/',
+        parser: (data: any) => ({
+          success: data.status === 'success',
+          country: data.country || '',
+          country_code: data.countryCode || '',
+          state: data.regionName || '',
+          city: data.city || '',
+          ip_address: data.query || ''
+        })
+      }
+    ];
+
+    for (const service of services) {
+      try {
+        console.log(`Trying client-side service: ${service.url}`);
+        
+        const response = await fetch(service.url, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log(`Service response:`, data);
+        
+        const result = service.parser(data);
+        if (result.success && result.country) {
+          console.log(`Successfully got location:`, result);
+          return result;
+        }
+      } catch (error) {
+        console.error(`Service ${service.url} failed:`, error);
+        continue;
+      }
+    }
+
+    return {
+      success: false,
+      error: 'All location services failed',
+      message: 'Could not determine location'
+    };
   }
 }
