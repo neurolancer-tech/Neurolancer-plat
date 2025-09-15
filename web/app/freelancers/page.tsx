@@ -378,22 +378,22 @@ export default function FreelancersPage() {
                             <span className="font-medium">{freelancer.rating}</span>
                             <span className="text-gray-600 dark:text-gray-400 ml-1">({freelancer.total_reviews} reviews)</span>
                           </div>
-                          {(freelancer.professionalProfile?.hourly_rate || freelancer.hourly_rate) && (
+                          {((freelancer as any).professionalProfile?.hourly_rate || freelancer.hourly_rate) && (
                             <div className="text-center text-lg font-bold text-primary">
-                              ${freelancer.professionalProfile?.hourly_rate || freelancer.hourly_rate}/hr
+                              ${(freelancer as any).professionalProfile?.hourly_rate || freelancer.hourly_rate}/hr
                             </div>
                           )}
-                          {freelancer.professionalProfile?.availability_status && (
+                          {(freelancer as any).professionalProfile?.availability_status && (
                             <div className="text-center mt-1">
                               <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                                freelancer.professionalProfile.availability_status === 'available' 
+                                (freelancer as any).professionalProfile.availability_status === 'available' 
                                   ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                  : freelancer.professionalProfile.availability_status === 'busy'
+                                  : (freelancer as any).professionalProfile.availability_status === 'busy'
                                   ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
                                   : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
                               }`}>
-                                {freelancer.professionalProfile.availability_status === 'available' ? '🟢 Available' :
-                                 freelancer.professionalProfile.availability_status === 'busy' ? '🟡 Busy' : '🔴 Unavailable'}
+                                {(freelancer as any).professionalProfile.availability_status === 'available' ? '🟢 Available' :
+                                 (freelancer as any).professionalProfile.availability_status === 'busy' ? '🟡 Busy' : '🔴 Unavailable'}
                               </span>
                             </div>
                           )}
@@ -409,13 +409,13 @@ export default function FreelancersPage() {
                         </div>
 
                         <p className="text-gray-700 dark:text-gray-300 text-sm mb-4 line-clamp-3">
-                          {freelancer.professionalProfile?.bio || freelancer.bio}
+                          {(freelancer as any).professionalProfile?.bio || freelancer.bio}
                         </p>
 
                         <div className="mb-4">
                           <div className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Skills:</div>
                           <div className="flex flex-wrap gap-1">
-                            {(freelancer.professionalProfile?.skills || freelancer.skills).split(',').slice(0, 3).map((skill, index) => (
+                            {((freelancer as any).professionalProfile?.skills || freelancer.skills).split(',').slice(0, 3).map((skill, index) => (
                               <span key={index} className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs rounded">
                                 {skill.trim()}
                               </span>
@@ -423,11 +423,11 @@ export default function FreelancersPage() {
                           </div>
                         </div>
                         
-                        {freelancer.professionalProfile?.experience_years && (
+                        {(freelancer as any).professionalProfile?.experience_years && (
                           <div className="mb-4">
                             <div className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Experience:</div>
                             <div className="text-xs text-gray-600 dark:text-gray-400">
-                              {freelancer.professionalProfile.experience_years} years
+                              {(freelancer as any).professionalProfile.experience_years} years
                             </div>
                           </div>
                         )}
