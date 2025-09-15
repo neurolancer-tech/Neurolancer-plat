@@ -19,6 +19,8 @@ export class LocationService {
    */
   static async getLocationByIP(): Promise<LocationData> {
     try {
+      console.log('Fetching location by IP from:', `${API_BASE_URL}/api/location/ip/`);
+      
       const response = await fetch(`${API_BASE_URL}/api/location/ip/`, {
         method: 'GET',
         headers: {
@@ -26,11 +28,17 @@ export class LocationService {
         },
       });
 
+      console.log('IP location response status:', response.status);
+
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('IP location error response:', errorText);
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      return await response.json();
+      const result = await response.json();
+      console.log('IP location result:', result);
+      return result;
     } catch (error) {
       console.error('Location by IP error:', error);
       return {
@@ -46,6 +54,8 @@ export class LocationService {
    */
   static async getLocationByCoordinates(latitude: number, longitude: number): Promise<LocationData> {
     try {
+      console.log('Fetching location by coordinates:', latitude, longitude);
+      
       const response = await fetch(`${API_BASE_URL}/api/location/coordinates/`, {
         method: 'POST',
         headers: {
@@ -57,11 +67,17 @@ export class LocationService {
         }),
       });
 
+      console.log('Coordinates location response status:', response.status);
+
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Coordinates location error response:', errorText);
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      return await response.json();
+      const result = await response.json();
+      console.log('Coordinates location result:', result);
+      return result;
     } catch (error) {
       console.error('Location by coordinates error:', error);
       return {
