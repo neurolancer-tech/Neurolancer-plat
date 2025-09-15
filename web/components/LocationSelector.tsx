@@ -37,6 +37,9 @@ export default function LocationSelector({
         setManualCountry(result.country || '');
         setManualState(result.state || '');
         onLocationChange?.(result);
+      } else {
+        console.log('Location detection failed, user can input manually');
+        // Don't show error, just let user input manually
       }
     } catch (error) {
       console.error('Auto-detect failed:', error);

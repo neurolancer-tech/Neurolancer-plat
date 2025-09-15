@@ -127,90 +127,53 @@ export class LocationService {
    * Auto-detect user location with smart fallback
    */
   static async autoDetectLocation(): Promise<LocationData> {
-    try {
-      // Try GPS first for better accuracy
-      const gpsResult = await this.getCurrentLocation();
-      
-      if (gpsResult.success) {
-        return gpsResult;
-      }
-
-      // Fallback to direct client-side IP location
-      console.log('GPS failed, using client-side IP location');
-      return await this.getClientSideLocation();
-      
-    } catch (error) {
-      console.error('Auto-detect location error:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-        message: 'Failed to detect location'
-      };
-    }
+    // Skip GPS for now, go directly to IP-based detection for reliability
+    console.log('Using IP-based location detection');
+    return await this.getClientSideLocation();
   }
 
   /**
-   * Get location using client-side free APIs directly
+   * Get location using reliable free API
    */
   static async getClientSideLocation(): Promise<LocationData> {
-    const services = [
-      {
-        url: 'https://ipapi.co/json/',
-        parser: (data: any) => ({
+    try {
+      console.log('Trying ipify + ipapi.co for location detection');
+      
+      // First get IP address
+      const ipResponse = await fetch('https://api.ipify.org?format=json');
+      const ipData = await ipResponse.json();
+      const userIP = ipData.ip;
+      
+      console.log('User IP:', userIP);
+      
+      // Then get location data using the IP
+      const locationResponse = await fetch(`https://ipapi.co/${userIP}/json/`);
+      const locationData = await locationResponse.json();
+      
+      console.log('Location data:', locationData);
+      
+      if (locationData.country_name) {
+        return {
           success: true,
-          country: data.country_name || '',
-          country_code: data.country_code || '',
-          state: data.region || '',
-          city: data.city || '',
-          ip_address: data.ip || ''
-        })
-      },
-      {
-        url: 'http://ip-api.com/json/',
-        parser: (data: any) => ({
-          success: data.status === 'success',
-          country: data.country || '',
-          country_code: data.countryCode || '',
-          state: data.regionName || '',
-          city: data.city || '',
-          ip_address: data.query || ''
-        })
+          country: locationData.country_name,
+          country_code: locationData.country_code,
+          state: locationData.region,
+          city: locationData.city,
+          ip_address: userIP
+        };
       }
-    ];
-
-    for (const service of services) {
-      try {
-        console.log(`Trying client-side service: ${service.url}`);
-        
-        const response = await fetch(service.url, {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        console.log(`Service response:`, data);
-        
-        const result = service.parser(data);
-        if (result.success && result.country) {
-          console.log(`Successfully got location:`, result);
-          return result;
-        }
-      } catch (error) {
-        console.error(`Service ${service.url} failed:`, error);
-        continue;
-      }
+      
+      throw new Error('No location data received');
+      
+    } catch (error) {
+      console.error('Location detection failed:', error);
+      
+      // Fallback: Return a default location or let user input manually
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        message: 'Could not detect location automatically. Please enter manually.'
+      };
     }
-
-    return {
-      success: false,
-      error: 'All location services failed',
-      message: 'Could not determine location'
-    };
   }
 }
