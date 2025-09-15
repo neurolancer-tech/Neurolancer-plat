@@ -17,6 +17,8 @@ export interface FreelancerProfile {
   response_time?: string;
   is_active?: boolean;
   is_verified?: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface ClientProfile {
@@ -32,6 +34,8 @@ export interface ClientProfile {
   avg_rating_given?: number;
   is_active?: boolean;
   is_verified?: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export const profileApi = {

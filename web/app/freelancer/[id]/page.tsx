@@ -338,11 +338,11 @@ export default function FreelancerDetailsPage() {
                   )}
 
                   {/* Languages */}
-                  {(professionalProfile?.languages || freelancer.languages) && (
+                  {freelancer.languages && (
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Languages</h3>
                       <div className="flex flex-wrap gap-2">
-                        {(professionalProfile?.languages || freelancer.languages).split(',').map((language, index) => (
+                        {freelancer.languages.split(',').map((language, index) => (
                           <span
                             key={index}
                             className="bg-gradient-to-r from-green-100 to-blue-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium"
