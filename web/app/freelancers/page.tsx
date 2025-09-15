@@ -424,7 +424,7 @@ export default function FreelancersPage() {
                             <span className="font-medium">{freelancer.rating}</span>
                             <span className="text-gray-600 dark:text-gray-400 ml-1">({freelancer.total_reviews} reviews)</span>
                           </div>
-                          {freelancer.hourly_rate > 0 && (
+                          {(freelancer.hourly_rate || 0) > 0 && (
                             <div className="text-center text-lg font-bold text-primary">
                               ${freelancer.hourly_rate}/hr
                             </div>
