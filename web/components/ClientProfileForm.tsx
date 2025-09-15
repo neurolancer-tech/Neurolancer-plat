@@ -40,6 +40,7 @@ export default function ClientProfileForm({ onSave }: ClientProfileFormProps) {
     setLoading(true);
 
     try {
+      console.log('Submitting client profile:', profile);
       let savedProfile;
       if (profile.id) {
         savedProfile = await profileApi.updateClientProfile(profile);
@@ -47,11 +48,13 @@ export default function ClientProfileForm({ onSave }: ClientProfileFormProps) {
         savedProfile = await profileApi.createClientProfile(profile);
       }
       
+      console.log('Saved profile:', savedProfile);
       setProfile(savedProfile);
       toast.success('Client profile saved successfully!');
       onSave?.(savedProfile);
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Failed to save profile');
+      console.error('Error saving client profile:', error);
+      toast.error(error.response?.data?.error || error.message || 'Failed to save profile');
     } finally {
       setLoading(false);
     }

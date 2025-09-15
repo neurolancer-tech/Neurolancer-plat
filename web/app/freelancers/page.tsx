@@ -76,22 +76,66 @@ export default function FreelancersPage() {
 
   const loadFreelancers = async () => {
     try {
-      const response = await api.get('/freelancers/');
-      const freelancersData = response.data.results || response.data;
+      // Get all users and filter for those with freelancer profiles or current freelancer role
+      const response = await api.get('/users/');
+      const usersData = response.data.results || response.data;
       
-      // Enhance with professional profiles
-      const enhancedFreelancers = await Promise.all(
-        freelancersData.map(async (freelancer: any) => {
-          try {
-            const professionalProfile = await profileApi.getFreelancerProfileById(freelancer.user.id);
-            return { ...freelancer, professionalProfile };
-          } catch {
-            return freelancer;
+      // Filter and enhance with professional profiles
+      const freelancersWithProfiles = [];
+      
+      for (const user of usersData) {
+        try {
+          // Try to get freelancer profile
+          const professionalProfile = await profileApi.getFreelancerProfileById(user.id);
+          
+          // Create freelancer object structure
+          const freelancerData = {
+            id: user.id,
+            user: user,
+            user_type: user.user_type || 'freelancer',
+            bio: user.bio || professionalProfile.bio || '',
+            skills: user.skills || professionalProfile.skills || '',
+            hourly_rate: user.hourly_rate || professionalProfile.hourly_rate || 0,
+            rating: user.rating || 0,
+            total_reviews: user.total_reviews || 0,
+            likes_count: user.likes_count || 0,
+            dislikes_count: user.dislikes_count || 0,
+            profile_picture: user.profile_picture,
+            avatar_type: user.avatar_type,
+            selected_avatar: user.selected_avatar,
+            google_photo_url: user.google_photo_url,
+            onboarding_response: user.onboarding_response,
+            professionalProfile
+          };
+          
+          freelancersWithProfiles.push(freelancerData);
+        } catch {
+          // If user has freelancer role but no professional profile, still include them
+          if (user.user_type === 'freelancer' || user.user_type === 'both') {
+            const freelancerData = {
+              id: user.id,
+              user: user,
+              user_type: user.user_type,
+              bio: user.bio || '',
+              skills: user.skills || '',
+              hourly_rate: user.hourly_rate || 0,
+              rating: user.rating || 0,
+              total_reviews: user.total_reviews || 0,
+              likes_count: user.likes_count || 0,
+              dislikes_count: user.dislikes_count || 0,
+              profile_picture: user.profile_picture,
+              avatar_type: user.avatar_type,
+              selected_avatar: user.selected_avatar,
+              google_photo_url: user.google_photo_url,
+              onboarding_response: user.onboarding_response
+            };
+            
+            freelancersWithProfiles.push(freelancerData);
           }
-        })
-      );
+        }
+      }
       
-      setFreelancers(enhancedFreelancers);
+      setFreelancers(freelancersWithProfiles);
     } catch (error) {
       console.error('Error loading freelancers:', error);
     } finally {

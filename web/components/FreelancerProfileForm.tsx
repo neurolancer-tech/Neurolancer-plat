@@ -44,6 +44,7 @@ export default function FreelancerProfileForm({ onSave }: FreelancerProfileFormP
     setLoading(true);
 
     try {
+      console.log('Submitting freelancer profile:', profile);
       let savedProfile;
       if (profile.id) {
         savedProfile = await profileApi.updateFreelancerProfile(profile);
@@ -51,11 +52,13 @@ export default function FreelancerProfileForm({ onSave }: FreelancerProfileFormP
         savedProfile = await profileApi.createFreelancerProfile(profile);
       }
       
+      console.log('Saved profile:', savedProfile);
       setProfile(savedProfile);
       toast.success('Freelancer profile saved successfully!');
       onSave?.(savedProfile);
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Failed to save profile');
+      console.error('Error saving freelancer profile:', error);
+      toast.error(error.response?.data?.error || error.message || 'Failed to save profile');
     } finally {
       setLoading(false);
     }

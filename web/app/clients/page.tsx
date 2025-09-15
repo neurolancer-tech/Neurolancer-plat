@@ -28,23 +28,27 @@ export default function ClientsPage() {
 
   const loadClients = async () => {
     try {
-      // Get all users with client type
-      const response = await api.get('/users/?user_type=client');
-      const clientsData = response.data.results || response.data;
+      // Get all users and filter for those with client profiles or current client role
+      const response = await api.get('/users/');
+      const usersData = response.data.results || response.data;
       
-      // Enhance with professional profiles
-      const enhancedClients = await Promise.all(
-        clientsData.map(async (client: any) => {
-          try {
-            const professionalProfile = await profileApi.getClientProfileById(client.id);
-            return { ...client, professionalProfile };
-          } catch {
-            return client;
+      // Filter and enhance with professional profiles
+      const clientsWithProfiles = [];
+      
+      for (const user of usersData) {
+        try {
+          // Try to get client profile
+          const professionalProfile = await profileApi.getClientProfileById(user.id);
+          clientsWithProfiles.push({ ...user, professionalProfile });
+        } catch {
+          // If user has client role but no professional profile, still include them
+          if (user.user_type === 'client' || user.user_type === 'both') {
+            clientsWithProfiles.push(user);
           }
-        })
-      );
+        }
+      }
       
-      setClients(enhancedClients);
+      setClients(clientsWithProfiles);
     } catch (error) {
       console.error('Error loading clients:', error);
     } finally {
