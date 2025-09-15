@@ -53,8 +53,8 @@ export default function ClientsPage() {
   };
 
   const filteredClients = clients.filter(client => {
-    const matchesSearch = client.first_name?.toLowerCase().includes(filters.search.toLowerCase()) ||
-                         client.last_name?.toLowerCase().includes(filters.search.toLowerCase()) ||
+    const matchesSearch = (client as any).first_name?.toLowerCase().includes(filters.search.toLowerCase()) ||
+                         (client as any).last_name?.toLowerCase().includes(filters.search.toLowerCase()) ||
                          (client as any).professionalProfile?.company_name?.toLowerCase().includes(filters.search.toLowerCase());
     
     const matchesIndustry = !filters.industry || (client as any).professionalProfile?.industry === filters.industry;
@@ -229,7 +229,7 @@ export default function ClientsPage() {
                             className="mx-auto mb-3"
                           />
                           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                            {client.first_name} {client.last_name}
+                            {(client as any).first_name} {(client as any).last_name}
                           </h3>
                           <p className="text-sm text-gray-600 dark:text-gray-400">Client</p>
                         </div>
@@ -261,10 +261,10 @@ export default function ClientsPage() {
                         )}
 
                         <div className="flex space-x-2">
-                          <Link href={`/clients/${client.id}`} className="flex-1 btn-primary text-center text-sm py-2">
+                          <Link href={`/clients/${(client as any).id}`} className="flex-1 btn-primary text-center text-sm py-2">
                             View Profile
                           </Link>
-                          <Link href={`/messages?user=${client.id}`} className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-center transition-colors text-sm">
+                          <Link href={`/messages?user=${(client as any).id}`} className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-center transition-colors text-sm">
                             Message
                           </Link>
                         </div>
