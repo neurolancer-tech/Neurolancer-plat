@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 """
-Test script to verify the missing endpoints are now available
+Simple test script to verify the missing endpoints are now available
 """
 import os
 import sys
 import django
-from django.conf import settings
 
 # Add the backend directory to Python path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -43,7 +42,7 @@ def test_endpoints():
         print("\n[SUCCESS] All URL patterns are correctly configured!")
         
     except Exception as e:
-        print(f"❌ URL pattern error: {e}")
+        print(f"[ERROR] URL pattern error: {e}")
         return False
     
     # Test view functions exist
@@ -53,44 +52,44 @@ def test_endpoints():
         # Test freelancer profile view
         request = factory.get('/api/profiles/freelancer/1/')
         response = get_freelancer_profile_by_id(request, user_id=1)
-        print(f"✓ Freelancer profile view callable (status: {response.status_code})")
+        print(f"[OK] Freelancer profile view callable (status: {response.status_code})")
         
         # Test client profile view
         request = factory.get('/api/profiles/client/1/')
         response = get_client_profile_by_id(request, user_id=1)
-        print(f"✓ Client profile view callable (status: {response.status_code})")
+        print(f"[OK] Client profile view callable (status: {response.status_code})")
         
         # Test categories view
         request = factory.get('/api/categories-with-subcategories/')
         response = get_categories_with_subcategories(request)
-        print(f"✓ Categories view callable (status: {response.status_code})")
+        print(f"[OK] Categories view callable (status: {response.status_code})")
         
         # Test onboarding view
         request = factory.get('/api/onboarding/')
         request.user = None  # Anonymous user for this test
         try:
             response = get_onboarding_data(request)
-            print(f"✓ Onboarding view callable (status: {response.status_code})")
+            print(f"[OK] Onboarding view callable (status: {response.status_code})")
         except Exception as e:
-            print(f"⚠ Onboarding view requires authentication: {e}")
+            print(f"[WARNING] Onboarding view requires authentication: {e}")
         
-        print("\n✅ All view functions are working!")
+        print("\n[SUCCESS] All view functions are working!")
         return True
         
     except Exception as e:
-        print(f"❌ View function error: {e}")
+        print(f"[ERROR] View function error: {e}")
         return False
 
 if __name__ == '__main__':
     success = test_endpoints()
     if success:
-        print("\n🎉 All missing endpoints have been successfully implemented!")
+        print("\n[COMPLETE] All missing endpoints have been successfully implemented!")
         print("\nThe following endpoints are now available:")
         print("- GET /api/profiles/freelancer/<user_id>/")
         print("- GET /api/profiles/client/<user_id>/")
         print("- GET /api/categories-with-subcategories/")
         print("- GET /api/onboarding/")
     else:
-        print("\n❌ Some endpoints still have issues.")
+        print("\n[FAILED] Some endpoints still have issues.")
     
     sys.exit(0 if success else 1)

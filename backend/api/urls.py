@@ -43,6 +43,7 @@ urlpatterns = [
     
     # Subcategory URLs
     path('categories/with-subcategories/', views.get_categories_with_subcategories, name='categories-with-subcategories'),
+    path('categories-with-subcategories/', views.get_categories_with_subcategories, name='categories-with-subcategories-alt'),
     path('categories/<int:category_id>/subcategories/', views.get_subcategories_by_category, name='subcategories-by-category'),
     path('subcategories/', views.get_all_subcategories, name='all-subcategories'),
     
@@ -353,7 +354,9 @@ urlpatterns = [
     
     # Professional Profile URLs
     path('profiles/freelancer/', freelancer_profile_view, name='freelancer-profile'),
+    path('profiles/freelancer/<int:user_id>/', views.get_freelancer_profile_by_id, name='freelancer-profile-by-id'),
     path('profiles/client/', client_profile_view, name='client-profile'),
+    path('profiles/client/<int:user_id>/', views.get_client_profile_by_id, name='client-profile-by-id'),
     path('profiles/freelancers/public/', public_freelancer_profiles, name='public-freelancer-profiles'),
     
     # Skill Assessment System URLs

@@ -26,7 +26,7 @@ from .models import (
     Course, Lesson, Enrollment, SkillAssessment, AssessmentQuestion, AssessmentAttempt, SkillBadge, CourseReview,
     Dispute, ContentReport, AdminAction, SystemSettings, NotificationPreference, NotificationTemplate, ErrorLog,
     UserAnalytics, PlatformAnalytics, AnalyticsEvent, ThirdPartyIntegration, IntegrationSync, Like,
-    AIConversation, AIMessage
+    AIConversation, AIMessage, FreelancerProfile, ClientProfile
 )
 from .serializers import (
     UserSerializer, UserProfileSerializer, ProfessionalDocumentSerializer, UserRegistrationSerializer, 
@@ -45,6 +45,7 @@ from .serializers import (
     ThirdPartyIntegrationSerializer, IntegrationSyncSerializer, AdminUserSerializer,
     AIConversationSerializer, AIMessageSerializer, EnhancedUserSerializer, ProfileCompletionSerializer
 )
+from .profile_serializers import FreelancerProfileSerializer, ClientProfileSerializer
 from rest_framework import serializers
 
 def send_verification_email(user, token):
@@ -5810,3 +5811,50 @@ def get_categories_with_subcategories(request):
         return Response(serializer.data)
     except Exception as e:
         return Response({'error': str(e)}, status=500)
+
+# Individual Profile Views
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
+def get_freelancer_profile_by_id(request, user_id):
+    """Get freelancer profile by user ID"""
+    try:
+        from .models import FreelancerProfile
+        from .profile_serializers import FreelancerProfileSerializer
+        
+        freelancer_profile = FreelancerProfile.objects.get(user_id=user_id)
+        serializer = FreelancerProfileSerializer(freelancer_profile)
+        return Response({
+            'success': True,
+            'profile': serializer.data,
+            'exists': True
+        })
+    except FreelancerProfile.DoesNotExist:
+        return Response({
+            'success': True,
+            'profile': None,
+            'exists': False,
+            'message': 'No freelancer profile found'
+        })
+
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
+def get_client_profile_by_id(request, user_id):
+    """Get client profile by user ID"""
+    try:
+        from .models import ClientProfile
+        from .profile_serializers import ClientProfileSerializer
+        
+        client_profile = ClientProfile.objects.get(user_id=user_id)
+        serializer = ClientProfileSerializer(client_profile)
+        return Response({
+            'success': True,
+            'profile': serializer.data,
+            'exists': True
+        })
+    except ClientProfile.DoesNotExist:
+        return Response({
+            'success': True,
+            'profile': None,
+            'exists': False,
+            'message': 'No client profile found'
+        })

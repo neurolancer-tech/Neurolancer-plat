@@ -14,12 +14,9 @@ export default function ClientProfileForm({ onSave }: ClientProfileFormProps) {
     company_name: '',
     company_size: '',
     industry: '',
-    company_description: '',
     website_url: '',
-    linkedin_url: '',
-    project_budget_range: '',
-    preferred_project_types: '',
-    communication_preferences: ''
+    typical_budget: '',
+    project_types: ''
   });
 
   useEffect(() => {
@@ -28,8 +25,11 @@ export default function ClientProfileForm({ onSave }: ClientProfileFormProps) {
 
   const loadProfile = async () => {
     try {
-      const data = await profileApi.getClientProfile();
-      setProfile(data);
+      const response = await profileApi.getClientProfile();
+      if (response && response.id) {
+        setProfile(response);
+        console.log('Loaded existing client profile:', response);
+      }
     } catch (error) {
       console.log('No existing client profile found');
     }
@@ -44,17 +44,23 @@ export default function ClientProfileForm({ onSave }: ClientProfileFormProps) {
       let savedProfile;
       if (profile.id) {
         savedProfile = await profileApi.updateClientProfile(profile);
+        toast.success('Client profile updated successfully!');
       } else {
         savedProfile = await profileApi.createClientProfile(profile);
+        toast.success('Client profile created successfully!');
       }
       
       console.log('Saved profile:', savedProfile);
       setProfile(savedProfile);
-      toast.success('Client profile saved successfully!');
       onSave?.(savedProfile);
     } catch (error: any) {
       console.error('Error saving client profile:', error);
-      toast.error(error.response?.data?.error || error.message || 'Failed to save profile');
+      if (error.response?.status === 400 && error.response?.data?.message?.includes('already exists')) {
+        toast.error('Profile already exists. Loading existing profile...');
+        loadProfile();
+      } else {
+        toast.error(error.response?.data?.error || error.response?.data?.message || error.message || 'Failed to save profile');
+      }
     } finally {
       setLoading(false);
     }
@@ -99,8 +105,7 @@ export default function ClientProfileForm({ onSave }: ClientProfileFormProps) {
             <option value="11-50">11-50 employees</option>
             <option value="51-200">51-200 employees</option>
             <option value="201-500">201-500 employees</option>
-            <option value="501-1000">501-1000 employees</option>
-            <option value="1000+">1000+ employees</option>
+            <option value="500+">500+ employees</option>
           </select>
         </div>
       </div>
@@ -130,70 +135,35 @@ export default function ClientProfileForm({ onSave }: ClientProfileFormProps) {
         </select>
       </div>
 
+
+
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          Company Description *
+          Typical Budget Range *
         </label>
-        <textarea
-          name="company_description"
-          value={profile.company_description}
+        <select
+          name="typical_budget"
+          value={profile.typical_budget}
           onChange={handleChange}
           required
-          rows={4}
           className="input-field"
-          placeholder="Describe your company and what you do..."
-        />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Project Budget Range *
-          </label>
-          <select
-            name="project_budget_range"
-            value={profile.project_budget_range}
-            onChange={handleChange}
-            required
-            className="input-field"
-          >
-            <option value="">Select budget range</option>
-            <option value="under_1k">Under $1,000</option>
-            <option value="1k_5k">$1,000 - $5,000</option>
-            <option value="5k_10k">$5,000 - $10,000</option>
-            <option value="10k_25k">$10,000 - $25,000</option>
-            <option value="25k_50k">$25,000 - $50,000</option>
-            <option value="50k_plus">$50,000+</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Communication Preferences
-          </label>
-          <select
-            name="communication_preferences"
-            value={profile.communication_preferences}
-            onChange={handleChange}
-            className="input-field"
-          >
-            <option value="">Select preference</option>
-            <option value="email">Email</option>
-            <option value="chat">Chat/Messaging</option>
-            <option value="video_calls">Video Calls</option>
-            <option value="phone">Phone Calls</option>
-            <option value="mixed">Mixed Communication</option>
-          </select>
-        </div>
+        >
+          <option value="">Select budget range</option>
+          <option value="under_1k">Under $1,000</option>
+          <option value="1k_5k">$1,000 - $5,000</option>
+          <option value="5k_10k">$5,000 - $10,000</option>
+          <option value="10k_25k">$10,000 - $25,000</option>
+          <option value="25k_plus">$25,000+</option>
+        </select>
       </div>
 
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          Preferred Project Types
+          Project Types
         </label>
         <textarea
-          name="preferred_project_types"
-          value={profile.preferred_project_types}
+          name="project_types"
+          value={profile.project_types}
           onChange={handleChange}
           rows={3}
           className="input-field"
@@ -201,34 +171,18 @@ export default function ClientProfileForm({ onSave }: ClientProfileFormProps) {
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Company Website
-          </label>
-          <input
-            type="url"
-            name="website_url"
-            value={profile.website_url}
-            onChange={handleChange}
-            className="input-field"
-            placeholder="https://yourcompany.com"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            LinkedIn Company Page
-          </label>
-          <input
-            type="url"
-            name="linkedin_url"
-            value={profile.linkedin_url}
-            onChange={handleChange}
-            className="input-field"
-            placeholder="https://linkedin.com/company/yourcompany"
-          />
-        </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Company Website
+        </label>
+        <input
+          type="url"
+          name="website_url"
+          value={profile.website_url}
+          onChange={handleChange}
+          className="input-field"
+          placeholder="https://yourcompany.com"
+        />
       </div>
 
       <div className="flex justify-end pt-6">

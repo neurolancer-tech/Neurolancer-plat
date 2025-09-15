@@ -16,14 +16,10 @@ export default function FreelancerProfileForm({ onSave }: FreelancerProfileFormP
     hourly_rate: 0,
     skills: '',
     experience_years: 0,
-    education: '',
-    certifications: '',
-    languages: '',
-    portfolio_urls: '',
+    portfolio_url: '',
     github_url: '',
     linkedin_url: '',
-    website_url: '',
-    availability_status: 'available'
+    availability: 'freelance'
   });
 
   useEffect(() => {
@@ -32,8 +28,11 @@ export default function FreelancerProfileForm({ onSave }: FreelancerProfileFormP
 
   const loadProfile = async () => {
     try {
-      const data = await profileApi.getFreelancerProfile();
-      setProfile(data);
+      const response = await profileApi.getFreelancerProfile();
+      if (response && response.id) {
+        setProfile(response);
+        console.log('Loaded existing freelancer profile:', response);
+      }
     } catch (error) {
       console.log('No existing freelancer profile found');
     }
@@ -48,17 +47,23 @@ export default function FreelancerProfileForm({ onSave }: FreelancerProfileFormP
       let savedProfile;
       if (profile.id) {
         savedProfile = await profileApi.updateFreelancerProfile(profile);
+        toast.success('Freelancer profile updated successfully!');
       } else {
         savedProfile = await profileApi.createFreelancerProfile(profile);
+        toast.success('Freelancer profile created successfully!');
       }
       
       console.log('Saved profile:', savedProfile);
       setProfile(savedProfile);
-      toast.success('Freelancer profile saved successfully!');
       onSave?.(savedProfile);
     } catch (error: any) {
       console.error('Error saving freelancer profile:', error);
-      toast.error(error.response?.data?.error || error.message || 'Failed to save profile');
+      if (error.response?.status === 400 && error.response?.data?.message?.includes('already exists')) {
+        toast.error('Profile already exists. Loading existing profile...');
+        loadProfile();
+      } else {
+        toast.error(error.response?.data?.error || error.response?.data?.message || error.message || 'Failed to save profile');
+      }
     } finally {
       setLoading(false);
     }
@@ -156,62 +161,22 @@ export default function FreelancerProfileForm({ onSave }: FreelancerProfileFormP
         </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          Education
-        </label>
-        <textarea
-          name="education"
-          value={profile.education}
-          onChange={handleChange}
-          rows={3}
-          className="input-field"
-          placeholder="Your educational background..."
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          Certifications
-        </label>
-        <textarea
-          name="certifications"
-          value={profile.certifications}
-          onChange={handleChange}
-          rows={3}
-          className="input-field"
-          placeholder="Professional certifications..."
-        />
-      </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Languages
-          </label>
-          <input
-            type="text"
-            name="languages"
-            value={profile.languages}
-            onChange={handleChange}
-            className="input-field"
-            placeholder="English, Spanish, French"
-          />
-        </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Availability Status
+            Availability
           </label>
           <select
-            name="availability_status"
-            value={profile.availability_status}
+            name="availability"
+            value={profile.availability}
             onChange={handleChange}
             className="input-field"
           >
-            <option value="available">Available</option>
-            <option value="busy">Busy</option>
-            <option value="unavailable">Unavailable</option>
+            <option value="freelance">Freelance</option>
+            <option value="full_time">Full Time</option>
+            <option value="part_time">Part Time</option>
+            <option value="contract">Contract</option>
           </select>
         </div>
       </div>
@@ -219,12 +184,12 @@ export default function FreelancerProfileForm({ onSave }: FreelancerProfileFormP
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Portfolio URLs
+            Portfolio URL
           </label>
           <input
             type="url"
-            name="portfolio_urls"
-            value={profile.portfolio_urls}
+            name="portfolio_url"
+            value={profile.portfolio_url}
             onChange={handleChange}
             className="input-field"
             placeholder="https://portfolio.com"
@@ -258,20 +223,6 @@ export default function FreelancerProfileForm({ onSave }: FreelancerProfileFormP
             placeholder="https://linkedin.com/in/username"
           />
         </div>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          Website URL
-        </label>
-        <input
-          type="url"
-          name="website_url"
-          value={profile.website_url}
-          onChange={handleChange}
-          className="input-field"
-          placeholder="https://yourwebsite.com"
-        />
       </div>
 
       <div className="flex justify-end pt-6">
