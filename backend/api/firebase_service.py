@@ -53,7 +53,7 @@ class FirebaseService:
     @classmethod
     def send_verification_code(cls, phone_number: str) -> dict:
         """
-        Send SMS verification code using Firebase Auth
+        Send SMS verification code using real SMS service
         
         Args:
             phone_number (str): Phone number in E.164 format (e.g., +1234567890)
@@ -64,28 +64,17 @@ class FirebaseService:
         cls.initialize()
         
         try:
-            # For Firebase Auth, we need to use the client SDK for phone verification
-            # The admin SDK doesn't directly support sending SMS verification codes
-            # Instead, we'll generate a custom token and return instructions for client-side verification
+            # Use the real SMS service
+            from .sms_service import SMSService
             
-            # Generate a verification code for our own tracking
-            import random
-            import string
-            verification_code = ''.join(random.choices(string.digits, k=6))
+            result = SMSService.send_verification_code(phone_number)
             
-            # In a real implementation, you would:
-            # 1. Use Firebase Auth client SDK on the frontend to send SMS
-            # 2. Or use a third-party SMS service like Twilio
-            # 3. Or use Firebase Functions to handle SMS sending
-            
-            # For now, we'll simulate the process and return the code for testing
-            return {
-                'success': True,
-                'message': 'Verification code sent successfully',
-                'verification_code': verification_code,  # Remove in production
-                'session_info': f'firebase_session_{phone_number}_{verification_code}',
-                'instructions': 'Use Firebase Auth client SDK to verify this code'
-            }
+            if result['success']:
+                logger.info(f"SMS verification code sent to {phone_number} via {result.get('provider', 'unknown')}")
+                return result
+            else:
+                logger.error(f"SMS sending failed: {result.get('error', 'Unknown error')}")
+                return result
             
         except Exception as e:
             logger.error(f"Failed to send verification code: {e}")
@@ -110,23 +99,17 @@ class FirebaseService:
         cls.initialize()
         
         try:
-            # Extract the original code from session_info for testing
-            if session_info.startswith('firebase_session_'):
-                parts = session_info.split('_')
-                if len(parts) >= 4:
-                    original_code = parts[-1]
-                    if original_code == verification_code:
-                        return {
-                            'success': True,
-                            'message': 'Phone number verified successfully',
-                            'verified': True
-                        }
+            # Use the SMS service for verification
+            from .sms_service import SMSService
             
-            return {
-                'success': False,
-                'message': 'Invalid verification code',
-                'verified': False
-            }
+            result = SMSService.verify_code(session_info, verification_code)
+            
+            if result['success'] and result['verified']:
+                logger.info(f"Phone verification successful for session: {session_info[:20]}...")
+            else:
+                logger.warning(f"Phone verification failed for session: {session_info[:20]}...")
+            
+            return result
             
         except Exception as e:
             logger.error(f"Failed to verify phone number: {e}")
