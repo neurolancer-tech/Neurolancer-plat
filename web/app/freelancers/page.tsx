@@ -76,66 +76,45 @@ export default function FreelancersPage() {
 
   const loadFreelancers = async () => {
     try {
-      // Get all users and filter for those with freelancer profiles or current freelancer role
-      const response = await api.get('/users/');
-      const usersData = response.data.results || response.data;
+      // Use the public freelancer profiles endpoint
+      const response = await api.get('/profiles/freelancers/public/');
+      const freelancerProfiles = response.data.profiles || response.data || [];
       
-      // Filter and enhance with professional profiles
-      const freelancersWithProfiles = [];
-      
-      for (const user of usersData) {
-        try {
-          // Try to get freelancer profile
-          const professionalProfile = await profileApi.getFreelancerProfileById(user.id);
-          
-          // Create freelancer object structure using professional profile data
-          const freelancerData = {
-            id: user.id,
-            user: user,
-            user_type: 'freelancer',
-            bio: professionalProfile.bio || user.bio || '',
-            skills: professionalProfile.skills || user.skills || '',
-            hourly_rate: professionalProfile.hourly_rate || user.hourly_rate || 0,
-            total_earnings: user.total_earnings || 0,
-            rating: professionalProfile.rating || user.rating || 0,
-            total_reviews: professionalProfile.total_reviews || user.total_reviews || 0,
-            likes_count: user.likes_count || 0,
-            dislikes_count: user.dislikes_count || 0,
-            profile_picture: user.profile_picture,
-            avatar_type: user.avatar_type,
-            selected_avatar: user.selected_avatar,
-            google_photo_url: user.google_photo_url,
-            onboarding_response: user.onboarding_response,
-            professionalProfile
-          };
-          
-          freelancersWithProfiles.push(freelancerData);
-        } catch {
-          // If user has freelancer role but no professional profile, still include them
-          if (user.user_type === 'freelancer' || user.user_type === 'both') {
-            const freelancerData = {
-              id: user.id,
-              user: user,
-              user_type: user.user_type,
-              bio: user.bio || '',
-              skills: user.skills || '',
-              hourly_rate: user.hourly_rate || 0,
-              total_earnings: user.total_earnings || 0,
-              rating: user.rating || 0,
-              total_reviews: user.total_reviews || 0,
-              likes_count: user.likes_count || 0,
-              dislikes_count: user.dislikes_count || 0,
-              profile_picture: user.profile_picture,
-              avatar_type: user.avatar_type,
-              selected_avatar: user.selected_avatar,
-              google_photo_url: user.google_photo_url,
-              onboarding_response: user.onboarding_response
-            };
-            
-            freelancersWithProfiles.push(freelancerData);
-          }
-        }
-      }
+      // Map data according to our plan
+      const freelancersWithProfiles = freelancerProfiles.map((profile: any) => {
+        const userInfo = profile.user_info || {};
+        
+        return {
+          id: profile.id,
+          user: {
+            id: userInfo.id || profile.user?.id,
+            username: userInfo.username || '',
+            first_name: userInfo.first_name || '',
+            last_name: userInfo.last_name || '',
+            email: userInfo.email || ''
+          },
+          user_type: 'freelancer',
+          bio: profile.bio || '',
+          skills: profile.skills || '',
+          hourly_rate: profile.hourly_rate || 0,
+          rating: profile.rating || 0,
+          total_reviews: profile.total_reviews || 0,
+          profile_picture: userInfo.avatar_url || '',
+          avatar_type: 'upload',
+          selected_avatar: 'user',
+          google_photo_url: '',
+          city: userInfo.city || '',
+          country: userInfo.country || '',
+          title: profile.title || '',
+          experience_years: profile.experience_years || 0,
+          portfolio_url: profile.portfolio_url || '',
+          github_url: profile.github_url || '',
+          linkedin_url: profile.linkedin_url || '',
+          availability: profile.availability || 'freelance',
+          completed_projects: profile.completed_projects || 0,
+          professionalProfile: profile
+        };
+      });
       
       setFreelancers(freelancersWithProfiles);
     } catch (error) {
@@ -413,8 +392,11 @@ export default function FreelancersPage() {
                             className="mx-auto mb-3"
                           />
                           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                            {(freelancer as any).professionalProfile?.user_info?.first_name || freelancer.user.first_name || freelancer.user.username} {(freelancer as any).professionalProfile?.user_info?.last_name || freelancer.user.last_name || ''}
+                            {freelancer.user.first_name || freelancer.user.username} {freelancer.user.last_name}
                           </h3>
+                          {freelancer.title && (
+                            <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">{freelancer.title}</p>
+                          )}
                           <p className="text-sm text-gray-600 dark:text-gray-400">Freelancer</p>
                         </div>
 
