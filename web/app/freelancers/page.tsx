@@ -415,7 +415,7 @@ export default function FreelancersPage() {
                         <div className="mb-4">
                           <div className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Skills:</div>
                           <div className="flex flex-wrap gap-1">
-                            {((freelancer as any).professionalProfile?.skills || freelancer.skills).split(',').slice(0, 3).map((skill, index) => (
+                            {((freelancer as any).professionalProfile?.skills || freelancer.skills).split(',').slice(0, 3).map((skill: string, index: number) => (
                               <span key={index} className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs rounded">
                                 {skill.trim()}
                               </span>
