@@ -13,7 +13,7 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'neurolancer.onrender.com',
+        hostname: 'neurolancer-plat.onrender.com',
       },
       {
         protocol: 'https',
