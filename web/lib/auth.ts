@@ -62,10 +62,24 @@ export const updateProfile = (profileData: Partial<UserProfile>): void => {
   }
 };
 
+export const markProfileAsCompleted = (): void => {
+  if (typeof window === 'undefined') return;
+  const currentProfile = getProfile();
+  if (currentProfile) {
+    const updatedProfile = { ...currentProfile, profile_completed: true };
+    setProfile(updatedProfile);
+  }
+};
+
 export const isProfileComplete = (): boolean => {
   if (typeof window === 'undefined') return false;
   const profile = getProfile();
   if (!profile) return false;
+  
+  // If profile_completed is explicitly set to true, consider it complete
+  if (profile.profile_completed === true) {
+    return true;
+  }
   
   // Check if essential profile fields are filled
   const requiredFields = [
@@ -78,6 +92,16 @@ export const isProfileComplete = (): boolean => {
     const value = profile[field as keyof UserProfile];
     return value !== null && value !== undefined && value !== '';
   }) && profile.phone_verified === true;
+};
+
+export const needsProfileCompletion = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  const profile = getProfile();
+  if (!profile) return false;
+  
+  // Only show profile completion for users who haven't completed it yet
+  // AND haven't explicitly marked it as completed
+  return profile.profile_completed !== true && !isProfileComplete();
 };
 
 export const logout = (): void => {

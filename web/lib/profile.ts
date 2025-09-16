@@ -19,7 +19,7 @@ export interface ProfileData {
 export const completeProfile = async (profileData: ProfileData) => {
   try {
     const response = await api.post('/auth/complete-profile/', profileData);
-    return response.data;
+    return response;
   } catch (error) {
     throw error;
   }

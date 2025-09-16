@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { auth } from '@/lib/firebase';
 import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
-import { getProfile, updateProfile } from '@/lib/auth';
+import { getProfile, updateProfile, markProfileAsCompleted } from '@/lib/auth';
 import { completeProfile } from '@/lib/profile';
 import api from '@/lib/api';
 import Navigation from '@/components/Navigation';
@@ -344,15 +344,21 @@ export default function CompleteProfilePage() {
         experience_level: formData.experience_level as 'entry' | 'intermediate' | 'expert'
       };
       
-      await completeProfile(profileData);
+      const response = await completeProfile(profileData);
       
-      // Update local profile
-      const updatedProfile = {
-        ...profile,
-        ...profileData,
-        profile_completed: true
-      };
-      updateProfile(updatedProfile);
+      // Update local profile with response data
+      if (response.data?.profile) {
+        updateProfile(response.data.profile);
+      } else {
+        // Fallback: update with local data and mark as completed
+        const updatedProfile = {
+          ...profile,
+          ...profileData,
+          profile_completed: true
+        };
+        updateProfile(updatedProfile);
+      }
+      markProfileAsCompleted();
       
       toast.success('Profile completed successfully!');
       router.push('/role-selection');

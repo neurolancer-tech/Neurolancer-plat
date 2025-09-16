@@ -142,6 +142,8 @@ def register(request):
         return Response({
             'user': EnhancedUserSerializer(user).data,
             'token': token.key,
+            'profile': UserProfileSerializer(profile).data,
+            'is_new_user': True,
             'requires_completion': not profile.profile_completed,
             'message': 'Registration successful. Please complete your profile.'
         }, status=status.HTTP_201_CREATED)
@@ -159,11 +161,15 @@ def complete_profile(request):
     serializer = ProfileCompletionSerializer(profile, data=request.data, partial=True)
     
     if serializer.is_valid():
-        serializer.save()
+        # Mark profile as completed
+        profile = serializer.save()
+        profile.profile_completed = True
+        profile.save()
         
         return Response({
             'message': 'Profile completed successfully',
-            'user': EnhancedUserSerializer(request.user).data
+            'user': EnhancedUserSerializer(request.user).data,
+            'profile': UserProfileSerializer(profile).data
         })
     
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -333,7 +339,8 @@ def login_view(request):
         return Response({
             'user': UserSerializer(user).data,
             'token': token.key,
-            'profile': UserProfileSerializer(profile).data
+            'profile': UserProfileSerializer(profile).data,
+            'requires_completion': not profile.profile_completed
         })
     else:
         print(f"Login failed for username: {username}")
@@ -450,6 +457,7 @@ def google_auth(request):
         return Response({
             'user': EnhancedUserSerializer(user).data,
             'token': token.key,
+            'profile': UserProfileSerializer(profile).data,
             'is_new_user': is_new_user,
             'requires_completion': not profile.profile_completed
         })

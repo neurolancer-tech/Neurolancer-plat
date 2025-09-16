@@ -179,14 +179,10 @@ function AuthContent() {
       setUser(backendUser);
       setProfile(updatedProfile);
       
-      // Check if profile needs completion first
-      if (!isProfileComplete()) {
-        console.log('Profile needs completion, redirecting to complete-profile');
-        if (is_new_user) {
-          toast.success('Welcome to Neurolancer! Please complete your profile.');
-        } else {
-          toast.success('Please complete your profile to continue.');
-        }
+      // Only show profile completion for new users or users who haven't completed it
+      if (is_new_user && !isProfileComplete()) {
+        console.log('New user needs profile completion, redirecting to complete-profile');
+        toast.success('Welcome to Neurolancer! Please complete your profile.');
         router.push('/auth/complete-profile');
         return;
       }
@@ -298,7 +294,7 @@ function AuthContent() {
         password: formData.password
       });
 
-      const { user, token, profile, requires_completion } = response.data;
+      const { user, token, profile, requires_completion, is_new_user } = response.data;
       
       // Update profile with selected role
       const updatedProfile = { ...profile, user_type: loginRole };
@@ -318,8 +314,8 @@ function AuthContent() {
       
       toast.success(`Welcome back! Signed in as ${loginRole}.`);
       
-      // Check if profile needs completion first
-      if (!isProfileComplete()) {
+      // Only show profile completion for users who haven't completed it yet
+      if (requires_completion || (!updatedProfile.profile_completed && !isProfileComplete())) {
         console.log('Profile needs completion, redirecting to complete-profile');
         router.push('/auth/complete-profile');
         return;
@@ -415,7 +411,7 @@ function AuthContent() {
           username: formData.username,
           password: formData.password,
         });
-        const { user, token, profile } = loginRes.data || {};
+        const { user, token, profile, is_new_user } = loginRes.data || {};
         if (token && user) {
           setAuthToken(token);
           setUser(user);
