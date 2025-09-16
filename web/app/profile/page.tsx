@@ -430,9 +430,9 @@ export default function ProfilePage() {
   const tabs = [
     { id: 'personal', label: 'Personal Info', icon: '👤' },
     { id: 'contact', label: 'Contact Details', icon: '📞' },
-    { id: 'professional', label: 'Professional', icon: '💼' },
+    ...(profile?.user_type === 'freelancer' || profile?.user_type === 'both' ? [{ id: 'professional', label: 'Professional', icon: '💼' }] : []),
     { id: 'profile-setup', label: 'Profile Setup', icon: '⚙️' },
-    { id: 'documents', label: 'Documents', icon: '📄' },
+    ...(profile?.user_type === 'freelancer' || profile?.user_type === 'both' ? [{ id: 'documents', label: 'Documents', icon: '📄' }] : []),
     ...(profile?.user_type === 'freelancer' || profile?.user_type === 'both' ? [{ id: 'badges', label: 'Skill Badges', icon: '🏆' }] : []),
     { id: 'onboarding', label: 'Background', icon: '📋' },
     { id: 'stats', label: 'Statistics', icon: '📊' }

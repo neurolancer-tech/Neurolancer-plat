@@ -448,23 +448,16 @@ export default function FreelancersPage() {
                                 <p className="text-sm text-blue-600 dark:text-blue-400 font-medium truncate mb-2">{(freelancer as any).title}</p>
                               )}
                               <div className="flex items-center justify-between">
-                                <div className="text-base font-semibold text-gray-900 dark:text-gray-100">
-                                  {freelancer.user.first_name || freelancer.user.username} {freelancer.user.last_name}
-                                </div>
                                 <div className="flex items-center">
                                   <span className="text-yellow-400 text-sm">★</span>
                                   <span className="text-sm font-medium ml-1">{freelancer.rating}</span>
                                   <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">({freelancer.total_reviews})</span>
                                 </div>
-                                <div className="text-right">
-                                  {(freelancer.hourly_rate || 0) > 0 && (
-                                    <div className="text-base font-bold text-primary">
-                                      ${freelancer.hourly_rate}/hr
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                              <div className="flex justify-end mt-2">
+                                {(freelancer.hourly_rate || 0) > 0 && (
+                                  <div className="text-base font-bold text-primary">
+                                    ${freelancer.hourly_rate}/hr
+                                  </div>
+                                )}
                                 <LikeButton
                                   contentType="freelancer"
                                   objectId={freelancer.user.id}
