@@ -26,6 +26,13 @@ export interface UserProfile {
   avatar_type?: string;
   selected_avatar?: string;
   google_photo_url?: string;
+  // Category and subcategory fields
+  primary_category?: Category;
+  primary_category_name?: string;
+  categories?: Category[];
+  category_names?: string;
+  subcategories?: Subcategory[];
+  subcategory_names?: string;
   // Enhanced auth fields
   phone_number?: string;
   phone_verified?: boolean;
@@ -67,7 +74,9 @@ export interface Gig {
     profile_picture?: string;
   };
   category: Category;
+  category_name?: string;
   subcategories?: Subcategory[];
+  subcategory_names?: string;
   title: string;
   description: string;
   image?: string;
@@ -121,6 +130,9 @@ export interface Job {
   title: string;
   description: string;
   category: Category;
+  category_name?: string;
+  subcategories?: Subcategory[];
+  subcategory_names?: string;
   budget_min: number;
   budget_max: number;
   deadline: string;

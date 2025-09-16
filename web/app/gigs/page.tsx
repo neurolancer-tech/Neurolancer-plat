@@ -95,8 +95,23 @@ export default function GigsPage() {
       const matchesSearch = gig.title.toLowerCase().includes(filters.search.toLowerCase()) ||
                            gig.description.toLowerCase().includes(filters.search.toLowerCase());
       const matchesCategory = !filters.category || gig.category.id.toString() === filters.category;
-      const matchesSubcategory = !filters.subcategory || 
-        ((gig as any).subcategories && (gig as any).subcategories.some((sub: any) => sub.id.toString() === filters.subcategory));
+      
+      // Enhanced subcategory matching - check both IDs and names
+      let matchesSubcategory = true;
+      if (filters.subcategory) {
+        const selectedSubcategory = subcategories.find(sub => sub.id.toString() === filters.subcategory);
+        if (selectedSubcategory) {
+          // Check if gig has this subcategory by ID or name
+          const hasSubcategoryById = (gig as any).subcategories && 
+            (gig as any).subcategories.some((sub: any) => sub.id?.toString() === filters.subcategory);
+          const hasSubcategoryByName = gig.subcategory_names && 
+            gig.subcategory_names.includes(selectedSubcategory.name);
+          matchesSubcategory = hasSubcategoryById || hasSubcategoryByName;
+        } else {
+          matchesSubcategory = false;
+        }
+      }
+      
       const matchesMinPrice = !filters.minPrice || gig.basic_price >= parseFloat(filters.minPrice);
       const matchesMaxPrice = !filters.maxPrice || gig.basic_price <= parseFloat(filters.maxPrice);
       const matchesRating = !filters.rating || gig.rating >= parseFloat(filters.rating);
@@ -104,7 +119,7 @@ export default function GigsPage() {
       
       return matchesSearch && matchesCategory && matchesSubcategory && matchesMinPrice && matchesMaxPrice && matchesRating && matchesMinLikes;
     });
-  }, [gigs, filters]);
+  }, [gigs, filters, subcategories]);
 
   const sortedGigs = useMemo(() => {
     const arr = [...filteredGigs];
@@ -394,16 +409,26 @@ export default function GigsPage() {
                           <h3 className="font-semibold text-lg mb-2 line-clamp-2 text-gray-900 dark:text-gray-100">{gig.title}</h3>
                           
                           {/* Subcategories */}
-                          {((gig as any).subcategories) && ((gig as any).subcategories).length > 0 && (
+                          {(gig.subcategory_names || ((gig as any).subcategories)) && (
                             <div className="flex flex-wrap gap-1 mb-2">
-                              {((gig as any).subcategories).slice(0, 2).map((sub: any) => (
-                                <span key={sub.id} className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs">
-                                  {sub.name}
-                                </span>
-                              ))}
-                              {((gig as any).subcategories).length > 2 && (
+                              {gig.subcategory_names ? (
+                                // Use stored subcategory names
+                                gig.subcategory_names.split(', ').slice(0, 2).map((name: string, index: number) => (
+                                  <span key={index} className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs">
+                                    {name}
+                                  </span>
+                                ))
+                              ) : (
+                                // Fallback to old format
+                                Array.isArray((gig as any).subcategories) && ((gig as any).subcategories).slice(0, 2).map((sub: any) => (
+                                  <span key={sub.id} className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs">
+                                    {sub.name}
+                                  </span>
+                                ))
+                              )}
+                              {(gig.subcategory_names ? gig.subcategory_names.split(', ').length : ((gig as any).subcategories?.length || 0)) > 2 && (
                                 <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs">
-                                  +{((gig as any).subcategories).length - 2}
+                                  +{(gig.subcategory_names ? gig.subcategory_names.split(', ').length : ((gig as any).subcategories?.length || 0)) - 2}
                                 </span>
                               )}
                             </div>

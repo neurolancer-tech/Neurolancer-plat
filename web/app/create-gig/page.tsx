@@ -153,9 +153,9 @@ export default function CreateGigPage() {
           if (key === 'category') {
             submitData.append('category_id', value as string);
           } else if (key === 'subcategories') {
-            // Handle subcategories array
+            // Handle subcategories array - send as subcategory_ids
             (value as string[]).forEach(subId => {
-              submitData.append('subcategories', subId);
+              submitData.append('subcategory_ids', subId);
             });
           } else {
             submitData.append(key, value as string);

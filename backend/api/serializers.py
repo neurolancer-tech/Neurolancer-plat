@@ -16,6 +16,37 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'username', 'email', 'first_name', 'last_name', 'date_joined', 'is_staff', 'is_superuser']
 
+class SubcategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subcategory
+        fields = ['id', 'name', 'description', 'created_at']
+
+class CategorySerializer(serializers.ModelSerializer):
+    subcategories = SubcategorySerializer(many=True, read_only=True)
+    gigs_count = serializers.SerializerMethodField()
+    jobs_count = serializers.SerializerMethodField()
+    courses_count = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Category
+        fields = '__all__'
+    
+    def get_gigs_count(self, obj):
+        return obj.gigs.filter(is_active=True).count()
+    
+    def get_jobs_count(self, obj):
+        try:
+            # Count all jobs tied to this category
+            return obj.jobs.count()
+        except Exception:
+            return 0
+    
+    def get_courses_count(self, obj):
+        try:
+            return obj.courses.count()
+        except Exception:
+            return 0
+
 class ProfessionalDocumentSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     file_url = serializers.SerializerMethodField()
@@ -52,6 +83,12 @@ class UserProfileSerializer(serializers.ModelSerializer):
     professional_documents = ProfessionalDocumentSerializer(many=True, read_only=True, source='user.professional_documents')
     available_balance_kes = serializers.SerializerMethodField()
     total_earnings_kes = serializers.SerializerMethodField()
+    primary_category = CategorySerializer(read_only=True)
+    categories = CategorySerializer(many=True, read_only=True)
+    subcategories = SubcategorySerializer(many=True, read_only=True)
+    category_ids = serializers.ListField(child=serializers.IntegerField(), write_only=True, required=False)
+    subcategory_ids = serializers.ListField(child=serializers.IntegerField(), write_only=True, required=False)
+    primary_category_id = serializers.IntegerField(write_only=True, required=False)
     
     class Meta:
         model = UserProfile
@@ -59,6 +96,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'id', 'user', 'user_type', 'bio', 'profile_picture', 'avatar_type', 'selected_avatar', 'google_photo_url', 'avatar_url', 
             'skills', 'hourly_rate', 'gender', 'phone', 'address', 'city', 'country', 'website', 'linkedin', 'github',
             'title', 'experience_years', 'education', 'certifications', 'languages', 'professional_documents',
+            'primary_category', 'primary_category_name', 'categories', 'category_names', 'subcategories', 'subcategory_names',
+            'primary_category_id', 'category_ids', 'subcategory_ids',
             'total_earnings', 'available_balance', 'available_balance_kes', 'total_earnings_kes', 'completed_gigs', 'rating', 'total_reviews', 
             'likes_count', 'dislikes_count', 'created_at', 'updated_at'
         ]
@@ -70,13 +109,49 @@ class UserProfileSerializer(serializers.ModelSerializer):
         """Convert USD balance to KES for withdrawal display"""
         from decimal import Decimal
         USD_TO_KES_RATE = Decimal('130.0')
-        return float(obj.available_balance * USD_TO_KES_RATE)
+        balance = obj.available_balance or Decimal('0')
+        return float(Decimal(str(balance)) * USD_TO_KES_RATE)
     
     def get_total_earnings_kes(self, obj):
         """Convert USD earnings to KES for display"""
         from decimal import Decimal
         USD_TO_KES_RATE = Decimal('130.0')
-        return float(obj.total_earnings * USD_TO_KES_RATE)
+        earnings = obj.total_earnings or Decimal('0')
+        return float(Decimal(str(earnings)) * USD_TO_KES_RATE)
+    
+    def update(self, instance, validated_data):
+        category_ids = validated_data.pop('category_ids', [])
+        subcategory_ids = validated_data.pop('subcategory_ids', [])
+        primary_category_id = validated_data.pop('primary_category_id', None)
+        
+        # Update primary category
+        if primary_category_id:
+            try:
+                primary_category = Category.objects.get(id=primary_category_id)
+                validated_data['primary_category'] = primary_category
+                validated_data['primary_category_name'] = primary_category.name
+            except Category.DoesNotExist:
+                pass
+        
+        instance = super().update(instance, validated_data)
+        
+        # Update categories and names
+        if category_ids:
+            categories = Category.objects.filter(id__in=category_ids)
+            instance.categories.set(categories)
+            category_names = [cat.name for cat in categories]
+            instance.category_names = ', '.join(category_names)
+            instance.save()
+        
+        # Update subcategories and names
+        if subcategory_ids:
+            subcategories = Subcategory.objects.filter(id__in=subcategory_ids)
+            instance.subcategories.set(subcategories)
+            subcategory_names = [sub.name for sub in subcategories]
+            instance.subcategory_names = ', '.join(subcategory_names)
+            instance.save()
+        
+        return instance
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=8)
@@ -123,12 +198,16 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         return user
 
 class ProfileCompletionSerializer(serializers.ModelSerializer):
+    category_ids = serializers.ListField(child=serializers.IntegerField(), write_only=True, required=False)
+    subcategory_ids = serializers.ListField(child=serializers.IntegerField(), write_only=True, required=False)
+    primary_category_id = serializers.IntegerField(write_only=True, required=False)
+    
     class Meta:
         model = UserProfile
         fields = [
             'phone_number', 'country_code', 'state', 'city', 'address', 'timezone',
             'skills', 'experience_level', 'hourly_rate', 'availability',
-            'bio', 'date_of_birth', 'gender'
+            'bio', 'date_of_birth', 'gender', 'category_ids', 'subcategory_ids', 'primary_category_id'
         ]
     
     def validate_phone_number(self, value):
@@ -147,9 +226,41 @@ class ProfileCompletionSerializer(serializers.ModelSerializer):
         return value
     
     def update(self, instance, validated_data):
+        category_ids = validated_data.pop('category_ids', [])
+        subcategory_ids = validated_data.pop('subcategory_ids', [])
+        primary_category_id = validated_data.pop('primary_category_id', None)
+        
         # Mark profile as completed when updating
         validated_data['profile_completed'] = True
-        return super().update(instance, validated_data)
+        
+        # Update primary category
+        if primary_category_id:
+            try:
+                primary_category = Category.objects.get(id=primary_category_id)
+                validated_data['primary_category'] = primary_category
+                validated_data['primary_category_name'] = primary_category.name
+            except Category.DoesNotExist:
+                pass
+        
+        instance = super().update(instance, validated_data)
+        
+        # Update categories and names
+        if category_ids:
+            categories = Category.objects.filter(id__in=category_ids)
+            instance.categories.set(categories)
+            category_names = [cat.name for cat in categories]
+            instance.category_names = ', '.join(category_names)
+            instance.save()
+        
+        # Update subcategories and names
+        if subcategory_ids:
+            subcategories = Subcategory.objects.filter(id__in=subcategory_ids)
+            instance.subcategories.set(subcategories)
+            subcategory_names = [sub.name for sub in subcategories]
+            instance.subcategory_names = ', '.join(subcategory_names)
+            instance.save()
+        
+        return instance
 
 class EnhancedUserSerializer(serializers.ModelSerializer):
     profile = serializers.SerializerMethodField()
@@ -235,37 +346,6 @@ class UserLoginSerializer(serializers.Serializer):
         
         return attrs
 
-class SubcategorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Subcategory
-        fields = ['id', 'name', 'description', 'created_at']
-
-class CategorySerializer(serializers.ModelSerializer):
-    subcategories = SubcategorySerializer(many=True, read_only=True)
-    gigs_count = serializers.SerializerMethodField()
-    jobs_count = serializers.SerializerMethodField()
-    courses_count = serializers.SerializerMethodField()
-    
-    class Meta:
-        model = Category
-        fields = '__all__'
-    
-    def get_gigs_count(self, obj):
-        return obj.gigs.filter(is_active=True).count()
-    
-    def get_jobs_count(self, obj):
-        try:
-            # Count all jobs tied to this category
-            return obj.jobs.count()
-        except Exception:
-            return 0
-    
-    def get_courses_count(self, obj):
-        try:
-            return obj.courses.count()
-        except Exception:
-            return 0
-
 class CategoryWithSubcategoriesSerializer(serializers.ModelSerializer):
     subcategories = SubcategorySerializer(many=True, read_only=True)
     
@@ -278,6 +358,7 @@ class GigSerializer(serializers.ModelSerializer):
     freelancer_profile = serializers.SerializerMethodField()
     category = CategorySerializer(read_only=True)
     category_id = serializers.IntegerField(write_only=True)
+    subcategory_ids = serializers.ListField(child=serializers.IntegerField(), write_only=True, required=False)
     image_url = serializers.URLField(required=False, allow_blank=True)
     image = serializers.SerializerMethodField()
     
@@ -314,10 +395,32 @@ class GigSerializer(serializers.ModelSerializer):
             return None
     
     def create(self, validated_data):
+        subcategory_ids = validated_data.pop('subcategory_ids', [])
         validated_data['freelancer'] = self.context['request'].user
-        return super().create(validated_data)
+        
+        # Set category name
+        if 'category_id' in validated_data:
+            try:
+                category = Category.objects.get(id=validated_data['category_id'])
+                validated_data['category_name'] = category.name
+            except Category.DoesNotExist:
+                pass
+        
+        gig = super().create(validated_data)
+        
+        # Set subcategories and names
+        if subcategory_ids:
+            subcategories = Subcategory.objects.filter(id__in=subcategory_ids)
+            gig.subcategories.set(subcategories)
+            subcategory_names = [sub.name for sub in subcategories]
+            gig.subcategory_names = ', '.join(subcategory_names)
+            gig.save()
+        
+        return gig
     
     def update(self, instance, validated_data):
+        subcategory_ids = validated_data.pop('subcategory_ids', [])
+        
         # Handle image field updates properly
         request = self.context.get('request')
         
@@ -345,7 +448,25 @@ class GigSerializer(serializers.ModelSerializer):
             instance.image_url = ''
             instance.save()
         
-        return super().update(instance, validated_data)
+        # Update category name if category changed
+        if 'category_id' in validated_data:
+            try:
+                category = Category.objects.get(id=validated_data['category_id'])
+                validated_data['category_name'] = category.name
+            except Category.DoesNotExist:
+                pass
+        
+        instance = super().update(instance, validated_data)
+        
+        # Update subcategories and names
+        if subcategory_ids:
+            subcategories = Subcategory.objects.filter(id__in=subcategory_ids)
+            instance.subcategories.set(subcategories)
+            subcategory_names = [sub.name for sub in subcategories]
+            instance.subcategory_names = ', '.join(subcategory_names)
+            instance.save()
+        
+        return instance
 
 class GigListSerializer(serializers.ModelSerializer):
     freelancer = UserSerializer(read_only=True)
@@ -969,6 +1090,7 @@ class JobSerializer(serializers.ModelSerializer):
     client = UserSerializer(read_only=True)
     category = CategorySerializer(read_only=True)
     category_id = serializers.IntegerField(write_only=True, required=False)
+    subcategory_ids = serializers.ListField(child=serializers.IntegerField(), write_only=True, required=False)
     skills_list = serializers.SerializerMethodField()
     time_until_deadline = serializers.SerializerMethodField()
     
@@ -997,13 +1119,55 @@ class JobSerializer(serializers.ModelSerializer):
         return "Expired" if obj.deadline else "No deadline"
     
     def create(self, validated_data):
+        subcategory_ids = validated_data.pop('subcategory_ids', [])
         validated_data['client'] = self.context['request'].user
         
         # Handle category field - accept both 'category' and 'category_id'
         if 'category' in validated_data and 'category_id' not in validated_data:
             validated_data['category_id'] = validated_data.pop('category')
         
-        return super().create(validated_data)
+        # Set category name
+        if 'category_id' in validated_data:
+            try:
+                category = Category.objects.get(id=validated_data['category_id'])
+                validated_data['category_name'] = category.name
+            except Category.DoesNotExist:
+                pass
+        
+        job = super().create(validated_data)
+        
+        # Set subcategories and names
+        if subcategory_ids:
+            subcategories = Subcategory.objects.filter(id__in=subcategory_ids)
+            job.subcategories.set(subcategories)
+            subcategory_names = [sub.name for sub in subcategories]
+            job.subcategory_names = ', '.join(subcategory_names)
+            job.save()
+        
+        return job
+    
+    def update(self, instance, validated_data):
+        subcategory_ids = validated_data.pop('subcategory_ids', [])
+        
+        # Update category name if category changed
+        if 'category_id' in validated_data:
+            try:
+                category = Category.objects.get(id=validated_data['category_id'])
+                validated_data['category_name'] = category.name
+            except Category.DoesNotExist:
+                pass
+        
+        instance = super().update(instance, validated_data)
+        
+        # Update subcategories and names
+        if subcategory_ids:
+            subcategories = Subcategory.objects.filter(id__in=subcategory_ids)
+            instance.subcategories.set(subcategories)
+            subcategory_names = [sub.name for sub in subcategories]
+            instance.subcategory_names = ', '.join(subcategory_names)
+            instance.save()
+        
+        return instance
 
 class JobListSerializer(serializers.ModelSerializer):
     client = UserSerializer(read_only=True)
@@ -1241,6 +1405,7 @@ class CourseSerializer(serializers.ModelSerializer):
     instructor = UserSerializer(read_only=True)
     category = CategorySerializer(read_only=True)
     category_id = serializers.IntegerField(write_only=True)
+    subcategory_ids = serializers.ListField(child=serializers.IntegerField(), write_only=True, required=False)
     lessons_count = serializers.SerializerMethodField()
     is_enrolled = serializers.SerializerMethodField()
     progress = serializers.SerializerMethodField()
@@ -1281,10 +1446,54 @@ class CourseSerializer(serializers.ModelSerializer):
         return 0.0
     
     def create(self, validated_data):
+        subcategory_ids = validated_data.pop('subcategory_ids', [])
+        
+        # Set category name
+        if 'category_id' in validated_data:
+            try:
+                category = Category.objects.get(id=validated_data['category_id'])
+                validated_data['category_name'] = category.name
+            except Category.DoesNotExist:
+                pass
+        
         # Set a default course_file if not provided
         if 'course_file' not in validated_data:
             validated_data['course_file'] = None
-        return super().create(validated_data)
+        
+        course = super().create(validated_data)
+        
+        # Set subcategories and names
+        if subcategory_ids:
+            subcategories = Subcategory.objects.filter(id__in=subcategory_ids)
+            course.subcategories.set(subcategories)
+            subcategory_names = [sub.name for sub in subcategories]
+            course.subcategory_names = ', '.join(subcategory_names)
+            course.save()
+        
+        return course
+    
+    def update(self, instance, validated_data):
+        subcategory_ids = validated_data.pop('subcategory_ids', [])
+        
+        # Update category name if category changed
+        if 'category_id' in validated_data:
+            try:
+                category = Category.objects.get(id=validated_data['category_id'])
+                validated_data['category_name'] = category.name
+            except Category.DoesNotExist:
+                pass
+        
+        instance = super().update(instance, validated_data)
+        
+        # Update subcategories and names
+        if subcategory_ids:
+            subcategories = Subcategory.objects.filter(id__in=subcategory_ids)
+            instance.subcategories.set(subcategories)
+            subcategory_names = [sub.name for sub in subcategories]
+            instance.subcategory_names = ', '.join(subcategory_names)
+            instance.save()
+        
+        return instance
 
 class CourseListSerializer(serializers.ModelSerializer):
     instructor = UserSerializer(read_only=True)
@@ -1658,6 +1867,7 @@ class QuestionSerializer(serializers.ModelSerializer):
 class AssessmentSerializer(serializers.ModelSerializer):
     category = AssessmentCategorySerializer(read_only=True)
     category_id = serializers.IntegerField(write_only=True, required=False)
+    subcategory_ids = serializers.ListField(child=serializers.IntegerField(), write_only=True, required=False)
     questions_count = serializers.SerializerMethodField()
     user_attempts = serializers.SerializerMethodField()
     best_score = serializers.SerializerMethodField()
@@ -1701,31 +1911,57 @@ class AssessmentSerializer(serializers.ModelSerializer):
         return False
     
     def create(self, validated_data):
+        subcategory_ids = validated_data.pop('subcategory_ids', [])
+        
         # Handle category_id
         category_id = validated_data.pop('category_id', None)
         if category_id:
             try:
                 category = AssessmentCategory.objects.get(id=category_id)
                 validated_data['category'] = category
+                validated_data['category_name'] = category.name
             except AssessmentCategory.DoesNotExist:
                 raise serializers.ValidationError({'category': 'Invalid category ID'})
         
         # Set created_by to current user
         validated_data['created_by'] = self.context['request'].user
         
-        return super().create(validated_data)
+        assessment = super().create(validated_data)
+        
+        # Set subcategories and names
+        if subcategory_ids:
+            subcategories = Subcategory.objects.filter(id__in=subcategory_ids)
+            assessment.subcategories.set(subcategories)
+            subcategory_names = [sub.name for sub in subcategories]
+            assessment.subcategory_names = ', '.join(subcategory_names)
+            assessment.save()
+        
+        return assessment
     
     def update(self, instance, validated_data):
+        subcategory_ids = validated_data.pop('subcategory_ids', [])
+        
         # Handle category_id for updates
         category_id = validated_data.pop('category_id', None)
         if category_id:
             try:
                 category = AssessmentCategory.objects.get(id=category_id)
                 validated_data['category'] = category
+                validated_data['category_name'] = category.name
             except AssessmentCategory.DoesNotExist:
                 raise serializers.ValidationError({'category': 'Invalid category ID'})
         
-        return super().update(instance, validated_data)
+        instance = super().update(instance, validated_data)
+        
+        # Update subcategories and names
+        if subcategory_ids:
+            subcategories = Subcategory.objects.filter(id__in=subcategory_ids)
+            instance.subcategories.set(subcategories)
+            subcategory_names = [sub.name for sub in subcategories]
+            instance.subcategory_names = ', '.join(subcategory_names)
+            instance.save()
+        
+        return instance
 
 class AssessmentPaymentSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)

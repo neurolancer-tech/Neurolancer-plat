@@ -203,13 +203,24 @@ export default function JobsPage() {
       
       const matchesCategory = !filters.category || (job.category?.id?.toString() === filters.category);
       
-      // Skip subcategory filter if job doesn't have subcategories or if no subcategory filter is set
-      const matchesSubcategory = !filters.subcategory || 
-        (!((job as any).subcategories) || // If job has no subcategories, skip this filter
-         (Array.isArray((job as any).subcategories) && ((job as any).subcategories).some((sub: any) => {
-           const subId = typeof sub === 'object' ? sub.id : sub;
-           return subId?.toString() === filters.subcategory;
-         })));
+      // Enhanced subcategory matching - check both IDs and names
+      let matchesSubcategory = true;
+      if (filters.subcategory) {
+        const selectedSubcategory = subcategories.find(sub => sub.id.toString() === filters.subcategory);
+        if (selectedSubcategory) {
+          // Check if job has this subcategory by ID or name
+          const hasSubcategoryById = Array.isArray((job as any).subcategories) && 
+            ((job as any).subcategories).some((sub: any) => {
+              const subId = typeof sub === 'object' ? sub.id : sub;
+              return subId?.toString() === filters.subcategory;
+            });
+          const hasSubcategoryByName = job.subcategory_names && 
+            job.subcategory_names.includes(selectedSubcategory.name);
+          matchesSubcategory = hasSubcategoryById || hasSubcategoryByName;
+        } else {
+          matchesSubcategory = false;
+        }
+      }
       
       const matchesExperience = !filters.experienceLevel || job.experience_level === filters.experienceLevel;
       const matchesJobType = !filters.jobType || job.job_type === filters.jobType;
@@ -219,7 +230,7 @@ export default function JobsPage() {
       
       return matchesSearch && matchesCategory && matchesSubcategory && matchesExperience && matchesJobType && matchesMinBudget && matchesMaxBudget && matchesMinLikes;
     });
-  }, [jobs, filters]);
+  }, [jobs, filters, subcategories]);
 
   // Pagination
   const totalPages = Math.ceil(filteredJobs.length / jobsPerPage);
@@ -480,28 +491,38 @@ export default function JobsPage() {
                         <p className="text-gray-700 dark:text-gray-300 mb-4 line-clamp-3">{job.description}</p>
                         
                         {/* Subcategories */}
-                        {((job as any).subcategories) && Array.isArray((job as any).subcategories) && ((job as any).subcategories).length > 0 && (
+                        {(job.subcategory_names || ((job as any).subcategories)) && (
                           <div className="mb-3">
                             <div className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Subcategories:</div>
                             <div className="flex flex-wrap gap-2">
-                              {((job as any).subcategories).slice(0, 3).map((sub: any, index: number) => {
-                                let subcategoryName;
-                                if (typeof sub === 'object' && sub.name) {
-                                  subcategoryName = sub.name;
-                                } else if (typeof sub === 'number') {
-                                  subcategoryName = getSubcategoryName(sub);
-                                } else {
-                                  subcategoryName = String(sub);
-                                }
-                                return (
-                                  <span key={sub.id || sub.name || sub || index} className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-1 rounded text-xs">
-                                    {subcategoryName}
+                              {job.subcategory_names ? (
+                                // Use stored subcategory names
+                                job.subcategory_names.split(', ').slice(0, 3).map((name: string, index: number) => (
+                                  <span key={index} className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-1 rounded text-xs">
+                                    {name}
                                   </span>
-                                );
-                              })}
-                              {((job as any).subcategories).length > 3 && (
+                                ))
+                              ) : (
+                                // Fallback to old format
+                                Array.isArray((job as any).subcategories) && ((job as any).subcategories).slice(0, 3).map((sub: any, index: number) => {
+                                  let subcategoryName;
+                                  if (typeof sub === 'object' && sub.name) {
+                                    subcategoryName = sub.name;
+                                  } else if (typeof sub === 'number') {
+                                    subcategoryName = getSubcategoryName(sub);
+                                  } else {
+                                    subcategoryName = String(sub);
+                                  }
+                                  return (
+                                    <span key={sub.id || sub.name || sub || index} className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-1 rounded text-xs">
+                                      {subcategoryName}
+                                    </span>
+                                  );
+                                })
+                              )}
+                              {(job.subcategory_names ? job.subcategory_names.split(', ').length : ((job as any).subcategories?.length || 0)) > 3 && (
                                 <span className="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-2 py-1 rounded text-xs">
-                                  +{((job as any).subcategories).length - 3} more
+                                  +{(job.subcategory_names ? job.subcategory_names.split(', ').length : ((job as any).subcategories?.length || 0)) - 3} more
                                 </span>
                               )}
                             </div>

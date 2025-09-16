@@ -6,6 +6,8 @@ import Navigation from '@/components/Navigation';
 import Avatar from '@/components/Avatar';
 import LikeButton from '@/components/LikeButton';
 import VerificationBadge from '@/components/VerificationBadge';
+import ThreeDotsMenu from '@/components/ThreeDotsMenu';
+import ReportModal from '@/components/ReportModal';
 import { UserProfile } from '@/types';
 import api from '@/lib/api';
 import { profileApi } from '@/lib/profileApi';
@@ -30,6 +32,8 @@ export default function FreelancersPage() {
   const [subcategories, setSubcategories] = useState<any[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const freelancersPerPage = 9;
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportData, setReportData] = useState<any>(null);
 
   useEffect(() => {
     loadFreelancers();
@@ -152,7 +156,14 @@ export default function FreelancersPage() {
           if (selectedCategory) {
             const categoryName = selectedCategory.name.toLowerCase();
             
-            matchesCategory = skills.includes(categoryName) || 
+            // Check profile categories first
+            const hasProfileCategory = freelancer.category_names && 
+              freelancer.category_names.toLowerCase().includes(categoryName);
+            const hasProfileCategoryById = freelancer.categories && 
+              freelancer.categories.some((cat: any) => cat.id.toString() === filters.category);
+            
+            matchesCategory = hasProfileCategory || hasProfileCategoryById ||
+                            skills.includes(categoryName) || 
                             title.includes(categoryName) || 
                             bio.includes(categoryName);
             
@@ -173,7 +184,14 @@ export default function FreelancersPage() {
           if (selectedSubcategory) {
             const subcategoryName = selectedSubcategory.name.toLowerCase();
             
-            matchesSubcategory = skills.includes(subcategoryName) || 
+            // Check profile subcategories first
+            const hasProfileSubcategory = freelancer.subcategory_names && 
+              freelancer.subcategory_names.toLowerCase().includes(subcategoryName);
+            const hasProfileSubcategoryById = freelancer.subcategories && 
+              freelancer.subcategories.some((sub: any) => sub.id.toString() === filters.subcategory);
+            
+            matchesSubcategory = hasProfileSubcategory || hasProfileSubcategoryById ||
+                               skills.includes(subcategoryName) || 
                                title.includes(subcategoryName) || 
                                bio.includes(subcategoryName);
             
@@ -426,7 +444,24 @@ export default function FreelancersPage() {
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                     {paginatedFreelancers.map(freelancer => (
-                      <div key={freelancer.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col h-full">
+                      <div key={freelancer.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col h-full relative">
+                        {/* Three Dots Menu */}
+                        <div className="absolute top-2 right-2 z-10">
+                          <ThreeDotsMenu
+                            onReport={() => {
+                              setReportData({
+                                id: freelancer.user.id,
+                                title: `${freelancer.user.first_name || freelancer.user.username} ${freelancer.user.last_name}`,
+                                owner: freelancer.user,
+                                url: `/freelancer/${freelancer.user.id}`
+                              });
+                              setShowReportModal(true);
+                            }}
+                            onView={() => window.location.href = `/freelancer/${freelancer.user.id}`}
+                            onContact={() => window.location.href = `/messages?user=${freelancer.user.id}`}
+                            size="sm"
+                          />
+                        </div>
                         <div className="p-4">
                           <div className="flex items-start space-x-3">
                             <Avatar
@@ -534,20 +569,72 @@ export default function FreelancersPage() {
                             </div>
                           )}
 
-                          {(freelancer as any).onboarding_response?.interested_subcategories && (freelancer as any).onboarding_response.interested_subcategories.length > 0 && (
+                          {/* Categories */}
+                          {(freelancer.category_names || freelancer.categories) && (
+                            <div>
+                              <div className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Categories</div>
+                              <div className="flex flex-wrap gap-1">
+                                {freelancer.category_names ? (
+                                  freelancer.category_names.split(', ').slice(0, 2).map((name: string, index: number) => (
+                                    <span key={index} className="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-xs rounded-md">
+                                      {name.length > 15 ? name.substring(0, 15) + '...' : name}
+                                    </span>
+                                  ))
+                                ) : (
+                                  freelancer.categories?.slice(0, 2).map((cat: any) => (
+                                    <span key={cat.id} className="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-xs rounded-md">
+                                      {cat.name.length > 15 ? cat.name.substring(0, 15) + '...' : cat.name}
+                                    </span>
+                                  ))
+                                )}
+                                {(freelancer.category_names ? freelancer.category_names.split(', ').length : (freelancer.categories?.length || 0)) > 2 && (
+                                  <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-xs rounded-md">
+                                    +{(freelancer.category_names ? freelancer.category_names.split(', ').length : (freelancer.categories?.length || 0)) - 2}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Subcategories */}
+                          {(freelancer.subcategory_names || freelancer.subcategories || (freelancer as any).onboarding_response?.interested_subcategories) && (
                             <div>
                               <div className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Expertise</div>
                               <div className="flex flex-wrap gap-1">
-                                {(freelancer as any).onboarding_response.interested_subcategories.slice(0, 2).map((sub: any) => (
-                                  <span key={sub.id} className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs rounded-md">
-                                    {sub.name.length > 15 ? sub.name.substring(0, 15) + '...' : sub.name}
-                                  </span>
-                                ))}
-                                {(freelancer as any).onboarding_response.interested_subcategories.length > 2 && (
-                                  <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-xs rounded-md">
-                                    +{(freelancer as any).onboarding_response.interested_subcategories.length - 2}
-                                  </span>
+                                {freelancer.subcategory_names ? (
+                                  // Use stored subcategory names
+                                  freelancer.subcategory_names.split(', ').slice(0, 2).map((name: string, index: number) => (
+                                    <span key={index} className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs rounded-md">
+                                      {name.length > 15 ? name.substring(0, 15) + '...' : name}
+                                    </span>
+                                  ))
+                                ) : freelancer.subcategories ? (
+                                  // Use subcategory objects
+                                  freelancer.subcategories.slice(0, 2).map((sub: any) => (
+                                    <span key={sub.id} className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs rounded-md">
+                                      {sub.name.length > 15 ? sub.name.substring(0, 15) + '...' : sub.name}
+                                    </span>
+                                  ))
+                                ) : (
+                                  // Fallback to onboarding data
+                                  (freelancer as any).onboarding_response?.interested_subcategories?.slice(0, 2).map((sub: any) => (
+                                    <span key={sub.id} className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs rounded-md">
+                                      {sub.name.length > 15 ? sub.name.substring(0, 15) + '...' : sub.name}
+                                    </span>
+                                  ))
                                 )}
+                                {(() => {
+                                  const count = freelancer.subcategory_names 
+                                    ? freelancer.subcategory_names.split(', ').length 
+                                    : freelancer.subcategories?.length 
+                                    || (freelancer as any).onboarding_response?.interested_subcategories?.length 
+                                    || 0;
+                                  return count > 2 && (
+                                    <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-xs rounded-md">
+                                      +{count - 2}
+                                    </span>
+                                  );
+                                })()}
                               </div>
                             </div>
                           )}
@@ -584,6 +671,17 @@ export default function FreelancersPage() {
           </div>
         </div>
       </main>
+      
+      {/* Report Modal */}
+      <ReportModal
+        isOpen={showReportModal}
+        onClose={() => {
+          setShowReportModal(false);
+          setReportData(null);
+        }}
+        reportType="freelancer"
+        reportData={reportData}
+      />
     </div>
   );
 }

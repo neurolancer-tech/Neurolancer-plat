@@ -113,11 +113,12 @@ export default function PostJobPage() {
         budget_min: parseFloat(formData.budget_min),
         budget_max: parseFloat(formData.budget_max),
         category_id: parseInt(formData.category),
-        subcategories: formData.subcategories.map(id => parseInt(id))
+        subcategory_ids: formData.subcategories.map(id => parseInt(id))
       };
       
-      // Remove the original category field to avoid confusion
+      // Remove the original category and subcategories fields to avoid confusion
       delete (jobData as any).category;
+      delete (jobData as any).subcategories;
       
       const response = await api.post('/jobs/create/', jobData);
       

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { FreelancerProfile, profileApi } from '@/lib/profileApi';
+import api from '@/lib/api';
 import toast from 'react-hot-toast';
 
 interface FreelancerProfileFormProps {
@@ -21,10 +22,53 @@ export default function FreelancerProfileForm({ onSave }: FreelancerProfileFormP
     linkedin_url: '',
     availability: 'freelance'
   });
+  const [categories, setCategories] = useState<any[]>([]);
+  const [subcategories, setSubcategories] = useState<any[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
+  const [selectedSubcategories, setSelectedSubcategories] = useState<number[]>([]);
+  const [primaryCategory, setPrimaryCategory] = useState<number | null>(null);
 
   useEffect(() => {
     loadProfile();
+    loadCategories();
   }, []);
+
+  const loadCategories = async () => {
+    try {
+      const response = await api.get('/categories/with-subcategories/');
+      setCategories(response.data || []);
+    } catch (error) {
+      console.error('Error loading categories:', error);
+    }
+  };
+
+  const handleCategoryChange = (categoryId: number, checked: boolean) => {
+    if (checked) {
+      setSelectedCategories([...selectedCategories, categoryId]);
+      // Load subcategories for this category
+      const category = categories.find(cat => cat.id === categoryId);
+      if (category?.subcategories) {
+        setSubcategories(prev => [...prev, ...category.subcategories]);
+      }
+    } else {
+      setSelectedCategories(selectedCategories.filter(id => id !== categoryId));
+      // Remove subcategories for this category
+      const category = categories.find(cat => cat.id === categoryId);
+      if (category?.subcategories) {
+        const subcategoryIds = category.subcategories.map((sub: any) => sub.id);
+        setSelectedSubcategories(selectedSubcategories.filter(id => !subcategoryIds.includes(id)));
+        setSubcategories(prev => prev.filter(sub => !subcategoryIds.includes(sub.id)));
+      }
+    }
+  };
+
+  const handleSubcategoryChange = (subcategoryId: number, checked: boolean) => {
+    if (checked) {
+      setSelectedSubcategories([...selectedSubcategories, subcategoryId]);
+    } else {
+      setSelectedSubcategories(selectedSubcategories.filter(id => id !== subcategoryId));
+    }
+  };
 
   const loadProfile = async () => {
     try {
@@ -44,18 +88,35 @@ export default function FreelancerProfileForm({ onSave }: FreelancerProfileFormP
 
     try {
       console.log('Submitting freelancer profile:', profile);
+      
+      // First save the freelancer profile
       let savedProfile;
       if (profile.id) {
         savedProfile = await profileApi.updateFreelancerProfile(profile);
-        toast.success('Freelancer profile updated successfully!');
       } else {
         savedProfile = await profileApi.createFreelancerProfile(profile);
-        toast.success('Freelancer profile created successfully!');
+      }
+      
+      // Then update the user profile with categories and subcategories
+      const profileData: any = {};
+      if (selectedCategories.length > 0) {
+        profileData.category_ids = selectedCategories;
+      }
+      if (selectedSubcategories.length > 0) {
+        profileData.subcategory_ids = selectedSubcategories;
+      }
+      if (primaryCategory) {
+        profileData.primary_category_id = primaryCategory;
+      }
+      
+      if (Object.keys(profileData).length > 0) {
+        await api.patch('/profile/update/', profileData);
       }
       
       console.log('Saved profile:', savedProfile);
       setProfile(savedProfile);
       onSave?.(savedProfile);
+      toast.success('Freelancer profile saved successfully!');
     } catch (error: any) {
       console.error('Error saving freelancer profile:', error);
       if (error.response?.status === 400 && error.response?.data?.message?.includes('already exists')) {
@@ -178,6 +239,78 @@ export default function FreelancerProfileForm({ onSave }: FreelancerProfileFormP
             <option value="part_time">Part Time</option>
             <option value="contract">Contract</option>
           </select>
+        </div>
+      </div>
+
+      {/* Categories and Subcategories */}
+      <div className="space-y-6">
+        <div>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Categories & Expertise</h3>
+          
+          {/* Primary Category */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Primary Category
+            </label>
+            <select
+              value={primaryCategory || ''}
+              onChange={(e) => setPrimaryCategory(e.target.value ? Number(e.target.value) : null)}
+              className="input-field"
+            >
+              <option value="">Select Primary Category</option>
+              {categories.map(category => (
+                <option key={category.id} value={category.id}>
+                  {category.icon && `${category.icon} `}{category.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Categories */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Categories (Select all that apply)
+            </label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-40 overflow-y-auto border border-gray-300 dark:border-gray-600 rounded-lg p-3">
+              {categories.map(category => (
+                <label key={category.id} className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={selectedCategories.includes(category.id)}
+                    onChange={(e) => handleCategoryChange(category.id, e.target.checked)}
+                    className="rounded border-gray-300 text-primary focus:ring-primary"
+                  />
+                  <span className="text-sm text-gray-700 dark:text-gray-300">
+                    {category.icon && `${category.icon} `}{category.name}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Subcategories */}
+          {subcategories.length > 0 && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Areas of Expertise (Select your specializations)
+              </label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-60 overflow-y-auto border border-gray-300 dark:border-gray-600 rounded-lg p-3">
+                {subcategories.map(subcategory => (
+                  <label key={subcategory.id} className="flex items-center space-x-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={selectedSubcategories.includes(subcategory.id)}
+                      onChange={(e) => handleSubcategoryChange(subcategory.id, e.target.checked)}
+                      className="rounded border-gray-300 text-primary focus:ring-primary"
+                    />
+                    <span className="text-sm text-gray-700 dark:text-gray-300">
+                      {subcategory.name}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

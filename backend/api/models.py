@@ -93,11 +93,19 @@ class UserProfile(models.Model):
     certifications = models.TextField(blank=True)
     languages = models.TextField(blank=True, help_text="Comma-separated list of languages")
     
+    # Category and Subcategory Information
+    primary_category = models.ForeignKey('Category', on_delete=models.SET_NULL, null=True, blank=True, related_name='primary_freelancers')
+    primary_category_name = models.CharField(max_length=100, blank=True, help_text="Primary category name")
+    categories = models.ManyToManyField('Category', blank=True, related_name='freelancers')
+    category_names = models.TextField(blank=True, help_text="Comma-separated category names")
+    subcategories = models.ManyToManyField('Subcategory', blank=True, related_name='freelancers')
+    subcategory_names = models.TextField(blank=True, help_text="Comma-separated subcategory names")
+    
+    # Financial Information
     total_earnings = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     escrow_balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     available_balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     
-    # Paystack Integration
     paystack_subaccount_code = models.CharField(max_length=100, blank=True, null=True)
     bank_name = models.CharField(max_length=100, blank=True)
     bank_code = models.CharField(max_length=10, blank=True)
@@ -177,7 +185,9 @@ class Gig(models.Model):
 
     freelancer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='gigs')
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='gigs')
+    category_name = models.CharField(max_length=100, blank=True, help_text="Category name for quick access")
     subcategories = models.ManyToManyField(Subcategory, blank=True, related_name='gigs')
+    subcategory_names = models.TextField(blank=True, help_text="Comma-separated subcategory names for quick access")
     title = models.CharField(max_length=200)
     description = models.TextField()
     image = models.ImageField(upload_to='gig_images/', blank=True, null=True)
@@ -600,7 +610,9 @@ class Job(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField()
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='jobs')
+    category_name = models.CharField(max_length=100, blank=True, help_text="Category name for quick access")
     subcategories = models.ManyToManyField(Subcategory, blank=True, related_name='jobs')
+    subcategory_names = models.TextField(blank=True, help_text="Comma-separated subcategory names for quick access")
     budget_min = models.DecimalField(max_digits=10, decimal_places=2)
     budget_max = models.DecimalField(max_digits=10, decimal_places=2)
     deadline = models.DateTimeField()
@@ -773,7 +785,9 @@ class Course(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField()
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='courses')
+    category_name = models.CharField(max_length=100, blank=True, help_text="Category name for quick access")
     subcategories = models.ManyToManyField(Subcategory, blank=True, related_name='courses')
+    subcategory_names = models.TextField(blank=True, help_text="Comma-separated subcategory names for quick access")
     instructor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='courses_taught')
     difficulty_level = models.CharField(max_length=15, choices=DIFFICULTY_LEVELS, default='beginner')
     duration_hours = models.IntegerField(help_text="Estimated course duration in hours")
@@ -1559,7 +1573,9 @@ class Assessment(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField()
     category = models.ForeignKey(AssessmentCategory, on_delete=models.CASCADE)
+    category_name = models.CharField(max_length=100, blank=True, help_text="Category name for quick access")
     subcategories = models.ManyToManyField(Subcategory, blank=True, related_name='new_assessments')
+    subcategory_names = models.TextField(blank=True, help_text="Comma-separated subcategory names for quick access")
     difficulty_level = models.CharField(max_length=20, choices=DIFFICULTY_CHOICES)
     duration_minutes = models.IntegerField()  # Test duration
     passing_score = models.IntegerField()  # Minimum score to pass (%)
