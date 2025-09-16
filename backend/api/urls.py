@@ -359,6 +359,9 @@ urlpatterns = [
     path('profiles/client/<int:user_id>/', views.get_client_profile_by_id, name='client-profile-by-id'),
     path('profiles/freelancers/public/', public_freelancer_profiles, name='public-freelancer-profiles'),
     
+    # User Verification System URLs
+    path('verification/', include('api.verification_urls')),
+    
     # Skill Assessment System URLs
     path('assessments/categories/', assessment_views.AssessmentCategoryListView.as_view(), name='assessment-categories'),
     path('assessments/', assessment_views.AssessmentListView.as_view(), name='skill-assessments'),

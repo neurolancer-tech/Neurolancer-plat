@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Navigation from '@/components/Navigation';
 import Avatar from '@/components/Avatar';
 import LikeButton from '@/components/LikeButton';
+import VerificationBadge from '@/components/VerificationBadge';
 import { UserProfile } from '@/types';
 import api from '@/lib/api';
 import { profileApi } from '@/lib/profileApi';
@@ -437,9 +438,12 @@ export default function FreelancersPage() {
                               className="flex-shrink-0"
                             />
                             <div className="flex-1 min-w-0">
-                              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 truncate">
-                                {freelancer.user.first_name || freelancer.user.username} {freelancer.user.last_name}
-                              </h3>
+                              <div className="flex items-center gap-2">
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 truncate">
+                                  {freelancer.user.first_name || freelancer.user.username} {freelancer.user.last_name}
+                                </h3>
+                                <VerificationBadge isVerified={(freelancer as any).is_verified || false} size="sm" />
+                              </div>
                               {(freelancer as any).title && (
                                 <p className="text-sm text-blue-600 dark:text-blue-400 font-medium truncate">{(freelancer as any).title}</p>
                               )}

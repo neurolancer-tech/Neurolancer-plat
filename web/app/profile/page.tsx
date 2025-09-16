@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Navigation from '@/components/Navigation';
 import Avatar from '@/components/Avatar';
 import AvatarSelector from '@/components/AvatarSelector';
+import VerificationBadge from '@/components/VerificationBadge';
 import OnboardingModal from '@/components/OnboardingModal';
 import FreelancerProfileForm from '@/components/FreelancerProfileForm';
 import ClientProfileForm from '@/components/ClientProfileForm';
@@ -475,9 +476,12 @@ export default function ProfilePage() {
 
             {/* User Info */}
             <div className="flex-1 text-center md:text-left">
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-                {user?.first_name} {user?.last_name}
-              </h1>
+              <div className="flex items-center justify-center md:justify-start gap-3 mb-2">
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                  {user?.first_name} {user?.last_name}
+                </h1>
+                <VerificationBadge isVerified={(profile as any)?.is_verified || false} size="lg" showText />
+              </div>
               <div className="flex items-center justify-center md:justify-start space-x-3 mb-4">
                 <p className="text-lg text-gray-600 dark:text-gray-400">
                   {profile?.user_type === 'client' ? '🏢 Client' : '💼 Freelancer'}

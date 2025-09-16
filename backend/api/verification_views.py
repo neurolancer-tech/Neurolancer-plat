@@ -1,0 +1,221 @@
+from rest_framework import status, permissions
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response
+from rest_framework.pagination import PageNumberPagination
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
+from django.db import transaction
+from .verification_models import VerificationRequest, VerificationBadge
+from .verification_serializers import (
+    VerificationRequestSerializer, 
+    VerificationRequestCreateSerializer,
+    VerificationBadgeSerializer,
+    AdminVerificationUpdateSerializer
+)
+
+class VerificationPagination(PageNumberPagination):
+    page_size = 20
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def submit_verification_request(request):
+    """Submit a new verification request"""
+    try:
+        # Check if user already has a pending or verified request
+        existing_request = VerificationRequest.objects.filter(
+            user=request.user,
+            status__in=['pending', 'verifying', 'verified']
+        ).first()
+        
+        if existing_request:
+            if existing_request.status == 'verified':
+                return Response({
+                    'error': 'You are already verified'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response({
+                    'error': 'You already have a pending verification request'
+                }, status=status.HTTP_400_BAD_REQUEST)
+        
+        serializer = VerificationRequestCreateSerializer(data=request.data)
+        if serializer.is_valid():
+            verification_request = serializer.save(user=request.user)
+            
+            response_serializer = VerificationRequestSerializer(verification_request)
+            return Response({
+                'status': 'success',
+                'message': 'Verification request submitted successfully',
+                'data': response_serializer.data
+            }, status=status.HTTP_201_CREATED)
+        
+        return Response({
+            'status': 'error',
+            'errors': serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
+        
+    except Exception as e:
+        return Response({
+            'status': 'error',
+            'message': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def get_verification_status(request):
+    """Get current user's verification status"""
+    try:
+        verification_request = VerificationRequest.objects.filter(
+            user=request.user
+        ).order_by('-created_at').first()
+        
+        verification_badge = VerificationBadge.objects.filter(
+            user=request.user
+        ).first()
+        
+        data = {
+            'has_request': verification_request is not None,
+            'request': VerificationRequestSerializer(verification_request).data if verification_request else None,
+            'badge': VerificationBadgeSerializer(verification_badge).data if verification_badge else None
+        }
+        
+        return Response({
+            'status': 'success',
+            'data': data
+        })
+        
+    except Exception as e:
+        return Response({
+            'status': 'error',
+            'message': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAdminUser])
+def list_verification_requests(request):
+    """List all verification requests for admin"""
+    try:
+        status_filter = request.GET.get('status', None)
+        queryset = VerificationRequest.objects.all()
+        
+        if status_filter:
+            queryset = queryset.filter(status=status_filter)
+        
+        paginator = VerificationPagination()
+        page = paginator.paginate_queryset(queryset, request)
+        
+        if page is not None:
+            serializer = VerificationRequestSerializer(page, many=True)
+            return paginator.get_paginated_response({
+                'status': 'success',
+                'data': serializer.data
+            })
+        
+        serializer = VerificationRequestSerializer(queryset, many=True)
+        return Response({
+            'status': 'success',
+            'data': serializer.data
+        })
+        
+    except Exception as e:
+        return Response({
+            'status': 'error',
+            'message': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET', 'PUT'])
+@permission_classes([permissions.IsAdminUser])
+def manage_verification_request(request, request_id):
+    """Get or update a specific verification request"""
+    try:
+        verification_request = get_object_or_404(VerificationRequest, id=request_id)
+        
+        if request.method == 'GET':
+            serializer = VerificationRequestSerializer(verification_request)
+            return Response({
+                'status': 'success',
+                'data': serializer.data
+            })
+        
+        elif request.method == 'PUT':
+            serializer = AdminVerificationUpdateSerializer(
+                verification_request, 
+                data=request.data, 
+                partial=True
+            )
+            
+            if serializer.is_valid():
+                with transaction.atomic():
+                    # Update the verification request
+                    verification_request = serializer.save(
+                        reviewed_by=request.user,
+                        reviewed_at=timezone.now()
+                    )
+                    
+                    # Handle verification badge
+                    if verification_request.status == 'verified':
+                        badge, created = VerificationBadge.objects.get_or_create(
+                            user=verification_request.user,
+                            defaults={
+                                'is_verified': True,
+                                'verified_at': timezone.now(),
+                                'verification_level': 'basic'
+                            }
+                        )
+                        if not created:
+                            badge.is_verified = True
+                            badge.verified_at = timezone.now()
+                            badge.save()
+                    
+                    elif verification_request.status in ['rejected', 'cancelled', 'invalid']:
+                        # Remove verification badge if exists
+                        VerificationBadge.objects.filter(
+                            user=verification_request.user
+                        ).update(is_verified=False)
+                
+                response_serializer = VerificationRequestSerializer(verification_request)
+                return Response({
+                    'status': 'success',
+                    'message': 'Verification request updated successfully',
+                    'data': response_serializer.data
+                })
+            
+            return Response({
+                'status': 'error',
+                'errors': serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
+    except Exception as e:
+        return Response({
+            'status': 'error',
+            'message': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def get_user_verification_badge(request, user_id=None):
+    """Get verification badge for a specific user or current user"""
+    try:
+        if user_id:
+            from django.contrib.auth.models import User
+            user = get_object_or_404(User, id=user_id)
+        else:
+            user = request.user
+        
+        badge = VerificationBadge.objects.filter(user=user).first()
+        
+        return Response({
+            'status': 'success',
+            'data': {
+                'is_verified': badge.is_verified if badge else False,
+                'verification_level': badge.verification_level if badge else None,
+                'verified_at': badge.verified_at if badge else None
+            }
+        })
+        
+    except Exception as e:
+        return Response({
+            'status': 'error',
+            'message': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Navigation from '@/components/Navigation';
 import Avatar from '@/components/Avatar';
 import LikeButton from '@/components/LikeButton';
+import VerificationBadge from '@/components/VerificationBadge';
 import { Job, Category } from '@/types';
 import { getProfile } from '@/lib/auth';
 import api from '@/lib/api';
@@ -434,9 +435,12 @@ export default function JobsPage() {
                                     className="mr-2"
                                   />
                                 </Link>
-                                <Link href={`/clients/${job.client?.id || ''}`} className="truncate hover:text-primary">
-                                  Posted by {job.client?.first_name || ''} {job.client?.last_name || job.client?.username || 'Client'}
-                                </Link>
+                                <div className="flex items-center gap-1">
+                                  <Link href={`/clients/${job.client?.id || ''}`} className="truncate hover:text-primary">
+                                    Posted by {job.client?.first_name || ''} {job.client?.last_name || job.client?.username || 'Client'}
+                                  </Link>
+                                  <VerificationBadge isVerified={(job.client as any)?.is_verified || false} size="sm" />
+                                </div>
                               </div>
                               <div className="flex flex-wrap gap-2 text-xs sm:text-sm">
                                 <span>• {job.category?.name || 'Uncategorized'}</span>

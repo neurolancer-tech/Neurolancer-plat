@@ -6,6 +6,7 @@ import Image from 'next/image';
 import Navigation from '@/components/Navigation';
 import Avatar from '@/components/Avatar';
 import LikeButton from '@/components/LikeButton';
+import VerificationBadge from '@/components/VerificationBadge';
 import { Gig, Category } from '@/types';
 interface Subcategory {
   id: number;
@@ -361,8 +362,11 @@ export default function GigsPage() {
                               size="sm"
                               alt={gig.freelancer.first_name}
                             />
-                            <div>
-                              <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{gig.freelancer.first_name} {gig.freelancer.last_name}</p>
+                            <div className="flex-1">
+                              <div className="flex items-center gap-1">
+                                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{gig.freelancer.first_name} {gig.freelancer.last_name}</p>
+                                <VerificationBadge isVerified={(gig as any).freelancer_verified || false} size="sm" />
+                              </div>
                               <p className="text-xs text-gray-500 dark:text-gray-400">AI Expert</p>
                             </div>
                           </div>

@@ -1763,3 +1763,6 @@ class ClientProfile(models.Model):
         
     def __str__(self):
         return f"{self.user.get_full_name() or self.user.username} - Client Profile"
+
+# Import verification models
+from .verification_models import VerificationRequest, VerificationBadge
