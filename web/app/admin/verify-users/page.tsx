@@ -16,8 +16,11 @@ interface VerificationRequest {
   full_name: string;
   phone_number: string;
   address: string;
+  id_document: string;
   id_document_type: string;
+  secondary_document: string;
   secondary_document_type: string;
+  certificates: string;
   portfolio_link: string;
   linkedin_profile: string;
   admin_notes: string;
