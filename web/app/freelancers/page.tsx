@@ -517,9 +517,35 @@ export default function FreelancersPage() {
                           </div>
                         )}
 
+                        {/* Categories (Specialization) */}
+                        {(freelancer as any).onboarding_response?.specialization && (
+                          <div className="mb-4">
+                            <div className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Categories:</div>
+                            <div className="flex flex-wrap gap-1">
+                              {(() => {
+                                try {
+                                  const specs = JSON.parse((freelancer as any).onboarding_response.specialization);
+                                  return specs.slice(0, 2).map((spec: string, index: number) => (
+                                    <span key={index} className="px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 text-xs rounded">
+                                      {spec.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
+                                    </span>
+                                  ));
+                                } catch {
+                                  return (
+                                    <span className="px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 text-xs rounded">
+                                      {(freelancer as any).onboarding_response.specialization.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
+                                    </span>
+                                  );
+                                }
+                              })()}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Subcategories (Areas of Expertise) */}
                         {(freelancer as any).onboarding_response?.interested_subcategories && (freelancer as any).onboarding_response.interested_subcategories.length > 0 && (
                           <div className="mb-4">
-                            <div className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Areas of Expertise:</div>
+                            <div className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Subcategories:</div>
                             <div className="flex flex-wrap gap-1">
                               {(freelancer as any).onboarding_response.interested_subcategories.slice(0, 2).map((sub: any) => (
                                 <span key={sub.id} className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs rounded">
