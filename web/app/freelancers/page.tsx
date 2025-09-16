@@ -447,26 +447,29 @@ export default function FreelancersPage() {
                               {(freelancer as any).title && (
                                 <p className="text-sm text-blue-600 dark:text-blue-400 font-medium truncate mb-2">{(freelancer as any).title}</p>
                               )}
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center">
-                                  <span className="text-yellow-400 text-sm">★</span>
-                                  <span className="text-sm font-medium ml-1">{freelancer.rating}</span>
-                                  <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">({freelancer.total_reviews})</span>
-                                </div>
-                                {(freelancer.hourly_rate || 0) > 0 && (
-                                  <div className="text-base font-bold text-primary">
-                                    ${freelancer.hourly_rate}/hr
-                                  </div>
-                                )}
-                                <LikeButton
-                                  contentType="freelancer"
-                                  objectId={freelancer.user.id}
-                                  initialLikes={freelancer.likes_count || 0}
-                                  initialDislikes={freelancer.dislikes_count || 0}
-                                  size="sm"
-                                />
-                              </div>
                             </div>
+                          </div>
+                        </div>
+                        
+                        <div className="px-4 pb-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center">
+                              <span className="text-yellow-400 text-sm">★</span>
+                              <span className="text-sm font-medium ml-1">{freelancer.rating}</span>
+                              <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">({freelancer.total_reviews})</span>
+                            </div>
+                            {(freelancer.hourly_rate || 0) > 0 && (
+                              <div className="text-base font-bold text-primary">
+                                ${freelancer.hourly_rate}/hr
+                              </div>
+                            )}
+                            <LikeButton
+                              contentType="freelancer"
+                              objectId={freelancer.user.id}
+                              initialLikes={freelancer.likes_count || 0}
+                              initialDislikes={freelancer.dislikes_count || 0}
+                              size="sm"
+                            />
                           </div>
                         </div>
 
