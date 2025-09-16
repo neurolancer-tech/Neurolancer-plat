@@ -38,7 +38,7 @@ export default function AdminVerifyUsersPage() {
 
   useEffect(() => {
     const user = getUser();
-    if (!isAuthenticated() || user?.email !== 'kbrian1237@gmail.com') {
+    if (!isAuthenticated() || !user?.is_staff) {
       router.push('/');
       return;
     }
