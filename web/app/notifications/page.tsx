@@ -275,6 +275,21 @@ export default function NotificationsPage() {
           );
         }
         break;
+        
+      case 'verification':
+        buttons.push(
+          <button
+            key="view-verification"
+            onClick={(e) => {
+              e.stopPropagation();
+              router.push('/verify');
+            }}
+            className="px-3 py-1 text-xs bg-teal-100 text-teal-700 rounded-full hover:bg-teal-200 transition-colors"
+          >
+            View Status
+          </button>
+        );
+        break;
     }
     
     return buttons;
@@ -352,6 +367,14 @@ export default function NotificationsPage() {
             </svg>
           </div>
         );
+      case 'verification':
+        return (
+          <div className="w-8 h-8 bg-teal-100 rounded-full flex items-center justify-center">
+            <svg className={`${iconClasses} text-teal-600`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+        );
       default:
         return (
           <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
@@ -372,6 +395,7 @@ export default function NotificationsPage() {
       case 'job': return 'bg-indigo-100 text-indigo-800';
       case 'task_assignment': return 'bg-orange-100 text-orange-800';
       case 'system': return 'bg-red-100 text-red-800';
+      case 'verification': return 'bg-teal-100 text-teal-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -495,6 +519,16 @@ export default function NotificationsPage() {
               }`}
             >
               Tasks
+            </button>
+            <button
+              onClick={() => setFilter('verification')}
+              className={`px-4 py-3 text-sm font-medium ${
+                filter === 'verification'
+                  ? 'border-b-2 border-primary text-primary'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              Verification
             </button>
           </div>
           

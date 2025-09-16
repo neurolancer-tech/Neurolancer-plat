@@ -12,6 +12,7 @@ from .verification_serializers import (
     VerificationBadgeSerializer,
     AdminVerificationUpdateSerializer
 )
+from .notification_service import NotificationService
 
 class VerificationPagination(PageNumberPagination):
     page_size = 20
@@ -42,6 +43,12 @@ def submit_verification_request(request):
         serializer = VerificationRequestCreateSerializer(data=request.data)
         if serializer.is_valid():
             verification_request = serializer.save(user=request.user)
+            
+            # Send notification
+            NotificationService.send_verification_notification(
+                user=request.user,
+                status='submitted'
+            )
             
             response_serializer = VerificationRequestSerializer(verification_request)
             return Response({
@@ -147,6 +154,9 @@ def manage_verification_request(request, request_id):
             
             if serializer.is_valid():
                 with transaction.atomic():
+                    # Get old status for notification
+                    old_status = VerificationRequest.objects.get(id=verification_request.id).status
+                    
                     # Update the verification request
                     verification_request = serializer.save(
                         reviewed_by=request.user,
@@ -173,6 +183,25 @@ def manage_verification_request(request, request_id):
                         VerificationBadge.objects.filter(
                             user=verification_request.user
                         ).update(is_verified=False)
+                    
+                    # Send notification if status changed
+                    if old_status != verification_request.status:
+                        if verification_request.status == 'verified':
+                            NotificationService.send_verification_notification(
+                                user=verification_request.user,
+                                status='approved'
+                            )
+                        elif verification_request.status == 'rejected':
+                            NotificationService.send_verification_notification(
+                                user=verification_request.user,
+                                status='rejected',
+                                message=verification_request.admin_notes or ''
+                            )
+                        elif verification_request.status == 'verifying':
+                            NotificationService.send_verification_notification(
+                                user=verification_request.user,
+                                status='pending_review'
+                            )
                 
                 response_serializer = VerificationRequestSerializer(verification_request)
                 return Response({

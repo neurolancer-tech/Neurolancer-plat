@@ -93,7 +93,8 @@ export default function NotificationCenter() {
       proposal: '📝',
       system: '🔔',
       review: '⭐',
-      help: '❓'
+      help: '❓',
+      verification: '✅'
     };
     return icons[type as keyof typeof icons] || '🔔';
   };

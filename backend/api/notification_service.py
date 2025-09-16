@@ -187,12 +187,44 @@ class NotificationService:
             return 0
     
     @staticmethod
+    def send_verification_notification(user, status, message=''):
+        """Send verification-related notifications"""
+        try:
+            if status == 'submitted':
+                title = "Verification Request Submitted"
+                message = "Your identity verification request has been submitted and is under review. You'll be notified once it's processed."
+                action_url = '/verify'
+            elif status == 'approved':
+                title = "Verification Approved"
+                message = f"Congratulations! Your identity verification has been approved. You now have a verified badge on your profile. {message}"
+                action_url = '/profile'
+            elif status == 'rejected':
+                title = "Verification Rejected"
+                message = f"Your identity verification request has been rejected. {message} You can submit a new request with updated documents."
+                action_url = '/verify'
+            elif status == 'pending_review':
+                title = "Verification Under Review"
+                message = "Your verification documents are currently being reviewed by our team. This process typically takes 1-3 business days."
+                action_url = '/verify'
+            
+            NotificationService.create_notification(
+                user=user,
+                title=title,
+                message=message,
+                notification_type='verification',
+                action_url=action_url
+            )
+            
+        except Exception as e:
+            logger.error(f"Failed to send verification notification: {e}")
+    
+    @staticmethod
     def get_default_preferences(user):
         """Create default notification preferences for user"""
         try:
             categories = [
                 'order_updates', 'messages', 'job_alerts', 'system_notifications',
-                'proposals', 'payments', 'reviews'
+                'proposals', 'payments', 'reviews', 'verification'
             ]
             
             delivery_methods = ['in_app', 'email']

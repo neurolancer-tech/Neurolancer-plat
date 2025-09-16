@@ -663,6 +663,7 @@ class Notification(models.Model):
         ('review', 'Review Notification'),
         ('help', 'Help Request'),
         ('group_invite', 'Group Invitation'),
+        ('verification', 'Verification Update'),
     )
     
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
@@ -1055,6 +1056,7 @@ class NotificationPreference(models.Model):
         ('proposals', 'Proposal Updates'),
         ('payments', 'Payment Notifications'),
         ('reviews', 'Review Notifications'),
+        ('verification', 'Verification Updates'),
     )
     
     DELIVERY_METHODS = (

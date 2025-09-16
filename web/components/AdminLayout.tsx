@@ -12,6 +12,7 @@ interface AdminLayoutProps {
 const adminNavItems = [
   { href: '/admin', label: 'Dashboard', icon: '📊' },
   { href: '/admin/users', label: 'Users', icon: '👥' },
+  { href: '/admin/verify-users', label: 'User Verification', icon: '✅' },
   { href: '/admin/gigs', label: 'Gigs', icon: '🚀' },
   { href: '/admin/jobs', label: 'Jobs', icon: '💼' },
   { href: '/admin/orders', label: 'Orders', icon: '📋' },
