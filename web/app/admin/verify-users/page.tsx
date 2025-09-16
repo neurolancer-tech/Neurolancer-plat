@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import AdminLayout from '@/components/AdminLayout';
 import { isAuthenticated, getUser } from '@/lib/auth';
-import { api } from '@/lib/api';
+import api from '@/lib/api';
 import toast from 'react-hot-toast';
 
 interface VerificationRequest {
@@ -55,11 +55,13 @@ export default function AdminVerifyUsersPage() {
       setLoading(true);
       const response = await api.get(`/verification/admin/requests/?status=${statusFilter}`);
       if (response.data.status === 'success') {
-        setRequests(response.data.data);
+        setRequests(response.data.data || []);
+      } else {
+        setRequests([]);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading verification requests:', error);
-      toast.error('Failed to load verification requests');
+      toast.error(error.response?.data?.message || 'Failed to load verification requests');
     } finally {
       setLoading(false);
     }

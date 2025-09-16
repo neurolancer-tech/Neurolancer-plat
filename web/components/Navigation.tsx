@@ -54,7 +54,7 @@ export default function Navigation() {
         <div className="px-2 sm:px-3 lg:px-4">
           <div className="flex justify-between items-center h-20">
             <div className="flex items-center space-x-4">
-              <Link href="/" className="flex items-center">
+              <Link href="/" className="flex items-center p-2 md:p-0">
                 <Image
                   src="/assets/Neurolancer-logo/vector/default-monochrome-white.svg"
                   alt="Neurolancer"
@@ -274,7 +274,7 @@ export default function Navigation() {
               {/* Header */}
               <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
                 <Link href="/" onClick={() => setShowMobileMenu(false)}>
-                  <div className="px-3 py-2 rounded-lg" style={{backgroundColor: '#0D9E86'}}>
+                  <div className="px-3 py-3 rounded-lg" style={{backgroundColor: '#0D9E86'}}>
                     <Image
                       src="/assets/Neurolancer-logo/vector/default-monochrome-white.svg"
                       alt="Neurolancer"

@@ -426,53 +426,57 @@ export default function FreelancersPage() {
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                     {paginatedFreelancers.map(freelancer => (
-                      <div key={freelancer.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-200 dark:border-gray-700 overflow-hidden">
-                        <div className="p-6 pb-4">
-                          <div className="flex items-start space-x-4">
+                      <div key={freelancer.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col h-full">
+                        <div className="p-4">
+                          <div className="flex items-start space-x-3">
                             <Avatar
                               src={freelancer.profile_picture}
                               avatarType={(freelancer.avatar_type as "upload" | "avatar" | "google") || 'avatar'}
                               selectedAvatar={freelancer.selected_avatar}
                               googlePhotoUrl={freelancer.google_photo_url}
-                              size="lg"
+                              size="md"
                               className="flex-shrink-0"
                             />
                             <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2">
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 truncate">
-                                  {freelancer.user.first_name || freelancer.user.username} {freelancer.user.last_name}
-                                </h3>
-                                <VerificationBadge isVerified={(freelancer as any).is_verified || false} size="sm" />
-                              </div>
-                              {(freelancer as any).title && (
-                                <p className="text-sm text-blue-600 dark:text-blue-400 font-medium truncate">{(freelancer as any).title}</p>
-                              )}
-                              <div className="flex items-center mt-1">
-                                <span className="text-yellow-400 text-sm">★</span>
-                                <span className="text-sm font-medium ml-1">{freelancer.rating}</span>
-                                <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">({freelancer.total_reviews})</span>
-                              </div>
-                            </div>
-                            <div className="text-right flex-shrink-0">
-                              {(freelancer.hourly_rate || 0) > 0 && (
-                                <div className="text-lg font-bold text-primary">
-                                  ${freelancer.hourly_rate}/hr
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 truncate">
+                                      {freelancer.user.first_name || freelancer.user.username} {freelancer.user.last_name}
+                                    </h3>
+                                    <VerificationBadge isVerified={(freelancer as any).is_verified || false} size="sm" />
+                                  </div>
+                                  {(freelancer as any).title && (
+                                    <p className="text-sm text-blue-600 dark:text-blue-400 font-medium truncate mb-1">{(freelancer as any).title}</p>
+                                  )}
+                                  <div className="flex items-center">
+                                    <span className="text-yellow-400 text-sm">★</span>
+                                    <span className="text-sm font-medium ml-1">{freelancer.rating}</span>
+                                    <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">({freelancer.total_reviews})</span>
+                                  </div>
                                 </div>
-                              )}
-                              <LikeButton
-                                contentType="freelancer"
-                                objectId={freelancer.user.id}
-                                initialLikes={freelancer.likes_count || 0}
-                                initialDislikes={freelancer.dislikes_count || 0}
-                                size="sm"
-                              />
+                                <div className="text-right flex-shrink-0 ml-2">
+                                  {(freelancer.hourly_rate || 0) > 0 && (
+                                    <div className="text-base font-bold text-primary mb-1">
+                                      ${freelancer.hourly_rate}/hr
+                                    </div>
+                                  )}
+                                  <LikeButton
+                                    contentType="freelancer"
+                                    objectId={freelancer.user.id}
+                                    initialLikes={freelancer.likes_count || 0}
+                                    initialDislikes={freelancer.dislikes_count || 0}
+                                    size="sm"
+                                  />
+                                </div>
+                              </div>
                             </div>
                           </div>
                         </div>
 
-                        <div className="px-6 pb-4">
+                        <div className="px-4 pb-3 flex-1">
                           {(freelancer as any).professionalProfile?.availability_status && (
-                            <div className="mb-3">
+                            <div className="mb-2">
                               <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                                 (freelancer as any).professionalProfile.availability_status === 'available' 
                                   ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
@@ -485,12 +489,12 @@ export default function FreelancersPage() {
                               </span>
                             </div>
                           )}
-                          <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-2 leading-relaxed">
+                          <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-2 leading-relaxed mb-3">
                             {freelancer.bio || 'No bio available'}
                           </p>
                         </div>
 
-                        <div className="px-6 pb-4 space-y-3">
+                        <div className="px-4 pb-3 space-y-2">
                           <div>
                             <div className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Skills</div>
                             <div className="flex flex-wrap gap-1">
@@ -537,7 +541,7 @@ export default function FreelancersPage() {
                               <div className="flex flex-wrap gap-1">
                                 {(freelancer as any).onboarding_response.interested_subcategories.slice(0, 2).map((sub: any) => (
                                   <span key={sub.id} className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs rounded-md">
-                                    {sub.name.length > 20 ? sub.name.substring(0, 20) + '...' : sub.name}
+                                    {sub.name.length > 15 ? sub.name.substring(0, 15) + '...' : sub.name}
                                   </span>
                                 ))}
                                 {(freelancer as any).onboarding_response.interested_subcategories.length > 2 && (
@@ -556,12 +560,12 @@ export default function FreelancersPage() {
                           )}
                         </div>
 
-                        <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-600">
+                        <div className="px-4 py-3 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-600 mt-auto">
                           <div className="flex space-x-2">
-                            <Link href={`/freelancer/${freelancer.user.id}`} className="flex-1 bg-primary text-white text-center text-sm py-2.5 px-4 rounded-lg hover:bg-primary/90 transition-colors font-medium">
+                            <Link href={`/freelancer/${freelancer.user.id}`} className="flex-1 bg-primary text-white text-center text-sm py-2 px-3 rounded-lg hover:bg-primary/90 transition-colors font-medium">
                               View Profile
                             </Link>
-                            <Link href={`/messages?user=${freelancer.user.id}`} className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-center text-sm py-2.5 px-4 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors font-medium">
+                            <Link href={`/messages?user=${freelancer.user.id}`} className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-center text-sm py-2 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors font-medium">
                               Message
                             </Link>
                           </div>
