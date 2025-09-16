@@ -37,30 +37,37 @@ export default function FreelancersPage() {
 
   const loadCategories = async () => {
     try {
-      // Try the new endpoint first, fallback to existing categories
-      let categoriesData = [];
+      // Use the categories with subcategories endpoint
+      const response = await api.get('/categories/with-subcategories/');
+      console.log('Categories API response:', response.data);
+      
+      if (response.data && Array.isArray(response.data)) {
+        setCategories(response.data);
+      } else {
+        console.error('Unexpected categories API response format:', response.data);
+        setCategories([]);
+      }
+    } catch (error) {
+      console.error('Error loading categories:', error);
+      // Fallback to basic categories endpoint
       try {
-        const response = await api.get('/categories-with-subcategories/');
-        categoriesData = response.data;
-      } catch {
-        // Fallback to existing categories endpoint
-        const response = await api.get('/categories/');
-        categoriesData = response.data.results || response.data || [];
+        const fallbackResponse = await api.get('/categories/');
+        const categoriesData = fallbackResponse.data.results || fallbackResponse.data || [];
         
         // Try to get subcategories for each category
         for (const category of categoriesData) {
           try {
-            const subResponse = await api.get(`/subcategories/?category=${category.id}`);
-            category.subcategories = subResponse.data.results || subResponse.data || [];
+            const subResponse = await api.get(`/categories/${category.id}/subcategories/`);
+            category.subcategories = subResponse.data || [];
           } catch {
             category.subcategories = [];
           }
         }
+        setCategories(categoriesData);
+      } catch (fallbackError) {
+        console.error('Fallback categories loading failed:', fallbackError);
+        setCategories([]);
       }
-      setCategories(categoriesData);
-    } catch (error) {
-      console.error('Error loading categories:', error);
-      setCategories([]);
     }
   };
 
@@ -135,29 +142,58 @@ export default function FreelancersPage() {
       const matchesRating = !filters.rating || (freelancer.rating || 0) >= parseFloat(filters.rating);
       const matchesMinLikes = !filters.minLikes || ((freelancer.likes_count || 0) >= parseInt(filters.minLikes));
       
-      // Category and subcategory filtering based on onboarding data
+      // Category and subcategory filtering based on skills and onboarding data
       let matchesCategory = true;
       let matchesSubcategory = true;
       
       if (filters.category || filters.subcategory) {
         const onboardingData = (freelancer as any).onboarding_response;
-        if (onboardingData?.interested_subcategories) {
-          if (filters.category) {
-            const categorySubcategories = categories.find(cat => cat.id.toString() === filters.category)?.subcategories || [];
-            const categorySubcategoryIds = categorySubcategories.map((sub: any) => sub.id);
-            matchesCategory = onboardingData.interested_subcategories.some((sub: any) => 
-              categorySubcategoryIds.includes(sub.id)
-            );
+        const skills = (freelancer.skills || '').toLowerCase();
+        const title = ((freelancer as any).title || '').toLowerCase();
+        const bio = (freelancer.bio || '').toLowerCase();
+        
+        if (filters.category) {
+          const selectedCategory = categories.find(cat => cat.id.toString() === filters.category);
+          if (selectedCategory) {
+            const categoryName = selectedCategory.name.toLowerCase();
+            
+            // Check if category matches skills, title, bio, or onboarding data
+            matchesCategory = skills.includes(categoryName) || 
+                            title.includes(categoryName) || 
+                            bio.includes(categoryName);
+            
+            // Also check onboarding data if available
+            if (!matchesCategory && onboardingData?.interested_subcategories) {
+              const categorySubcategories = selectedCategory.subcategories || [];
+              const categorySubcategoryIds = categorySubcategories.map((sub: any) => sub.id);
+              matchesCategory = onboardingData.interested_subcategories.some((sub: any) => 
+                categorySubcategoryIds.includes(sub.id)
+              );
+            }
+          } else {
+            matchesCategory = false;
           }
-          
-          if (filters.subcategory) {
-            matchesSubcategory = onboardingData.interested_subcategories.some((sub: any) => 
-              sub.id.toString() === filters.subcategory
-            );
+        }
+        
+        if (filters.subcategory) {
+          const selectedSubcategory = subcategories.find(sub => sub.id.toString() === filters.subcategory);
+          if (selectedSubcategory) {
+            const subcategoryName = selectedSubcategory.name.toLowerCase();
+            
+            // Check if subcategory matches skills, title, bio, or onboarding data
+            matchesSubcategory = skills.includes(subcategoryName) || 
+                               title.includes(subcategoryName) || 
+                               bio.includes(subcategoryName);
+            
+            // Also check onboarding data if available
+            if (!matchesSubcategory && onboardingData?.interested_subcategories) {
+              matchesSubcategory = onboardingData.interested_subcategories.some((sub: any) => 
+                sub.id.toString() === filters.subcategory
+              );
+            }
+          } else {
+            matchesSubcategory = false;
           }
-        } else {
-          matchesCategory = false;
-          matchesSubcategory = false;
         }
       }
       
@@ -308,7 +344,7 @@ export default function FreelancersPage() {
                   <option value="">All Categories</option>
                   {categories.map(category => (
                     <option key={category.id} value={category.id}>
-                      {category.name}
+                      {category.icon && `${category.icon} `}{category.name}
                     </option>
                   ))}
                 </select>
@@ -316,13 +352,13 @@ export default function FreelancersPage() {
 
               {subcategories.length > 0 && (
                 <div className="mb-3">
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Subcategory</label>
+                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Areas of Expertise</label>
                   <select
                     value={filters.subcategory}
                     onChange={(e) => setFilters({...filters, subcategory: e.target.value})}
                     className="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:text-white"
                   >
-                    <option value="">All Subcategories</option>
+                    <option value="">All Areas</option>
                     {subcategories.map(subcategory => (
                       <option key={subcategory.id} value={subcategory.id}>
                         {subcategory.name}
@@ -357,7 +393,23 @@ export default function FreelancersPage() {
               <div className="p-6 border-b flex justify-between items-center">
                 <div>
                   <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">AI Experts</h2>
-                  <p className="text-gray-600 dark:text-gray-400">{filteredFreelancers.length} freelancers found</p>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    {filteredFreelancers.length} freelancers found
+                    {(filters.category || filters.subcategory) && (
+                      <span className="ml-2 text-sm">
+                        {filters.category && categories.find(cat => cat.id.toString() === filters.category) && (
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 mr-1">
+                            {categories.find(cat => cat.id.toString() === filters.category)?.name}
+                          </span>
+                        )}
+                        {filters.subcategory && subcategories.find(sub => sub.id.toString() === filters.subcategory) && (
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                            {subcategories.find(sub => sub.id.toString() === filters.subcategory)?.name}
+                          </span>
+                        )}
+                      </span>
+                    )}
+                  </p>
                 </div>
                 <select
                   value={filters.sortBy}
@@ -467,11 +519,11 @@ export default function FreelancersPage() {
 
                         {(freelancer as any).onboarding_response?.interested_subcategories && (freelancer as any).onboarding_response.interested_subcategories.length > 0 && (
                           <div className="mb-4">
-                            <div className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Expertise:</div>
+                            <div className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Areas of Expertise:</div>
                             <div className="flex flex-wrap gap-1">
                               {(freelancer as any).onboarding_response.interested_subcategories.slice(0, 2).map((sub: any) => (
                                 <span key={sub.id} className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs rounded">
-                                  {sub.name.length > 30 ? sub.name.substring(0, 30) + '...' : sub.name}
+                                  {sub.name.length > 25 ? sub.name.substring(0, 25) + '...' : sub.name}
                                 </span>
                               ))}
                               {(freelancer as any).onboarding_response.interested_subcategories.length > 2 && (
