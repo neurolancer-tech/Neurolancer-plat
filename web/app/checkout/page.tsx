@@ -49,7 +49,7 @@ function CheckoutContent() {
   const [feeBreakdown, setFeeBreakdown] = useState({
     base_amount: 0,
     platform_fee: 0,
-    platform_fee_percentage: 10,
+    platform_fee_percentage: 5,
     processing_fee: 50,
     total_amount: 0,
     currency: 'KES'
@@ -177,13 +177,13 @@ function CheckoutContent() {
       const baseAmountUSD = hours_worked && hourly_rate 
         ? parseFloat(hours_worked) * parseFloat(hourly_rate)
         : parseFloat(amount || '0');
-      const platformFeeUSD = baseAmountUSD * 0.10;
+      const platformFeeUSD = baseAmountUSD * 0.05;
       const processingFeeUSD = 2; // $2 processing fee
       
       setFeeBreakdown({
         base_amount: await convertUSDToKES(baseAmountUSD),
         platform_fee: await convertUSDToKES(platformFeeUSD),
-        platform_fee_percentage: 10,
+        platform_fee_percentage: 5,
         processing_fee: await convertUSDToKES(processingFeeUSD),
         total_amount: await convertUSDToKES(baseAmountUSD + platformFeeUSD + processingFeeUSD),
         currency: 'KES'

@@ -60,7 +60,7 @@ function CourseCheckoutContent() {
       
       // Convert USD to KES
       const converted = await convertUSDToKES(courseData.price);
-      const fee = Math.round(converted * 0.10);
+      const fee = Math.round(converted * 0.05);
       const total = converted + fee;
       
       setKesPrice(converted);
@@ -223,7 +223,7 @@ function CourseCheckoutContent() {
                   <span className="font-medium text-gray-900 dark:text-gray-100">KES {kesPrice.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Processing Fee (10%):</span>
+                  <span className="text-gray-600 dark:text-gray-400">Processing Fee (5%):</span>
                   <span className="font-medium text-gray-900 dark:text-gray-100">KES {processingFee.toLocaleString()}</span>
                 </div>
                 <div className="border-t pt-3">

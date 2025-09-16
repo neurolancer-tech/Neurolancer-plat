@@ -74,7 +74,7 @@ export default function SubmitProposalPage() {
 
   const calculateFees = useMemo(() => {
     const price = parseFloat(formData.proposed_price) || 0;
-    const platformFee = price * 0.1; // 10% platform fee
+    const platformFee = price * 0.05; // 5% platform fee
     const youReceive = price - platformFee;
     return { price, platformFee, youReceive };
   }, [formData.proposed_price]);
@@ -290,7 +290,7 @@ export default function SubmitProposalPage() {
                         <span>${price.toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between text-gray-600 mt-1">
-                        <span>Neurolancer fee (10%):</span>
+                        <span>Neurolancer fee (5%):</span>
                         <span>${platformFee.toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between font-semibold text-gray-900 mt-2 pt-2 border-t">
