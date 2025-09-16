@@ -92,7 +92,7 @@ export default function ReportModal({ isOpen, onClose, reportType, reportData }:
         submitData.append('evidence_file', formData.evidence_file);
       }
 
-      const response = await api.post('/reports/create/', submitData, {
+      const response = await api.post('/user-reports/create/', submitData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },

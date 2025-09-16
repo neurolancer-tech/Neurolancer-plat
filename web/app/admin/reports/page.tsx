@@ -103,7 +103,7 @@ export default function AdminReportsPage() {
         ...filters
       });
 
-      const response = await api.get(`/reports/?${params}`);
+      const response = await api.get(`/user-reports/?${params}`);
       setReports(response.data.reports || []);
       setPagination(prev => ({
         ...prev,
@@ -120,7 +120,7 @@ export default function AdminReportsPage() {
 
   const loadStats = async () => {
     try {
-      const response = await api.get('/reports/statistics/');
+      const response = await api.get('/user-reports/statistics/');
       setStats(response.data);
     } catch (error) {
       console.error('Error loading stats:', error);
@@ -129,7 +129,7 @@ export default function AdminReportsPage() {
 
   const takeAction = async (reportId: number) => {
     try {
-      await api.post(`/reports/${reportId}/action/`, actionData);
+      await api.post(`/user-reports/${reportId}/action/`, actionData);
       toast.success('Action taken successfully');
       setShowActionModal(false);
       loadReports();
