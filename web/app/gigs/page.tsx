@@ -80,7 +80,7 @@ export default function GigsPage() {
   const loadSubcategories = async (categoryId: string) => {
     setSubcategoriesLoading(true);
     try {
-      const response = await api.get(`/subcategories/?category=${categoryId}`);
+      const response = await api.get(`/categories/${categoryId}/subcategories/`);
       setSubcategories(response.data.results || response.data);
     } catch (error) {
       console.error('Error loading subcategories:', error);

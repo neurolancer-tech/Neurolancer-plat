@@ -4,6 +4,7 @@ import './globals.css'
 import { ThemeProvider } from '@/contexts/ThemeContext'
 import { Toaster } from 'react-hot-toast'
 import Footer from '@/components/Footer'
+import { Analytics } from '@vercel/analytics/next'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -88,6 +89,7 @@ export default function RootLayout({
               },
             }}
           />
+          <Analytics />
         </ThemeProvider>
       </body>
     </html>
