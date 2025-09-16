@@ -9,11 +9,17 @@ class Command(BaseCommand):
         password = 'admin123'
         email = 'admin@neurolancer.com'
         
-        if User.objects.filter(username=username).exists():
+        try:
+            user = User.objects.get(username=username)
+            user.set_password(password)
+            user.is_staff = True
+            user.is_superuser = True
+            user.is_active = True
+            user.save()
             self.stdout.write(
-                self.style.WARNING(f'Admin user "{username}" already exists')
+                self.style.SUCCESS(f'Admin user "{username}" password reset')
             )
-        else:
+        except User.DoesNotExist:
             User.objects.create_superuser(
                 username=username,
                 email=email,
