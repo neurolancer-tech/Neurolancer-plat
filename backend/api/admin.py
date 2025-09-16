@@ -15,6 +15,7 @@ from .models import (
     Transaction, ProfessionalDocument, Like, NewsletterSubscriber, Newsletter, NewsletterSendLog,
     NewsletterTemplate, NewsletterContent, AIConversation, AIMessage
 )
+from .verification_models import VerificationRequest, VerificationBadge
 
 # Learning & Development Admin
 @admin.register(Course)
@@ -481,6 +482,36 @@ class UserVerificationAdmin(admin.ModelAdmin):
     list_filter = ['verification_type', 'status', 'created_at']
     search_fields = ['user__username']
 
+@admin.register(VerificationRequest)
+class VerificationRequestAdmin(admin.ModelAdmin):
+    list_display = ['user', 'status', 'document_type', 'created_at', 'reviewed_at', 'reviewed_by']
+    list_filter = ['status', 'document_type', 'created_at']
+    search_fields = ['user__username', 'user__email']
+    readonly_fields = ['created_at', 'reviewed_at']
+    
+    fieldsets = (
+        ('User Information', {
+            'fields': ('user', 'status')
+        }),
+        ('Documents', {
+            'fields': ('document_type', 'id_document', 'selfie_document', 'address_document')
+        }),
+        ('Admin Review', {
+            'fields': ('reviewed_by', 'reviewed_at', 'admin_notes')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at',),
+            'classes': ['collapse']
+        })
+    )
+
+@admin.register(VerificationBadge)
+class VerificationBadgeAdmin(admin.ModelAdmin):
+    list_display = ['user', 'is_verified', 'verification_level', 'verified_at']
+    list_filter = ['is_verified', 'verification_level', 'verified_at']
+    search_fields = ['user__username', 'user__email']
+    readonly_fields = ['verified_at']
+
 @admin.register(SavedSearch)
 class SavedSearchAdmin(admin.ModelAdmin):
     list_display = ['user', 'name', 'search_type', 'is_active', 'email_notifications', 'created_at']
@@ -666,3 +697,26 @@ admin.site.register(User, CustomUserAdmin)
 admin.site.site_header = 'Neurolancer Admin Panel'
 admin.site.site_title = 'Neurolancer Admin'
 admin.site.index_title = 'Welcome to Neurolancer Administration'
+
+# Custom admin site configuration
+class NeurolancerAdminSite(admin.AdminSite):
+    site_header = 'Neurolancer Admin Panel'
+    site_title = 'Neurolancer Admin'
+    index_title = 'Welcome to Neurolancer Administration'
+    
+    def get_app_list(self, request, app_label=None):
+        app_list = super().get_app_list(request, app_label)
+        
+        # Custom ordering for better organization
+        app_order = {
+            'api': 0,
+            'auth': 1,
+            'contenttypes': 2,
+            'sessions': 3,
+            'admin': 4,
+        }
+        
+        # Sort apps by custom order
+        app_list.sort(key=lambda x: app_order.get(x['app_label'], 999))
+        
+        return app_list
