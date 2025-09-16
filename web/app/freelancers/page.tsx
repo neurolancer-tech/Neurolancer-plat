@@ -431,40 +431,54 @@ export default function FreelancersPage() {
                     <p className="text-gray-600 dark:text-gray-400">Try adjusting your filters or search terms</p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                     {paginatedFreelancers.map(freelancer => (
-                      <div key={freelancer.id} className="card p-6 hover:shadow-md transition-shadow">
-                        <div className="text-center mb-4">
-                          <Avatar
-                            src={freelancer.profile_picture}
-                            avatarType={(freelancer.avatar_type as "upload" | "avatar" | "google") || 'avatar'}
-                            selectedAvatar={freelancer.selected_avatar}
-                            googlePhotoUrl={freelancer.google_photo_url}
-                            size="lg"
-                            className="mx-auto mb-3"
-                          />
-                          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                            {freelancer.user.first_name || freelancer.user.username} {freelancer.user.last_name}
-                          </h3>
-                          {(freelancer as any).title && (
-                            <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">{(freelancer as any).title}</p>
-                          )}
-                          <p className="text-sm text-gray-600 dark:text-gray-400">Freelancer</p>
+                      <div key={freelancer.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-200 dark:border-gray-700 overflow-hidden">
+                        {/* Header */}
+                        <div className="p-6 pb-4">
+                          <div className="flex items-start space-x-4">
+                            <Avatar
+                              src={freelancer.profile_picture}
+                              avatarType={(freelancer.avatar_type as "upload" | "avatar" | "google") || 'avatar'}
+                              selectedAvatar={freelancer.selected_avatar}
+                              googlePhotoUrl={freelancer.google_photo_url}
+                              size="lg"
+                              className="flex-shrink-0"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 truncate">
+                                {freelancer.user.first_name || freelancer.user.username} {freelancer.user.last_name}
+                              </h3>
+                              {(freelancer as any).title && (
+                                <p className="text-sm text-blue-600 dark:text-blue-400 font-medium truncate">{(freelancer as any).title}</p>
+                              )}
+                              <div className="flex items-center mt-1">
+                                <span className="text-yellow-400 text-sm">★</span>
+                                <span className="text-sm font-medium ml-1">{freelancer.rating}</span>
+                                <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">({freelancer.total_reviews})</span>
+                              </div>
+                            </div>
+                            <div className="text-right flex-shrink-0">
+                              {(freelancer.hourly_rate || 0) > 0 && (
+                                <div className="text-lg font-bold text-primary">
+                                  ${freelancer.hourly_rate}/hr
+                                </div>
+                              )}
+                              <LikeButton
+                                contentType="freelancer"
+                                objectId={freelancer.user.id}
+                                initialLikes={freelancer.likes_count || 0}
+                                initialDislikes={freelancer.dislikes_count || 0}
+                                size="sm"
+                              />
+                            </div>
+                          </div>
                         </div>
 
-                        <div className="mb-4">
-                          <div className="flex items-center justify-center mb-2">
-                            <span className="text-yellow-400 mr-1">★</span>
-                            <span className="font-medium">{freelancer.rating}</span>
-                            <span className="text-gray-600 dark:text-gray-400 ml-1">({freelancer.total_reviews} reviews)</span>
-                          </div>
-                          {(freelancer.hourly_rate || 0) > 0 && (
-                            <div className="text-center text-lg font-bold text-primary">
-                              ${freelancer.hourly_rate}/hr
-                            </div>
-                          )}
+                        {/* Status & Bio */}
+                        <div className="px-6 pb-4">
                           {(freelancer as any).professionalProfile?.availability_status && (
-                            <div className="text-center mt-1">
+                            <div className="mb-3">
                               <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                                 (freelancer as any).professionalProfile.availability_status === 'available' 
                                   ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
@@ -477,100 +491,95 @@ export default function FreelancersPage() {
                               </span>
                             </div>
                           )}
-                          <div className="flex justify-center mt-2">
-                            <LikeButton
-                              contentType="freelancer"
-                              objectId={freelancer.user.id}
-                              initialLikes={freelancer.likes_count || 0}
-                              initialDislikes={freelancer.dislikes_count || 0}
-                              size="sm"
-                            />
-                          </div>
+                          <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-2 leading-relaxed">
+                            {freelancer.bio || 'No bio available'}
+                          </p>
                         </div>
 
-                        <p className="text-gray-700 dark:text-gray-300 text-sm mb-4 line-clamp-3">
-                          {freelancer.bio || 'No bio available'}
-                        </p>
-
-                        <div className="mb-4">
-                          <div className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Skills:</div>
-                          <div className="flex flex-wrap gap-1">
-                            {(freelancer.skills || '').split(',').filter(skill => skill.trim()).slice(0, 3).map((skill: string, index: number) => (
-                              <span key={index} className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs rounded">
-                                {skill.trim()}
-                              </span>
-                            ))}
-                            {!freelancer.skills && (
-                              <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-xs rounded italic">
-                                No skills listed
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        
-                        {(freelancer as any).professionalProfile?.experience_years > 0 && (
-                          <div className="mb-4">
-                            <div className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Experience:</div>
-                            <div className="text-xs text-gray-600 dark:text-gray-400">
-                              {(freelancer as any).professionalProfile.experience_years} years
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Categories (Specialization) */}
-                        {(freelancer as any).onboarding_response?.specialization && (
-                          <div className="mb-4">
-                            <div className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Categories:</div>
+                        {/* Skills & Categories */}
+                        <div className="px-6 pb-4 space-y-3">
+                          {/* Skills */}
+                          <div>
+                            <div className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Skills</div>
                             <div className="flex flex-wrap gap-1">
-                              {(() => {
-                                try {
-                                  const specs = JSON.parse((freelancer as any).onboarding_response.specialization);
-                                  return specs.slice(0, 2).map((spec: string, index: number) => (
-                                    <span key={index} className="px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 text-xs rounded">
-                                      {spec.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
-                                    </span>
-                                  ));
-                                } catch {
-                                  return (
-                                    <span className="px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 text-xs rounded">
-                                      {(freelancer as any).onboarding_response.specialization.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
-                                    </span>
-                                  );
-                                }
-                              })()}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Subcategories (Areas of Expertise) */}
-                        {(freelancer as any).onboarding_response?.interested_subcategories && (freelancer as any).onboarding_response.interested_subcategories.length > 0 && (
-                          <div className="mb-4">
-                            <div className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Subcategories:</div>
-                            <div className="flex flex-wrap gap-1">
-                              {(freelancer as any).onboarding_response.interested_subcategories.slice(0, 2).map((sub: any) => (
-                                <span key={sub.id} className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs rounded">
-                                  {sub.name.length > 25 ? sub.name.substring(0, 25) + '...' : sub.name}
+                              {(freelancer.skills || '').split(',').filter(skill => skill.trim()).slice(0, 3).map((skill: string, index: number) => (
+                                <span key={index} className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs rounded-md">
+                                  {skill.trim()}
                                 </span>
                               ))}
-                              {(freelancer as any).onboarding_response.interested_subcategories.length > 2 && (
-                                <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-xs rounded">
-                                  +{(freelancer as any).onboarding_response.interested_subcategories.length - 2} more
+                              {!freelancer.skills && (
+                                <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-xs rounded-md italic">
+                                  No skills listed
                                 </span>
                               )}
                             </div>
                           </div>
-                        )}
 
-                        <div className="flex space-x-2">
-                          <Link href={`/freelancer/${freelancer.user.id}`} className="flex-1 btn-primary text-center text-sm py-2">
-                            View Profile
-                          </Link>
-                          <Link href={`/messages?user=${freelancer.user.id}`} className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-center transition-colors text-sm">
-                            Message
-                          </Link>
+                          {/* Categories */}
+                          {(freelancer as any).onboarding_response?.specialization && (
+                            <div>
+                              <div className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Categories</div>
+                              <div className="flex flex-wrap gap-1">
+                                {(() => {
+                                  try {
+                                    const specs = JSON.parse((freelancer as any).onboarding_response.specialization);
+                                    return specs.slice(0, 2).map((spec: string, index: number) => (
+                                      <span key={index} className="px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 text-xs rounded-md">
+                                        {spec.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
+                                      </span>
+                                    ));
+                                  } catch {
+                                    return (
+                                      <span className="px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 text-xs rounded-md">
+                                        {(freelancer as any).onboarding_response.specialization.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
+                                      </span>
+                                    );
+                                  }
+                                })()}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Subcategories */}
+                          {(freelancer as any).onboarding_response?.interested_subcategories && (freelancer as any).onboarding_response.interested_subcategories.length > 0 && (
+                            <div>
+                              <div className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Expertise</div>
+                              <div className="flex flex-wrap gap-1">
+                                {(freelancer as any).onboarding_response.interested_subcategories.slice(0, 2).map((sub: any) => (
+                                  <span key={sub.id} className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs rounded-md">
+                                    {sub.name.length > 20 ? sub.name.substring(0, 20) + '...' : sub.name}
+                                  </span>
+                                ))}
+                                {(freelancer as any).onboarding_response.interested_subcategories.length > 2 && (
+                                  <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-xs rounded-md">
+                                    +{(freelancer as any).onboarding_response.interested_subcategories.length - 2}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Experience */}
+                          {(freelancer as any).professionalProfile?.experience_years > 0 && (
+                            <div className="text-xs text-gray-600 dark:text-gray-400">
+                              💼 {(freelancer as any).professionalProfile.experience_years} years experience
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Actions */}
+                        <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-600">
+                          <div className="flex space-x-2">
+                            <Link href={`/freelancer/${freelancer.user.id}`} className="flex-1 bg-primary text-white text-center text-sm py-2.5 px-4 rounded-lg hover:bg-primary/90 transition-colors font-medium">
+                              View Profile
+                            </Link>
+                            <Link href={`/messages?user=${freelancer.user.id}`} className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-center text-sm py-2.5 px-4 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors font-medium">
+                              Message
+                            </Link>
+                          </div>
                         </div>
                       </div>
-                    ))}
+                    ))
                   </div>
                 )}
               </div>
