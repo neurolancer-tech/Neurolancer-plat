@@ -204,10 +204,10 @@ def send_phone_verification(request):
             defaults={'user_type': 'client'}
         )
         
-        # Use Firebase service to send verification code
-        from .firebase_service import FirebaseService
+        # Use Firebase phone service to send verification code
+        from .firebase_phone_service import firebase_phone_service
         
-        result = FirebaseService.send_verification_code(clean_phone)
+        result = firebase_phone_service.send_verification_code(clean_phone)
         
         if result['success']:
             # Store verification info in user profile
@@ -260,8 +260,8 @@ def verify_phone_number(request):
         }, status=status.HTTP_400_BAD_REQUEST)
     
     try:
-        # Use Firebase service to verify the code
-        from .firebase_service import FirebaseService
+        # Use Firebase phone service to verify the code
+        from .firebase_phone_service import firebase_phone_service
         
         # Use session_info from request or fallback to stored session
         verification_session = session_info or profile.firebase_session_info
@@ -271,7 +271,7 @@ def verify_phone_number(request):
                 'error': 'No verification session found. Please request a new code.'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        result = FirebaseService.verify_phone_number(verification_session, code)
+        result = firebase_phone_service.verify_phone_number(verification_session, code)
         
         if result['success'] and result['verified']:
             # Mark phone as verified
