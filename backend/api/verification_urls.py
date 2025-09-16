@@ -12,4 +12,5 @@ urlpatterns = [
     path('admin/requests/', verification_views.list_verification_requests, name='admin_verification_requests'),
     path('admin/requests/<int:request_id>/', verification_views.manage_verification_request, name='admin_manage_verification'),
     path('admin/overview/', verification_views.admin_verification_overview, name='admin_verification_overview'),
+    path('admin/document/<int:request_id>/<str:doc_type>/', verification_views.serve_verification_document, name='serve_verification_document'),
 ]

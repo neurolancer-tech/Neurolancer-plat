@@ -354,7 +354,7 @@ export default function AdminVerifyUsersPage() {
                         <span><strong>Primary ID:</strong> {selectedRequest.id_document_type}</span>
                         {selectedRequest.id_document && (
                           <a
-                            href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${selectedRequest.id_document}`}
+                            href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/verification/admin/document/${selectedRequest.id}/id_document/`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-blue-600 hover:text-blue-800 text-xs bg-blue-50 px-2 py-1 rounded"
@@ -368,7 +368,7 @@ export default function AdminVerifyUsersPage() {
                           <span><strong>Secondary:</strong> {selectedRequest.secondary_document_type}</span>
                           {selectedRequest.secondary_document && (
                             <a
-                              href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${selectedRequest.secondary_document}`}
+                              href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/verification/admin/document/${selectedRequest.id}/secondary_document/`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-blue-600 hover:text-blue-800 text-xs bg-blue-50 px-2 py-1 rounded"
@@ -382,7 +382,7 @@ export default function AdminVerifyUsersPage() {
                         <div className="flex items-center justify-between">
                           <span><strong>Certificates:</strong> Uploaded</span>
                           <a
-                            href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${selectedRequest.certificates}`}
+                            href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/verification/admin/document/${selectedRequest.id}/certificates/`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-blue-600 hover:text-blue-800 text-xs bg-blue-50 px-2 py-1 rounded"

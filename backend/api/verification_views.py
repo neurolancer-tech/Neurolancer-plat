@@ -308,3 +308,42 @@ def admin_verification_overview(request):
             'status': 'error',
             'message': str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def serve_verification_document(request, request_id, doc_type):
+    """Serve verification documents with authentication"""
+    try:
+        # Check if user is admin
+        if not (request.user.is_superuser or request.user.email == 'kbrian1237@gmail.com'):
+            return Response({
+                'status': 'error',
+                'message': 'Admin access required'
+            }, status=status.HTTP_403_FORBIDDEN)
+        
+        verification_request = get_object_or_404(VerificationRequest, id=request_id)
+        
+        # Get the appropriate document field
+        document_field = None
+        if doc_type == 'id_document':
+            document_field = verification_request.id_document
+        elif doc_type == 'secondary_document':
+            document_field = verification_request.secondary_document
+        elif doc_type == 'certificates':
+            document_field = verification_request.certificates
+        
+        if not document_field:
+            return Response({
+                'status': 'error',
+                'message': 'Document not found'
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        # Redirect to the actual file URL
+        from django.http import HttpResponseRedirect
+        return HttpResponseRedirect(document_field.url)
+        
+    except Exception as e:
+        return Response({
+            'status': 'error',
+            'message': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
