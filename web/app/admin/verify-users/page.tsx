@@ -30,11 +30,15 @@ export default function AdminVerifyUsersPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [requests, setRequests] = useState<VerificationRequest[]>([]);
+  const [badges, setBadges] = useState<any[]>([]);
+  const [userVerifications, setUserVerifications] = useState<any[]>([]);
+  const [summary, setSummary] = useState<any>(null);
   const [selectedRequest, setSelectedRequest] = useState<VerificationRequest | null>(null);
   const [statusFilter, setStatusFilter] = useState('pending');
   const [updating, setUpdating] = useState(false);
   const [adminNotes, setAdminNotes] = useState('');
   const [newStatus, setNewStatus] = useState('');
+  const [activeTab, setActiveTab] = useState('requests');
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -48,20 +52,28 @@ export default function AdminVerifyUsersPage() {
       return;
     }
     loadVerificationRequests();
-  }, [router, statusFilter]);
+  }, [router]);
 
   const loadVerificationRequests = async () => {
     try {
       setLoading(true);
-      const response = await api.get(`/verification/admin/requests/?status=${statusFilter}`);
+      // Load comprehensive verification data
+      const response = await api.get('/verification/admin/overview/');
       if (response.data.status === 'success') {
-        setRequests(response.data.data || []);
+        const data = response.data.data;
+        setRequests(data.verification_requests || []);
+        setBadges(data.verification_badges || []);
+        setUserVerifications(data.user_verifications || []);
+        setSummary(data.summary || {});
       } else {
         setRequests([]);
+        setBadges([]);
+        setUserVerifications([]);
+        setSummary(null);
       }
     } catch (error: any) {
-      console.error('Error loading verification requests:', error);
-      toast.error(error.response?.data?.message || 'Failed to load verification requests');
+      console.error('Error loading verification data:', error);
+      toast.error(error.response?.data?.message || 'Failed to load verification data');
     } finally {
       setLoading(false);
     }
@@ -112,28 +124,84 @@ export default function AdminVerifyUsersPage() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">User Verification Management</h1>
           <p className="text-gray-600 dark:text-gray-400 mt-2">Review and manage user verification requests</p>
+          
+          {summary && (
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-6">
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                <div className="text-2xl font-bold text-blue-600">{summary.total_requests}</div>
+                <div className="text-sm text-blue-800 dark:text-blue-400">Total Requests</div>
+              </div>
+              <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg">
+                <div className="text-2xl font-bold text-yellow-600">{summary.pending_requests}</div>
+                <div className="text-sm text-yellow-800 dark:text-yellow-400">Pending</div>
+              </div>
+              <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+                <div className="text-2xl font-bold text-green-600">{summary.verified_users}</div>
+                <div className="text-sm text-green-800 dark:text-green-400">Verified Users</div>
+              </div>
+              <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+                <div className="text-2xl font-bold text-purple-600">{summary.total_badges}</div>
+                <div className="text-sm text-purple-800 dark:text-purple-400">Total Badges</div>
+              </div>
+              <div className="bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-lg">
+                <div className="text-2xl font-bold text-indigo-600">{summary.total_user_verifications}</div>
+                <div className="text-sm text-indigo-800 dark:text-indigo-400">User Verifications</div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Tab Navigation */}
+        <div className="mb-6">
+          <div className="border-b border-gray-200 dark:border-gray-700">
+            <nav className="flex space-x-8">
+              {[
+                { id: 'requests', label: 'Verification Requests', count: requests.length },
+                { id: 'badges', label: 'Verification Badges', count: badges.length },
+                { id: 'user_verifications', label: 'User Verifications', count: userVerifications.length }
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                    activeTab === tab.id
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  {tab.label} ({tab.count})
+                </button>
+              ))}
+            </nav>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Requests List */}
+          {/* Data List */}
           <div className="lg:col-span-2">
             <div className="card">
               <div className="p-6 border-b">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Verification Requests</h2>
-                  <select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    className="input-field w-auto"
-                  >
-                    <option value="">All Statuses</option>
-                    <option value="pending">Pending</option>
-                    <option value="verifying">Verifying</option>
-                    <option value="verified">Verified</option>
-                    <option value="rejected">Rejected</option>
-                    <option value="cancelled">Cancelled</option>
-                    <option value="invalid">Invalid</option>
-                  </select>
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                    {activeTab === 'requests' && 'Verification Requests'}
+                    {activeTab === 'badges' && 'Verification Badges'}
+                    {activeTab === 'user_verifications' && 'User Verifications'}
+                  </h2>
+                  {activeTab === 'requests' && (
+                    <select
+                      value={statusFilter}
+                      onChange={(e) => setStatusFilter(e.target.value)}
+                      className="input-field w-auto"
+                    >
+                      <option value="">All Statuses</option>
+                      <option value="pending">Pending</option>
+                      <option value="verifying">Verifying</option>
+                      <option value="verified">Verified</option>
+                      <option value="rejected">Rejected</option>
+                      <option value="cancelled">Cancelled</option>
+                      <option value="invalid">Invalid</option>
+                    </select>
+                  )}
                 </div>
               </div>
 
@@ -141,37 +209,105 @@ export default function AdminVerifyUsersPage() {
                 {loading ? (
                   <div className="p-8 text-center">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-                    <p className="text-gray-500 mt-2">Loading requests...</p>
-                  </div>
-                ) : requests.length === 0 ? (
-                  <div className="p-8 text-center">
-                    <p className="text-gray-500">No verification requests found</p>
+                    <p className="text-gray-500 mt-2">Loading data...</p>
                   </div>
                 ) : (
-                  requests.map((request) => (
-                    <div
-                      key={request.id}
-                      onClick={() => handleRequestClick(request)}
-                      className={`p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
-                        selectedRequest?.id === request.id ? 'bg-blue-50 dark:bg-blue-900/20' : ''
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h3 className="font-medium text-gray-900 dark:text-gray-100">
-                            {request.full_name || `${request.user_first_name} ${request.user_last_name}`}
-                          </h3>
-                          <p className="text-sm text-gray-500">{request.user_email}</p>
-                          <p className="text-xs text-gray-400 mt-1">
-                            Submitted: {new Date(request.created_at).toLocaleDateString()}
-                          </p>
+                  <>
+                    {activeTab === 'requests' && (
+                      requests.filter(req => !statusFilter || req.status === statusFilter).length === 0 ? (
+                        <div className="p-8 text-center">
+                          <p className="text-gray-500">No verification requests found</p>
                         </div>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(request.status)}`}>
-                          {request.status}
-                        </span>
-                      </div>
-                    </div>
-                  ))
+                      ) : (
+                        requests.filter(req => !statusFilter || req.status === statusFilter).map((request) => (
+                          <div
+                            key={request.id}
+                            onClick={() => handleRequestClick(request)}
+                            className={`p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
+                              selectedRequest?.id === request.id ? 'bg-blue-50 dark:bg-blue-900/20' : ''
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <h3 className="font-medium text-gray-900 dark:text-gray-100">
+                                  {request.full_name || `${request.user_first_name} ${request.user_last_name}`}
+                                </h3>
+                                <p className="text-sm text-gray-500">{request.user_email}</p>
+                                <p className="text-xs text-gray-400 mt-1">
+                                  Submitted: {new Date(request.created_at).toLocaleDateString()}
+                                </p>
+                              </div>
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(request.status)}`}>
+                                {request.status}
+                              </span>
+                            </div>
+                          </div>
+                        ))
+                      )
+                    )}
+                    
+                    {activeTab === 'badges' && (
+                      badges.length === 0 ? (
+                        <div className="p-8 text-center">
+                          <p className="text-gray-500">No verification badges found</p>
+                        </div>
+                      ) : (
+                        badges.map((badge) => (
+                          <div key={badge.user} className="p-4">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <h3 className="font-medium text-gray-900 dark:text-gray-100">
+                                  {badge.username}
+                                </h3>
+                                <p className="text-sm text-gray-500">
+                                  Level: {badge.verification_level}
+                                </p>
+                                {badge.verified_at && (
+                                  <p className="text-xs text-gray-400 mt-1">
+                                    Verified: {new Date(badge.verified_at).toLocaleDateString()}
+                                  </p>
+                                )}
+                              </div>
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                badge.is_verified ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                              }`}>
+                                {badge.is_verified ? 'Verified' : 'Not Verified'}
+                              </span>
+                            </div>
+                          </div>
+                        ))
+                      )
+                    )}
+                    
+                    {activeTab === 'user_verifications' && (
+                      userVerifications.length === 0 ? (
+                        <div className="p-8 text-center">
+                          <p className="text-gray-500">No user verifications found</p>
+                        </div>
+                      ) : (
+                        userVerifications.map((verification) => (
+                          <div key={verification.id} className="p-4">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <h3 className="font-medium text-gray-900 dark:text-gray-100">
+                                  User ID: {verification.user}
+                                </h3>
+                                <p className="text-sm text-gray-500">
+                                  Type: {verification.verification_type}
+                                </p>
+                                <p className="text-xs text-gray-400 mt-1">
+                                  Created: {new Date(verification.created_at).toLocaleDateString()}
+                                </p>
+                              </div>
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(verification.status)}`}>
+                                {verification.status}
+                              </span>
+                            </div>
+                          </div>
+                        ))
+                      )
+                    )}
+                  </>
                 )}
               </div>
             </div>

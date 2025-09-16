@@ -71,6 +71,7 @@ export default function ProfilePage() {
   const [uploadingDocument, setUploadingDocument] = useState(false);
   const [skillBadges, setSkillBadges] = useState<any[]>([]);
   const [showRoleMenu, setShowRoleMenu] = useState(false);
+  const [verificationBadge, setVerificationBadge] = useState<any>(null);
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -128,6 +129,9 @@ export default function ProfilePage() {
       if (currentProfile?.user_type === 'freelancer' || currentProfile?.user_type === 'both') {
         loadSkillBadges();
       }
+      
+      // Load verification badge status
+      loadVerificationBadge();
     }
   }, [router]);
 
@@ -203,6 +207,16 @@ export default function ProfilePage() {
     } catch (error: any) {
       console.error('Error loading skill badges:', error);
       setSkillBadges([]);
+    }
+  };
+
+  const loadVerificationBadge = async () => {
+    try {
+      const response = await api.get('/verification/badge/');
+      setVerificationBadge(response.data.data);
+    } catch (error: any) {
+      console.error('Error loading verification badge:', error);
+      setVerificationBadge(null);
     }
   };
 
@@ -480,7 +494,7 @@ export default function ProfilePage() {
                 <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
                   {user?.first_name} {user?.last_name}
                 </h1>
-                <VerificationBadge isVerified={(profile as any)?.is_verified || false} size="lg" showText />
+                <VerificationBadge isVerified={verificationBadge?.is_verified || false} size="lg" showText />
               </div>
               <div className="flex items-center justify-center md:justify-start space-x-3 mb-4">
                 <p className="text-lg text-gray-600 dark:text-gray-400">

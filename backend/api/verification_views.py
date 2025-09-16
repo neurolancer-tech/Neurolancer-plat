@@ -6,12 +6,14 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.db import transaction
 from .verification_models import VerificationRequest, VerificationBadge
+from .models import UserVerification
 from .verification_serializers import (
     VerificationRequestSerializer, 
     VerificationRequestCreateSerializer,
     VerificationBadgeSerializer,
     AdminVerificationUpdateSerializer
 )
+from .serializers import UserVerificationSerializer
 from .notification_service import NotificationService
 
 class VerificationPagination(PageNumberPagination):
@@ -99,10 +101,17 @@ def get_verification_status(request):
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['GET'])
-@permission_classes([permissions.IsAdminUser])
+@permission_classes([permissions.IsAuthenticated])
 def list_verification_requests(request):
     """List all verification requests for admin"""
     try:
+        # Check if user is admin (either superuser or specific email)
+        if not (request.user.is_superuser or request.user.email == 'kbrian1237@gmail.com'):
+            return Response({
+                'status': 'error',
+                'message': 'Admin access required'
+            }, status=status.HTTP_403_FORBIDDEN)
+        
         status_filter = request.GET.get('status', None)
         queryset = VerificationRequest.objects.all()
         
@@ -132,10 +141,17 @@ def list_verification_requests(request):
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['GET', 'PUT'])
-@permission_classes([permissions.IsAdminUser])
+@permission_classes([permissions.IsAuthenticated])
 def manage_verification_request(request, request_id):
     """Get or update a specific verification request"""
     try:
+        # Check if user is admin (either superuser or specific email)
+        if not (request.user.is_superuser or request.user.email == 'kbrian1237@gmail.com'):
+            return Response({
+                'status': 'error',
+                'message': 'Admin access required'
+            }, status=status.HTTP_403_FORBIDDEN)
+        
         verification_request = get_object_or_404(VerificationRequest, id=request_id)
         
         if request.method == 'GET':
@@ -240,6 +256,50 @@ def get_user_verification_badge(request, user_id=None):
                 'is_verified': badge.is_verified if badge else False,
                 'verification_level': badge.verification_level if badge else None,
                 'verified_at': badge.verified_at if badge else None
+            }
+        })
+        
+    except Exception as e:
+        return Response({
+            'status': 'error',
+            'message': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def admin_verification_overview(request):
+    """Get comprehensive verification data from all three tables"""
+    try:
+        # Check if user is admin (either superuser or specific email)
+        if not (request.user.is_superuser or request.user.email == 'kbrian1237@gmail.com'):
+            return Response({
+                'status': 'error',
+                'message': 'Admin access required'
+            }, status=status.HTTP_403_FORBIDDEN)
+        
+        # Get data from all three verification tables
+        verification_requests = VerificationRequest.objects.all().order_by('-created_at')
+        verification_badges = VerificationBadge.objects.all().order_by('-verified_at')
+        user_verifications = UserVerification.objects.all().order_by('-created_at')
+        
+        # Serialize the data
+        requests_data = VerificationRequestSerializer(verification_requests, many=True).data
+        badges_data = VerificationBadgeSerializer(verification_badges, many=True).data
+        user_verifications_data = UserVerificationSerializer(user_verifications, many=True).data
+        
+        return Response({
+            'status': 'success',
+            'data': {
+                'verification_requests': requests_data,
+                'verification_badges': badges_data,
+                'user_verifications': user_verifications_data,
+                'summary': {
+                    'total_requests': verification_requests.count(),
+                    'total_badges': verification_badges.count(),
+                    'total_user_verifications': user_verifications.count(),
+                    'verified_users': verification_badges.filter(is_verified=True).count(),
+                    'pending_requests': verification_requests.filter(status='pending').count()
+                }
             }
         })
         
