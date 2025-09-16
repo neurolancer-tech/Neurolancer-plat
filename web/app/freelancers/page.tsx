@@ -37,7 +37,6 @@ export default function FreelancersPage() {
 
   const loadCategories = async () => {
     try {
-      // Use the categories with subcategories endpoint
       const response = await api.get('/categories/with-subcategories/');
       console.log('Categories API response:', response.data);
       
@@ -49,12 +48,10 @@ export default function FreelancersPage() {
       }
     } catch (error) {
       console.error('Error loading categories:', error);
-      // Fallback to basic categories endpoint
       try {
         const fallbackResponse = await api.get('/categories/');
         const categoriesData = fallbackResponse.data.results || fallbackResponse.data || [];
         
-        // Try to get subcategories for each category
         for (const category of categoriesData) {
           try {
             const subResponse = await api.get(`/categories/${category.id}/subcategories/`);
@@ -83,11 +80,9 @@ export default function FreelancersPage() {
 
   const loadFreelancers = async () => {
     try {
-      // Use the public freelancer profiles endpoint
       const response = await api.get('/profiles/freelancers/public/');
       const freelancerProfiles = response.data.profiles || response.data || [];
       
-      // Map data according to our plan
       const freelancersWithProfiles = freelancerProfiles.map((profile: any) => {
         const userInfo = profile.user_info || {};
         
@@ -142,7 +137,6 @@ export default function FreelancersPage() {
       const matchesRating = !filters.rating || (freelancer.rating || 0) >= parseFloat(filters.rating);
       const matchesMinLikes = !filters.minLikes || ((freelancer.likes_count || 0) >= parseInt(filters.minLikes));
       
-      // Category and subcategory filtering based on skills and onboarding data
       let matchesCategory = true;
       let matchesSubcategory = true;
       
@@ -157,12 +151,10 @@ export default function FreelancersPage() {
           if (selectedCategory) {
             const categoryName = selectedCategory.name.toLowerCase();
             
-            // Check if category matches skills, title, bio, or onboarding data
             matchesCategory = skills.includes(categoryName) || 
                             title.includes(categoryName) || 
                             bio.includes(categoryName);
             
-            // Also check onboarding data if available
             if (!matchesCategory && onboardingData?.interested_subcategories) {
               const categorySubcategories = selectedCategory.subcategories || [];
               const categorySubcategoryIds = categorySubcategories.map((sub: any) => sub.id);
@@ -180,12 +172,10 @@ export default function FreelancersPage() {
           if (selectedSubcategory) {
             const subcategoryName = selectedSubcategory.name.toLowerCase();
             
-            // Check if subcategory matches skills, title, bio, or onboarding data
             matchesSubcategory = skills.includes(subcategoryName) || 
                                title.includes(subcategoryName) || 
                                bio.includes(subcategoryName);
             
-            // Also check onboarding data if available
             if (!matchesSubcategory && onboardingData?.interested_subcategories) {
               matchesSubcategory = onboardingData.interested_subcategories.some((sub: any) => 
                 sub.id.toString() === filters.subcategory
@@ -222,10 +212,15 @@ export default function FreelancersPage() {
     return arr;
   }, [filteredFreelancers, filters.sortBy]);
 
-  // Pagination
   const totalPages = Math.ceil(sortedFreelancers.length / freelancersPerPage);
   const startIndex = (currentPage - 1) * freelancersPerPage;
   const paginatedFreelancers = sortedFreelancers.slice(startIndex, startIndex + freelancersPerPage);
+
+  const formatText = (text: string) => {
+    return text.replace(/_/g, ' ').split(' ').map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1)
+    ).join(' ');
+  };
 
   if (loading) {
     return (
@@ -242,7 +237,6 @@ export default function FreelancersPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navigation />
       
-      {/* Hero Section */}
       <section 
         className="text-white py-16 relative"
         style={{
@@ -262,7 +256,6 @@ export default function FreelancersPage() {
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Filters Sidebar */}
           <div className="lg:w-1/4">
             <div className="card p-4 sticky top-24">
               <h3 className="text-base font-semibold mb-3 text-gray-900 dark:text-gray-100">Filter Freelancers</h3>
@@ -387,7 +380,6 @@ export default function FreelancersPage() {
             </div>
           </div>
 
-          {/* Freelancers List */}
           <div className="lg:w-3/4">
             <div className="card">
               <div className="p-6 border-b flex justify-between items-center">
@@ -415,7 +407,7 @@ export default function FreelancersPage() {
                   value={filters.sortBy}
                   onChange={(e) => setFilters({...filters, sortBy: e.target.value})}
                   className="input-field w-auto"
->
+                >
                   <option value="-rating">Highest Rated</option>
                   <option value="-total_reviews">Most Reviews</option>
                   <option value="hourly_rate">Hourly Rate (Low to High)</option>
@@ -434,7 +426,6 @@ export default function FreelancersPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                     {paginatedFreelancers.map(freelancer => (
                       <div key={freelancer.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-200 dark:border-gray-700 overflow-hidden">
-                        {/* Header */}
                         <div className="p-6 pb-4">
                           <div className="flex items-start space-x-4">
                             <Avatar
@@ -475,7 +466,6 @@ export default function FreelancersPage() {
                           </div>
                         </div>
 
-                        {/* Status & Bio */}
                         <div className="px-6 pb-4">
                           {(freelancer as any).professionalProfile?.availability_status && (
                             <div className="mb-3">
@@ -496,9 +486,7 @@ export default function FreelancersPage() {
                           </p>
                         </div>
 
-                        {/* Skills & Categories */}
                         <div className="px-6 pb-4 space-y-3">
-                          {/* Skills */}
                           <div>
                             <div className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Skills</div>
                             <div className="flex flex-wrap gap-1">
@@ -515,7 +503,6 @@ export default function FreelancersPage() {
                             </div>
                           </div>
 
-                          {/* Categories */}
                           {(freelancer as any).onboarding_response?.specialization && (
                             <div>
                               <div className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Categories</div>
@@ -525,13 +512,13 @@ export default function FreelancersPage() {
                                     const specs = JSON.parse((freelancer as any).onboarding_response.specialization);
                                     return specs.slice(0, 2).map((spec: string, index: number) => (
                                       <span key={index} className="px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 text-xs rounded-md">
-                                        {spec.replace(/_/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                                        {formatText(spec)}
                                       </span>
                                     ));
                                   } catch {
                                     return (
                                       <span className="px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 text-xs rounded-md">
-                                        {(freelancer as any).onboarding_response.specialization.replace(/_/g, ' ').split(' ').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                                        {formatText((freelancer as any).onboarding_response.specialization)}
                                       </span>
                                     );
                                   }
@@ -540,7 +527,6 @@ export default function FreelancersPage() {
                             </div>
                           )}
 
-                          {/* Subcategories */}
                           {(freelancer as any).onboarding_response?.interested_subcategories && (freelancer as any).onboarding_response.interested_subcategories.length > 0 && (
                             <div>
                               <div className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Expertise</div>
@@ -559,7 +545,6 @@ export default function FreelancersPage() {
                             </div>
                           )}
 
-                          {/* Experience */}
                           {(freelancer as any).professionalProfile?.experience_years > 0 && (
                             <div className="text-xs text-gray-600 dark:text-gray-400">
                               💼 {(freelancer as any).professionalProfile.experience_years} years experience
@@ -567,7 +552,6 @@ export default function FreelancersPage() {
                           )}
                         </div>
 
-                        {/* Actions */}
                         <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-600">
                           <div className="flex space-x-2">
                             <Link href={`/freelancer/${freelancer.user.id}`} className="flex-1 bg-primary text-white text-center text-sm py-2.5 px-4 rounded-lg hover:bg-primary/90 transition-colors font-medium">
@@ -579,7 +563,7 @@ export default function FreelancersPage() {
                           </div>
                         </div>
                       </div>
-                    ))
+                    ))}
                   </div>
                 )}
               </div>
