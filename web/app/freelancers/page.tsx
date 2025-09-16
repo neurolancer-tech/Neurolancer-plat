@@ -525,13 +525,13 @@ export default function FreelancersPage() {
                                     const specs = JSON.parse((freelancer as any).onboarding_response.specialization);
                                     return specs.slice(0, 2).map((spec: string, index: number) => (
                                       <span key={index} className="px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 text-xs rounded-md">
-                                        {spec.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
+                                        {spec.replace(/_/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
                                       </span>
                                     ));
                                   } catch {
                                     return (
                                       <span className="px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 text-xs rounded-md">
-                                        {(freelancer as any).onboarding_response.specialization.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
+                                        {(freelancer as any).onboarding_response.specialization.replace(/_/g, ' ').split(' ').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
                                       </span>
                                     );
                                   }
