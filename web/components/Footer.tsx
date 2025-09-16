@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { isAuthenticated, getUser, getProfile } from '../lib/auth';
 import { User, UserProfile } from '../types';
+import ReportModal from './ReportModal';
 
 
 
@@ -14,6 +15,7 @@ const Footer = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [user, setUserState] = useState<User | null>(null);
   const [profile, setProfileState] = useState<UserProfile | null>(null);
+  const [showReportModal, setShowReportModal] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated()) {
@@ -200,6 +202,14 @@ const Footer = () => {
                 <span className="w-2 h-2 bg-teal-500 rounded-full mr-3 group-hover:bg-teal-400"></span>Help Center</Link></li>
               <li><Link href="/feedback" className="text-gray-300 hover:text-teal-400 transition-colors duration-200 flex items-center group">
                 <span className="w-2 h-2 bg-teal-500 rounded-full mr-3 group-hover:bg-teal-400"></span>Feedback</Link></li>
+              <li>
+                <button 
+                  onClick={() => setShowReportModal(true)}
+                  className="text-gray-300 hover:text-red-400 transition-colors duration-200 flex items-center group w-full text-left"
+                >
+                  <span className="w-2 h-2 bg-red-500 rounded-full mr-3 group-hover:bg-red-400"></span>Report Issue
+                </button>
+              </li>
             </ul>
           </div>
 
@@ -250,6 +260,13 @@ const Footer = () => {
           </div>
         </div>
       </div>
+      
+      {/* Report Modal */}
+      <ReportModal
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        reportType="general"
+      />
     </footer>
     </>
   );

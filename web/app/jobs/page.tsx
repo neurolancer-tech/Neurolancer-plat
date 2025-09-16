@@ -6,6 +6,8 @@ import Navigation from '@/components/Navigation';
 import Avatar from '@/components/Avatar';
 import LikeButton from '@/components/LikeButton';
 import VerificationBadge from '@/components/VerificationBadge';
+import ThreeDotsMenu from '@/components/ThreeDotsMenu';
+import ReportModal from '@/components/ReportModal';
 import { Job, Category } from '@/types';
 import { getProfile } from '@/lib/auth';
 import api from '@/lib/api';
@@ -39,6 +41,8 @@ export default function JobsPage() {
   });
   const [currentPage, setCurrentPage] = useState(1);
   const jobsPerPage = 10;
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportData, setReportData] = useState<any>(null);
   
   const profile = getProfile();
   const isFreelancer = profile?.user_type === 'freelancer' || profile?.user_type === 'both';
@@ -416,8 +420,24 @@ export default function JobsPage() {
                 ) : (
                   <div className="space-y-6">
                     {paginatedJobs.map(job => (
-                      <div key={job.id} className="card p-6 hover:shadow-md transition-shadow">
-                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-4 gap-3">
+                      <div key={job.id} className="card p-6 hover:shadow-md transition-shadow relative">
+                        {/* Three Dots Menu */}
+                        <div className="absolute top-4 right-4">
+                          <ThreeDotsMenu
+                            onReport={() => {
+                              setReportData({
+                                id: job.id,
+                                title: job.title,
+                                owner: job.client,
+                                url: `/jobs/${job.id}`
+                              });
+                              setShowReportModal(true);
+                            }}
+                            onView={() => window.location.href = `/jobs/${job.id}`}
+                            size="sm"
+                          />
+                        </div>
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-4 gap-3 pr-8">
                           <div className="flex-1 min-w-0">
                             <Link href={`/jobs/${job.id}`} className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-gray-100 hover:text-primary block">
                               <span className="line-clamp-2">{job.title}</span>
@@ -526,6 +546,17 @@ export default function JobsPage() {
           </div>
         </div>
       </main>
+      
+      {/* Report Modal */}
+      <ReportModal
+        isOpen={showReportModal}
+        onClose={() => {
+          setShowReportModal(false);
+          setReportData(null);
+        }}
+        reportType="job"
+        reportData={reportData}
+      />
     </div>
   );
 }

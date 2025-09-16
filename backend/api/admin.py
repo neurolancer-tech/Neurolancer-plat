@@ -15,6 +15,7 @@ from .models import (
     Transaction, ProfessionalDocument, Like, NewsletterSubscriber, Newsletter, NewsletterSendLog,
     NewsletterTemplate, NewsletterContent, AIConversation, AIMessage
 )
+from .report_models import Report, ReportAction, UserReportStats
 from .verification_models import VerificationRequest, VerificationBadge
 
 # Learning & Development Admin
@@ -700,6 +701,91 @@ class CustomUserAdmin(UserAdmin):
 # Unregister default User admin and register custom one
 admin.site.unregister(User)
 admin.site.register(User, CustomUserAdmin)
+
+# Report System Admin
+@admin.register(Report)
+class ReportAdmin(admin.ModelAdmin):
+    list_display = ['id', 'title', 'report_type', 'category', 'severity', 'status', 'reporter', 'reported_user', 'created_at']
+    list_filter = ['status', 'report_type', 'category', 'severity', 'created_at']
+    search_fields = ['title', 'description', 'reporter__username', 'reported_user__username']
+    readonly_fields = ['created_at', 'updated_at']
+    
+    fieldsets = (
+        ('Report Information', {
+            'fields': ('reporter', 'report_type', 'category', 'title', 'description', 'severity')
+        }),
+        ('Reported Content', {
+            'fields': ('reported_user', 'reported_gig', 'reported_job', 'reported_order', 'content_url')
+        }),
+        ('Evidence', {
+            'fields': ('evidence_file',)
+        }),
+        ('Admin Management', {
+            'fields': ('status', 'assigned_admin', 'admin_notes', 'resolution_notes')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at', 'resolved_at'),
+            'classes': ['collapse']
+        })
+    )
+    
+    def save_model(self, request, obj, form, change):
+        if change and obj.status in ['resolved', 'dismissed'] and not obj.resolved_at:
+            obj.resolved_at = timezone.now()
+        super().save_model(request, obj, form, change)
+
+@admin.register(ReportAction)
+class ReportActionAdmin(admin.ModelAdmin):
+    list_display = ['id', 'report', 'action_type', 'admin', 'created_at']
+    list_filter = ['action_type', 'created_at']
+    search_fields = ['report__title', 'admin__username', 'action_description']
+    readonly_fields = ['created_at']
+    
+    fieldsets = (
+        ('Action Information', {
+            'fields': ('report', 'action_type', 'action_description')
+        }),
+        ('Custom Message', {
+            'fields': ('custom_message',)
+        }),
+        ('Admin', {
+            'fields': ('admin', 'created_at')
+        })
+    )
+
+@admin.register(UserReportStats)
+class UserReportStatsAdmin(admin.ModelAdmin):
+    list_display = ['user', 'total_reports_received', 'risk_level', 'is_flagged', 'warnings_received', 'last_report_date']
+    list_filter = ['risk_level', 'is_flagged', 'last_report_date']
+    search_fields = ['user__username', 'user__email']
+    readonly_fields = ['updated_at', 'last_report_date']
+    
+    fieldsets = (
+        ('User Information', {
+            'fields': ('user', 'risk_level', 'is_flagged')
+        }),
+        ('Report Statistics', {
+            'fields': ('total_reports_received', 'reports_last_30_days', 'reports_last_7_days')
+        }),
+        ('Severity Breakdown', {
+            'fields': ('low_severity_reports', 'medium_severity_reports', 'high_severity_reports', 'critical_severity_reports')
+        }),
+        ('Actions Taken', {
+            'fields': ('warnings_received', 'content_removals', 'suspensions_count')
+        }),
+        ('Timestamps', {
+            'fields': ('last_report_date', 'updated_at'),
+            'classes': ['collapse']
+        })
+    )
+    
+    actions = ['update_stats']
+    
+    def update_stats(self, request, queryset):
+        for stats in queryset:
+            stats.update_stats()
+        self.message_user(request, f"Updated statistics for {queryset.count()} users.")
+    update_stats.short_description = "Update report statistics"
 
 # Customize admin site
 admin.site.site_header = 'Neurolancer Admin Panel'

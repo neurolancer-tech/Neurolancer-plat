@@ -23,7 +23,7 @@ const adminNavItems = [
   { href: '/admin/categories', label: 'Categories', icon: '📂' },
   { href: '/admin/courses', label: 'Courses', icon: '🎓' },
   { href: '/admin/assessments', label: 'Skill Assessments', icon: '🧠' },
-  { href: '/admin/reports', label: 'Reports', icon: '📈' },
+  { href: '/admin/reports', label: 'Content Reports', icon: '🚨' },
   { href: '/admin/activity', label: 'Activity', icon: '🔄' },
   { href: '/admin/settings', label: 'Settings', icon: '⚙️' },
 ];

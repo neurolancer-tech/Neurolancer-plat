@@ -5,36 +5,78 @@ import { useRouter } from 'next/navigation';
 import AdminLayout from '@/components/AdminLayout';
 import { isAuthenticated, getUser } from '@/lib/auth';
 import api from '@/lib/api';
+import { Flag, AlertTriangle, Clock, CheckCircle, XCircle, Eye, MessageSquare, User, Shield } from 'lucide-react';
+import toast from 'react-hot-toast';
+
+interface Report {
+  id: number;
+  title: string;
+  description: string;
+  report_type: string;
+  category: string;
+  severity: string;
+  status: string;
+  reporter: {
+    id: number;
+    username: string;
+    email: string;
+  };
+  reported_user?: {
+    id: number;
+    username: string;
+    email: string;
+    full_name?: string;
+  };
+  content_details?: {
+    type: string;
+    title: string;
+    id: number;
+    owner: any;
+    url: string;
+  };
+  assigned_admin?: {
+    id: number;
+    username: string;
+  };
+  created_at: string;
+  resolved_at?: string;
+}
+
+interface ReportStats {
+  total_reports: number;
+  pending_reports: number;
+  resolved_reports: number;
+  reports_last_30_days: number;
+  reports_last_7_days: number;
+  reports_by_type: Array<{ report_type: string; count: number }>;
+  reports_by_category: Array<{ category: string; count: number }>;
+  reports_by_severity: Array<{ severity: string; count: number }>;
+  high_risk_users: number;
+}
 
 export default function AdminReportsPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [reportData, setReportData] = useState({
-    revenue: {
-      daily: 0,
-      weekly: 0,
-      monthly: 0,
-      yearly: 0
-    },
-    users: {
-      total: 0,
-      newThisMonth: 0,
-      activeUsers: 0,
-      retentionRate: 0
-    },
-    orders: {
-      total: 0,
-      completed: 0,
-      pending: 0,
-      cancelled: 0,
-      averageValue: 0
-    },
-    gigs: {
-      total: 0,
-      active: 0,
-      topCategory: 'N/A',
-      averagePrice: 0
-    }
+  const [reports, setReports] = useState<Report[]>([]);
+  const [stats, setStats] = useState<ReportStats | null>(null);
+  const [selectedReport, setSelectedReport] = useState<Report | null>(null);
+  const [filters, setFilters] = useState({
+    status: '',
+    type: '',
+    severity: '',
+    search: ''
+  });
+  const [pagination, setPagination] = useState({
+    page: 1,
+    per_page: 20,
+    total: 0,
+    pages: 0
+  });
+  const [showActionModal, setShowActionModal] = useState(false);
+  const [actionData, setActionData] = useState({
+    action_type: '',
+    action_description: '',
+    custom_message: ''
   });
 
   useEffect(() => {
@@ -50,305 +92,305 @@ export default function AdminReportsPage() {
     }
 
     loadReports();
-  }, [router]);
-
-  const fetchAll = async (url: string) => {
-    const results: any[] = [];
-    let next: string | null = url;
-    while (next) {
-      const data: any = (await api.get(next as any)).data;
-      const page = Array.isArray(data) ? data : (data.results || []);
-      results.push(...(page || []));
-      next = data.next || null;
-    }
-    return results;
-  };
+    loadStats();
+  }, [router, filters, pagination.page]);
 
   const loadReports = async () => {
-    setLoading(true);
     try {
-      const [orders, gigs, users] = await Promise.all([
-        fetchAll('/admin/orders/').catch(() => fetchAll('/orders/').catch(() => [])),
-        fetchAll('/admin/gigs/').catch(() => fetchAll('/gigs/').catch(() => [])),
-        fetchAll('/admin/users/').catch(() => []),
-      ]);
-
-      // Orders stats
-      const completed = orders.filter((o: any) => (o.status || '').toLowerCase() === 'completed');
-      const pending = orders.filter((o: any) => (o.status || '').toLowerCase() === 'pending');
-      const cancelled = orders.filter((o: any) => (o.status || '').toLowerCase() === 'cancelled');
-      const totalAmount = orders.reduce((s: number, o: any) => s + Number(o.price ?? o.total_amount ?? 0), 0);
-      const avgValue = orders.length ? +(totalAmount / orders.length).toFixed(2) : 0;
-
-      // Revenue by period (using created_at)
-      const now = new Date();
-      const within = (d: string, days: number) => {
-        const dt = new Date(d);
-        return (now.getTime() - dt.getTime()) / (1000 * 60 * 60 * 24) <= days;
-      };
-      const sumWithin = (days: number) => completed
-        .filter((o: any) => o.created_at && within(o.created_at, days))
-        .reduce((s: number, o: any) => s + Number(o.price ?? o.total_amount ?? 0), 0);
-
-      // Gigs stats
-      const activeGigs = gigs.filter((g: any) => g.is_active !== false);
-      const topCategory = (() => {
-        const counts: Record<string, number> = {};
-        for (const g of gigs) {
-          const cname = g.category?.name || 'Unknown';
-          counts[cname] = (counts[cname] || 0) + 1;
-        }
-        return Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A';
-      })();
-      const avgGigPrice = gigs.length ? +(gigs.reduce((s: number, g: any) => s + (g.basic_price || 0), 0) / gigs.length).toFixed(2) : 0;
-
-      // Users stats (new this month)
-      const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      const newThisMonth = users.filter((u: any) => u.date_joined && new Date(u.date_joined) >= firstOfMonth).length;
-
-      setReportData({
-        revenue: {
-          daily: +sumWithin(1).toFixed(2),
-          weekly: +sumWithin(7).toFixed(2),
-          monthly: +sumWithin(30).toFixed(2),
-          yearly: +sumWithin(365).toFixed(2),
-        },
-        users: {
-          total: users.length,
-          newThisMonth,
-          activeUsers: users.filter((u: any) => u.is_active).length,
-          retentionRate: 0, // Unknown without cohort data
-        },
-        orders: {
-          total: orders.length,
-          completed: completed.length,
-          pending: pending.length,
-          cancelled: cancelled.length,
-          averageValue: avgValue,
-        },
-        gigs: {
-          total: gigs.length,
-          active: activeGigs.length,
-          topCategory,
-          averagePrice: avgGigPrice,
-        },
+      const params = new URLSearchParams({
+        page: pagination.page.toString(),
+        per_page: pagination.per_page.toString(),
+        ...filters
       });
-    } catch (err) {
-      console.error('Failed to load reports:', err);
+
+      const response = await api.get(`/reports/?${params}`);
+      setReports(response.data.reports || []);
+      setPagination(prev => ({
+        ...prev,
+        total: response.data.pagination?.total || 0,
+        pages: response.data.pagination?.pages || 0
+      }));
+    } catch (error) {
+      console.error('Error loading reports:', error);
+      toast.error('Failed to load reports');
     } finally {
       setLoading(false);
     }
   };
 
-  const exportReport = (type: string) => {
-    // Mock export functionality
-    const data = JSON.stringify(reportData, null, 2);
-    const blob = new Blob([data], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `neurolancer-${type}-report-${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+  const loadStats = async () => {
+    try {
+      const response = await api.get('/reports/statistics/');
+      setStats(response.data);
+    } catch (error) {
+      console.error('Error loading stats:', error);
+    }
+  };
+
+  const takeAction = async (reportId: number) => {
+    try {
+      await api.post(`/reports/${reportId}/action/`, actionData);
+      toast.success('Action taken successfully');
+      setShowActionModal(false);
+      loadReports();
+      loadStats();
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Failed to take action');
+    }
+  };
+
+  const getSeverityColor = (severity: string) => {
+    switch (severity) {
+      case 'low': return 'text-green-600 bg-green-100';
+      case 'medium': return 'text-yellow-600 bg-yellow-100';
+      case 'high': return 'text-orange-600 bg-orange-100';
+      case 'critical': return 'text-red-600 bg-red-100';
+      default: return 'text-gray-600 bg-gray-100';
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'pending': return 'text-yellow-600 bg-yellow-100';
+      case 'investigating': return 'text-blue-600 bg-blue-100';
+      case 'resolved': return 'text-green-600 bg-green-100';
+      case 'dismissed': return 'text-gray-600 bg-gray-100';
+      default: return 'text-gray-600 bg-gray-100';
+    }
   };
 
   return (
     <AdminLayout>
       <div className="space-y-6">
-        <div className="bg-gradient-to-r from-[#0D9E86] to-teal-600 rounded-xl p-6 text-white">
-          <h1 className="text-2xl font-bold mb-2">Analytics & Reports</h1>
-          <p className="opacity-90">Comprehensive platform analytics and reporting</p>
+        <div className="bg-gradient-to-r from-red-600 to-red-700 rounded-xl p-6 text-white">
+          <h1 className="text-2xl font-bold mb-2">Report Management</h1>
+          <p className="opacity-90">Monitor and manage user reports and content moderation</p>
         </div>
 
-        {/* Export Actions */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Export Reports</h3>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <button
-              onClick={() => exportReport('revenue')}
-              className="bg-[#0D9E86] text-white px-4 py-3 rounded-lg font-medium hover:bg-teal-700 transition-colors"
-            >
-              📊 Revenue Report
-            </button>
-            <button
-              onClick={() => exportReport('users')}
-              className="bg-[#FF8559] text-white px-4 py-3 rounded-lg font-medium hover:bg-orange-600 transition-colors"
-            >
-              👥 User Analytics
-            </button>
-            <button
-              onClick={() => exportReport('orders')}
-              className="bg-blue-600 text-white px-4 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors"
-            >
-              📋 Order Report
-            </button>
-            <button
-              onClick={() => exportReport('complete')}
-              className="bg-purple-600 text-white px-4 py-3 rounded-lg font-medium hover:bg-purple-700 transition-colors"
-            >
-              📈 Complete Report
-            </button>
-          </div>
-        </div>
-
-        {/* Revenue Analytics */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-          <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6">Revenue Analytics</h3>
+        {/* Statistics */}
+        {stats && (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 p-6 rounded-xl">
-              <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">
-                ${reportData.revenue.daily.toFixed(2)}
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Total Reports</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.total_reports}</p>
+                </div>
+                <Flag className="w-8 h-8 text-blue-600" />
               </div>
-              <div className="text-sm text-green-600 dark:text-green-400 font-medium">Daily Revenue</div>
-              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">+12.5% from yesterday</div>
             </div>
-            <div className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 p-6 rounded-xl">
-              <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">
-                ${reportData.revenue.weekly.toFixed(2)}
+            
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Pending</p>
+                  <p className="text-2xl font-bold text-yellow-600">{stats.pending_reports}</p>
+                </div>
+                <Clock className="w-8 h-8 text-yellow-600" />
               </div>
-              <div className="text-sm text-blue-600 dark:text-blue-400 font-medium">Weekly Revenue</div>
-              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">+8.3% from last week</div>
             </div>
-            <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 p-6 rounded-xl">
-              <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2">
-                ${reportData.revenue.monthly.toFixed(2)}
+            
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Resolved</p>
+                  <p className="text-2xl font-bold text-green-600">{stats.resolved_reports}</p>
+                </div>
+                <CheckCircle className="w-8 h-8 text-green-600" />
               </div>
-              <div className="text-sm text-purple-600 dark:text-purple-400 font-medium">Monthly Revenue</div>
-              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">+15.7% from last month</div>
             </div>
-            <div className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 p-6 rounded-xl">
-              <div className="text-3xl font-bold text-orange-600 dark:text-orange-400 mb-2">
-                ${reportData.revenue.yearly.toFixed(2)}
+            
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">High Risk Users</p>
+                  <p className="text-2xl font-bold text-red-600">{stats.high_risk_users}</p>
+                </div>
+                <AlertTriangle className="w-8 h-8 text-red-600" />
               </div>
-              <div className="text-sm text-orange-600 dark:text-orange-400 font-medium">Yearly Revenue</div>
-              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">+42.1% from last year</div>
             </div>
+          </div>
+        )}
+
+        {/* Filters */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <select
+              value={filters.status}
+              onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700"
+            >
+              <option value="">All Status</option>
+              <option value="pending">Pending</option>
+              <option value="investigating">Investigating</option>
+              <option value="resolved">Resolved</option>
+              <option value="dismissed">Dismissed</option>
+            </select>
+            
+            <select
+              value={filters.type}
+              onChange={(e) => setFilters(prev => ({ ...prev, type: e.target.value }))}
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700"
+            >
+              <option value="">All Types</option>
+              <option value="gig">Gig</option>
+              <option value="job">Job</option>
+              <option value="freelancer">Freelancer</option>
+              <option value="client">Client</option>
+              <option value="order">Order</option>
+            </select>
+            
+            <select
+              value={filters.severity}
+              onChange={(e) => setFilters(prev => ({ ...prev, severity: e.target.value }))}
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700"
+            >
+              <option value="">All Severity</option>
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+              <option value="critical">Critical</option>
+            </select>
+            
+            <input
+              type="text"
+              placeholder="Search reports..."
+              value={filters.search}
+              onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700"
+            />
           </div>
         </div>
 
-        {/* User Analytics */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-          <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6">User Analytics</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="text-center">
-              <div className="text-4xl font-bold text-blue-600 dark:text-blue-400 mb-2">
-                {reportData.users.total.toLocaleString()}
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Total Users</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold text-green-600 dark:text-green-400 mb-2">
-                {reportData.users.newThisMonth}
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">New This Month</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold text-purple-600 dark:text-purple-400 mb-2">
-                {reportData.users.activeUsers.toLocaleString()}
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Active Users</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold text-orange-600 dark:text-orange-400 mb-2">
-                {reportData.users.retentionRate}%
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Retention Rate</div>
-            </div>
+        {/* Reports List */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Report</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Severity</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Reporter</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                {reports.map((report) => (
+                  <tr key={report.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <td className="px-6 py-4">
+                      <div>
+                        <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{report.title}</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">{report.category}</div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+                        {report.report_type}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${getSeverityColor(report.severity)}`}>
+                        {report.severity}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(report.status)}`}>
+                        {report.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
+                      {report.reporter.username}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                      {new Date(report.created_at).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => setSelectedReport(report)}
+                          className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        {report.status === 'pending' && (
+                          <button
+                            onClick={() => {
+                              setSelectedReport(report);
+                              setShowActionModal(true);
+                            }}
+                            className="text-green-600 hover:text-green-800 text-sm font-medium"
+                          >
+                            Action
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
 
-        {/* Order Analytics */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6">Order Statistics</h3>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600 dark:text-gray-400">Total Orders</span>
-                <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                  {reportData.orders.total.toLocaleString()}
-                </span>
+        {/* Action Modal */}
+        {showActionModal && selectedReport && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full mx-4">
+              <h3 className="text-lg font-bold mb-4">Take Action on Report</h3>
+              
+              <div className="space-y-4">
+                <select
+                  value={actionData.action_type}
+                  onChange={(e) => setActionData(prev => ({ ...prev, action_type: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                >
+                  <option value="">Select Action</option>
+                  <option value="warning">Send Warning</option>
+                  <option value="content_removal">Remove Content</option>
+                  <option value="account_suspension">Suspend Account</option>
+                  <option value="custom_message">Send Custom Message</option>
+                  <option value="no_action">No Action Required</option>
+                </select>
+                
+                <textarea
+                  placeholder="Action description..."
+                  value={actionData.action_description}
+                  onChange={(e) => setActionData(prev => ({ ...prev, action_description: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  rows={3}
+                />
+                
+                {actionData.action_type === 'custom_message' && (
+                  <textarea
+                    placeholder="Custom message to user..."
+                    value={actionData.custom_message}
+                    onChange={(e) => setActionData(prev => ({ ...prev, custom_message: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    rows={3}
+                  />
+                )}
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600 dark:text-gray-400">Completed</span>
-                <span className="text-xl font-semibold text-green-600 dark:text-green-400">
-                  {reportData.orders.completed.toLocaleString()}
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600 dark:text-gray-400">Pending</span>
-                <span className="text-xl font-semibold text-yellow-600 dark:text-yellow-400">
-                  {reportData.orders.pending}
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600 dark:text-gray-400">Cancelled</span>
-                <span className="text-xl font-semibold text-red-600 dark:text-red-400">
-                  {reportData.orders.cancelled}
-                </span>
-              </div>
-              <div className="flex justify-between items-center pt-4 border-t border-gray-200 dark:border-gray-700">
-                <span className="text-gray-600 dark:text-gray-400">Average Order Value</span>
-                <span className="text-xl font-bold text-purple-600 dark:text-purple-400">
-                  ${reportData.orders.averageValue}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6">Gig Statistics</h3>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600 dark:text-gray-400">Total Gigs</span>
-                <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                  {reportData.gigs.total}
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600 dark:text-gray-400">Active Gigs</span>
-                <span className="text-xl font-semibold text-green-600 dark:text-green-400">
-                  {reportData.gigs.active}
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600 dark:text-gray-400">Top Category</span>
-                <span className="text-lg font-medium text-blue-600 dark:text-blue-400">
-                  {reportData.gigs.topCategory}
-                </span>
-              </div>
-              <div className="flex justify-between items-center pt-4 border-t border-gray-200 dark:border-gray-700">
-                <span className="text-gray-600 dark:text-gray-400">Average Gig Price</span>
-                <span className="text-xl font-bold text-purple-600 dark:text-purple-400">
-                  ${reportData.gigs.averagePrice}
-                </span>
+              
+              <div className="flex space-x-4 mt-6">
+                <button
+                  onClick={() => setShowActionModal(false)}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => takeAction(selectedReport.id)}
+                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg"
+                >
+                  Take Action
+                </button>
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Performance Metrics */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-          <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6">Platform Performance</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="text-center p-6 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-xl">
-              <div className="text-3xl font-bold text-indigo-600 dark:text-indigo-400 mb-2">98.7%</div>
-              <div className="text-sm text-indigo-600 dark:text-indigo-400 font-medium">Uptime</div>
-              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Last 30 days</div>
-            </div>
-            <div className="text-center p-6 bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-xl">
-              <div className="text-3xl font-bold text-emerald-600 dark:text-emerald-400 mb-2">1.2s</div>
-              <div className="text-sm text-emerald-600 dark:text-emerald-400 font-medium">Avg Response Time</div>
-              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">API endpoints</div>
-            </div>
-            <div className="text-center p-6 bg-gradient-to-br from-rose-50 to-pink-50 dark:from-rose-900/20 dark:to-pink-900/20 rounded-xl">
-              <div className="text-3xl font-bold text-rose-600 dark:text-rose-400 mb-2">4.8/5</div>
-              <div className="text-sm text-rose-600 dark:text-rose-400 font-medium">User Satisfaction</div>
-              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Based on reviews</div>
-            </div>
-          </div>
-        </div>
+        )}
       </div>
     </AdminLayout>
   );

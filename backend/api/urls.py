@@ -362,6 +362,9 @@ urlpatterns = [
     # User Verification System URLs
     path('verification/', include('api.verification_urls')),
     
+    # Reporting System URLs
+    path('', include('api.report_urls')),
+    
     # Skill Assessment System URLs
     path('assessments/categories/', assessment_views.AssessmentCategoryListView.as_view(), name='assessment-categories'),
     path('assessments/', assessment_views.AssessmentListView.as_view(), name='skill-assessments'),

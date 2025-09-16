@@ -7,6 +7,8 @@ import Navigation from '@/components/Navigation';
 import Avatar from '@/components/Avatar';
 import LikeButton from '@/components/LikeButton';
 import VerificationBadge from '@/components/VerificationBadge';
+import ThreeDotsMenu from '@/components/ThreeDotsMenu';
+import ReportModal from '@/components/ReportModal';
 import { Gig, Category } from '@/types';
 interface Subcategory {
   id: number;
@@ -39,6 +41,8 @@ export default function GigsPage() {
   
   const [currentPage, setCurrentPage] = useState(1);
   const gigsPerPage = 12;
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportData, setReportData] = useState<any>(null);
 
   useEffect(() => {
     loadCategories();
@@ -341,7 +345,24 @@ export default function GigsPage() {
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {paginatedGigs.map(gig => (
-                      <div key={gig.id} className="card rounded-xl shadow-lg hover:shadow-xl transition-shadow overflow-hidden cursor-pointer" onClick={() => window.location.href = `/gigs/${gig.id}`}>
+                      <div key={gig.id} className="card rounded-xl shadow-lg hover:shadow-xl transition-shadow overflow-hidden cursor-pointer relative" onClick={() => window.location.href = `/gigs/${gig.id}`}>
+                        {/* Three Dots Menu */}
+                        <div className="absolute top-2 right-2 z-10">
+                          <ThreeDotsMenu
+                            onReport={() => {
+                              setReportData({
+                                id: gig.id,
+                                title: gig.title,
+                                owner: gig.freelancer,
+                                url: `/gigs/${gig.id}`
+                              });
+                              setShowReportModal(true);
+                            }}
+                            onView={() => window.location.href = `/gigs/${gig.id}`}
+                            size="sm"
+                            className="bg-white/80 backdrop-blur-sm rounded-full"
+                          />
+                        </div>
                         <div className="h-48 overflow-hidden">
                           <Image
                             src={gig.image || '/assets/images/gigsdefault_imgupscaler.ai_General_2.jpeg'}
@@ -447,6 +468,17 @@ export default function GigsPage() {
           </div>
         </div>
       </main>
+      
+      {/* Report Modal */}
+      <ReportModal
+        isOpen={showReportModal}
+        onClose={() => {
+          setShowReportModal(false);
+          setReportData(null);
+        }}
+        reportType="gig"
+        reportData={reportData}
+      />
     </div>
   );
 }

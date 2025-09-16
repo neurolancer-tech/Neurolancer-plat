@@ -1768,3 +1768,6 @@ class ClientProfile(models.Model):
 
 # Import verification models
 from .verification_models import VerificationRequest, VerificationBadge
+
+# Import report models
+from .report_models import Report, ReportAction, UserReportStats
