@@ -204,32 +204,16 @@ def send_phone_verification(request):
             defaults={'user_type': 'client'}
         )
         
-        # Use Firebase service to send verification code
-        from .firebase_service import FirebaseService
+        # Store phone number for client-side verification
+        profile.phone_number = clean_phone
+        profile.save()
         
-        result = FirebaseService.send_verification_code(clean_phone)
-        
-        if result['success']:
-            # Store verification info in user profile
-            profile.phone_number = clean_phone
-            profile.phone_verification_code = result.get('verification_code')
-            profile.phone_verification_expires = timezone.now() + timezone.timedelta(minutes=10)
-            profile.firebase_session_info = result.get('session_info')
-            profile.save()
-            
-            return Response({
-                'success': True,
-                'message': result['message'],
-                'session_info': result.get('session_info'),
-                'phone_number': clean_phone,
-                # Include verification code for testing (remove in production)
-                'verification_code': result.get('verification_code') if settings.DEBUG else None
-            })
-        else:
-            return Response({
-                'error': result.get('message', 'Failed to send verification code'),
-                'details': result.get('error')
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({
+            'success': True,
+            'message': 'Ready for client-side Firebase verification',
+            'phone_number': clean_phone,
+            'use_firebase': True
+        })
             
     except Exception as e:
         return Response({
@@ -240,45 +224,28 @@ def send_phone_verification(request):
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
 def verify_phone_number(request):
-    """Verify phone number with Firebase verification code"""
-    code = request.data.get('code')
-    session_info = request.data.get('session_info')
+    """Verify phone number with Firebase ID token"""
+    firebase_token = request.data.get('firebase_token')
+    phone_number = request.data.get('phone_number')
     
-    if not code:
-        return Response({'error': 'Verification code required'}, status=status.HTTP_400_BAD_REQUEST)
+    if not firebase_token:
+        return Response({'error': 'Firebase token required'}, status=status.HTTP_400_BAD_REQUEST)
     
     try:
         profile = request.user.userprofile
     except UserProfile.DoesNotExist:
         return Response({'error': 'Profile not found'}, status=status.HTTP_404_NOT_FOUND)
     
-    # Check if verification has expired
-    if (profile.phone_verification_expires and 
-        profile.phone_verification_expires < timezone.now()):
-        return Response({
-            'error': 'Verification code has expired. Please request a new code.'
-        }, status=status.HTTP_400_BAD_REQUEST)
-    
     try:
-        # Use Firebase service to verify the code
+        # Verify Firebase ID token
         from .firebase_service import FirebaseService
         
-        # Use session_info from request or fallback to stored session
-        verification_session = session_info or profile.firebase_session_info
+        decoded_token = FirebaseService.verify_id_token(firebase_token)
         
-        if not verification_session:
-            return Response({
-                'error': 'No verification session found. Please request a new code.'
-            }, status=status.HTTP_400_BAD_REQUEST)
-        
-        result = FirebaseService.verify_phone_number(verification_session, code)
-        
-        if result['success'] and result['verified']:
+        if decoded_token and decoded_token.get('phone_number'):
             # Mark phone as verified
+            profile.phone_number = phone_number or decoded_token.get('phone_number')
             profile.phone_verified = True
-            profile.phone_verification_code = None
-            profile.phone_verification_expires = None
-            profile.firebase_session_info = None
             profile.save()
             
             return Response({
@@ -289,7 +256,7 @@ def verify_phone_number(request):
             })
         else:
             return Response({
-                'error': result.get('message', 'Invalid verification code'),
+                'error': 'Invalid Firebase token or no phone number in token',
                 'verified': False
             }, status=status.HTTP_400_BAD_REQUEST)
             

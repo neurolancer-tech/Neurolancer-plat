@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { auth } from '@/lib/firebase';
-import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
+import PhoneVerificationModal from '@/components/PhoneVerificationModal';
 import { getProfile, updateProfile, markProfileAsCompleted } from '@/lib/auth';
 import { completeProfile } from '@/lib/profile';
 import api from '@/lib/api';
@@ -228,11 +228,8 @@ export default function CompleteProfilePage() {
     experience_level: 'entry'
   });
 
-  const [phoneVerification, setPhoneVerification] = useState({
-    step: 'input',
-    verificationCode: '',
-    recaptchaVerifier: null as any
-  });
+  const [showPhoneVerification, setShowPhoneVerification] = useState(false);
+  const [phoneVerified, setPhoneVerified] = useState(false);
 
   const [selectedCountry, setSelectedCountry] = useState<any>(null);
 
@@ -294,41 +291,9 @@ export default function CompleteProfilePage() {
     setFormData(prev => ({ ...prev, country: countryCode, state: '' }));
   };
 
-  const sendVerificationCode = async () => {
-    if (!formData.phone_number || !selectedCountry) {
-      toast.error('Please enter a valid phone number');
-      return;
-    }
-
-    try {
-      const fullPhoneNumber = `${selectedCountry.phone}${formData.phone_number}`;
-      await api.post('/auth/send-phone-verification/', {
-        phone_number: fullPhoneNumber
-      });
-      setPhoneVerification(prev => ({ ...prev, step: 'verify' }));
-      toast.success('Verification code sent to your phone');
-    } catch (error: any) {
-      console.error('Phone verification error:', error);
-      toast.error('Failed to send verification code');
-    }
-  };
-
-  const verifyPhoneCode = async () => {
-    if (!phoneVerification.verificationCode) {
-      toast.error('Please enter the verification code');
-      return;
-    }
-
-    try {
-      await api.post('/auth/verify-phone/', {
-        code: phoneVerification.verificationCode
-      });
-      setPhoneVerification(prev => ({ ...prev, step: 'verified' }));
-      toast.success('Phone number verified successfully');
-    } catch (error: any) {
-      console.error('Phone verification error:', error);
-      toast.error('Invalid verification code');
-    }
+  const handlePhoneVerificationSuccess = () => {
+    setPhoneVerified(true);
+    toast.success('Phone number verified successfully!');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -340,7 +305,7 @@ export default function CompleteProfilePage() {
       const profileData = {
         ...formData,
         phone: `${selectedCountry?.phone}${formData.phone_number}`,
-        phone_verified: phoneVerification.step === 'verified',
+        phone_verified: phoneVerified,
         experience_level: formData.experience_level as 'entry' | 'intermediate' | 'expert'
       };
       
@@ -444,43 +409,18 @@ export default function CompleteProfilePage() {
                 </div>
               </div>
 
-              {phoneVerification.step === 'input' && (
+              {!phoneVerified && (
                 <button
                   type="button"
-                  onClick={sendVerificationCode}
-                  className="mt-4 btn-secondary"
+                  onClick={() => setShowPhoneVerification(true)}
+                  className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all"
                   disabled={!formData.phone_number || !selectedCountry}
                 >
-                  Send Verification Code
+                  Verify Phone Number
                 </button>
               )}
 
-              {phoneVerification.step === 'verify' && (
-                <div className="mt-4 space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Verification Code
-                    </label>
-                    <input
-                      type="text"
-                      value={phoneVerification.verificationCode}
-                      onChange={(e) => setPhoneVerification(prev => ({ ...prev, verificationCode: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:text-white"
-                      placeholder="Enter 6-digit code"
-                      maxLength={6}
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={verifyPhoneCode}
-                    className="btn-primary"
-                  >
-                    Verify Code
-                  </button>
-                </div>
-              )}
-
-              {phoneVerification.step === 'verified' && (
+              {phoneVerified && (
                 <div className="mt-4 flex items-center text-green-600 dark:text-green-400">
                   <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
@@ -592,6 +532,13 @@ export default function CompleteProfilePage() {
           </form>
         </div>
       </div>
+
+      {/* Phone Verification Modal */}
+      <PhoneVerificationModal
+        isOpen={showPhoneVerification}
+        onClose={() => setShowPhoneVerification(false)}
+        onSuccess={handlePhoneVerificationSuccess}
+      />
     </div>
   );
 }
