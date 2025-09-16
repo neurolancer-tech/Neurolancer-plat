@@ -24,7 +24,7 @@ PAYSTACK_PUBLIC_KEY = getattr(settings, 'PAYSTACK_PUBLIC_KEY', 'pk_test_your_pub
 PAYSTACK_BASE_URL = 'https://api.paystack.co'
 
 # Platform configuration
-PLATFORM_FEE_PERCENTAGE = Decimal('0.10')  # 10% platform fee
+PLATFORM_FEE_PERCENTAGE = Decimal('0.05')  # 5% platform fee
 PROCESSING_FEE_KES = Decimal('50.00')  # 50 KES processing fee
 PLATFORM_ACCOUNT_NUMBER = '1234567890'  # Platform's M-Pesa account
 KES_TO_USD_RATE = Decimal('0.0077')  # Approximate conversion rate (1 KES = 0.0077 USD)
@@ -548,11 +548,10 @@ def verify_payment(request):
                     freelancer = User.objects.get(id=freelancer_id)
                     client = User.objects.get(id=client_id)
                     
-                    # Update freelancer's available balance (convert KES to USD for dashboard)
+                    # Update freelancer's escrow balance (convert KES to USD for dashboard)
                     freelancer_profile, created = UserProfile.objects.get_or_create(user=freelancer)
                     usd_amount = convert_kes_to_usd(base_amount)
-                    freelancer_profile.available_balance += usd_amount
-                    freelancer_profile.total_earnings += usd_amount
+                    freelancer_profile.escrow_balance += usd_amount
                     freelancer_profile.save()
                     
                     # Create transaction records
@@ -587,9 +586,9 @@ def verify_payment(request):
                     Notification.objects.create(
                         user=freelancer,
                         title='Payment Received',
-                        message=f'You have received a payment of KES {base_amount:,.2f} for "{job.title}". Funds are now available in your wallet.',
+                        message=f'You have received a payment of KES {base_amount:,.2f} for "{job.title}". Funds are held in escrow until job completion.',
                         notification_type='payment',
-                        action_url=f'/transactions'
+                        action_url=f'/my-jobs'
                     )
                     
                     response_data = {'job_id': job.id}
@@ -618,11 +617,10 @@ def verify_payment(request):
                         course.enrollment_count += 1
                         course.save()
                         
-                        # Update instructor's earnings (convert KES to USD for dashboard)
+                        # Update instructor's escrow balance (convert KES to USD for dashboard)
                         instructor_profile, created = UserProfile.objects.get_or_create(user=course.instructor)
                         usd_amount = convert_kes_to_usd(base_amount)
-                        instructor_profile.available_balance += usd_amount
-                        instructor_profile.total_earnings += usd_amount
+                        instructor_profile.escrow_balance += usd_amount
                         instructor_profile.save()
                         
                         # Create transaction records

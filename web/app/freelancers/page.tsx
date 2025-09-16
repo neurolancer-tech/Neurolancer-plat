@@ -438,37 +438,40 @@ export default function FreelancersPage() {
                               className="flex-shrink-0"
                             />
                             <div className="flex-1 min-w-0">
-                              <div className="flex items-start justify-between">
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 truncate">
-                                      {freelancer.user.first_name || freelancer.user.username} {freelancer.user.last_name}
-                                    </h3>
-                                    <VerificationBadge isVerified={(freelancer as any).is_verified || false} size="sm" />
-                                  </div>
-                                  {(freelancer as any).title && (
-                                    <p className="text-sm text-blue-600 dark:text-blue-400 font-medium truncate mb-1">{(freelancer as any).title}</p>
-                                  )}
-                                  <div className="flex items-center">
-                                    <span className="text-yellow-400 text-sm">★</span>
-                                    <span className="text-sm font-medium ml-1">{freelancer.rating}</span>
-                                    <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">({freelancer.total_reviews})</span>
-                                  </div>
+                              <div className="flex items-center gap-2 mb-1">
+                                <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 truncate">
+                                  {freelancer.user.first_name || freelancer.user.username} {freelancer.user.last_name}
+                                </h3>
+                                <VerificationBadge isVerified={(freelancer as any).is_verified || false} size="sm" />
+                              </div>
+                              {(freelancer as any).title && (
+                                <p className="text-sm text-blue-600 dark:text-blue-400 font-medium truncate mb-2">{(freelancer as any).title}</p>
+                              )}
+                              <div className="flex items-center justify-between">
+                                <div className="text-base font-semibold text-gray-900 dark:text-gray-100">
+                                  {freelancer.user.first_name || freelancer.user.username} {freelancer.user.last_name}
                                 </div>
-                                <div className="text-right flex-shrink-0 ml-2">
+                                <div className="flex items-center">
+                                  <span className="text-yellow-400 text-sm">★</span>
+                                  <span className="text-sm font-medium ml-1">{freelancer.rating}</span>
+                                  <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">({freelancer.total_reviews})</span>
+                                </div>
+                                <div className="text-right">
                                   {(freelancer.hourly_rate || 0) > 0 && (
-                                    <div className="text-base font-bold text-primary mb-1">
+                                    <div className="text-base font-bold text-primary">
                                       ${freelancer.hourly_rate}/hr
                                     </div>
                                   )}
-                                  <LikeButton
-                                    contentType="freelancer"
-                                    objectId={freelancer.user.id}
-                                    initialLikes={freelancer.likes_count || 0}
-                                    initialDislikes={freelancer.dislikes_count || 0}
-                                    size="sm"
-                                  />
                                 </div>
+                              </div>
+                              <div className="flex justify-end mt-2">
+                                <LikeButton
+                                  contentType="freelancer"
+                                  objectId={freelancer.user.id}
+                                  initialLikes={freelancer.likes_count || 0}
+                                  initialDislikes={freelancer.dislikes_count || 0}
+                                  size="sm"
+                                />
                               </div>
                             </div>
                           </div>

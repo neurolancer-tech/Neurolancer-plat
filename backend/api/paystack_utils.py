@@ -13,7 +13,7 @@ class PaystackAPI:
             'Content-Type': 'application/json'
         }
     
-    def create_subaccount(self, business_name, settlement_bank, account_number, percentage_charge=10):
+    def create_subaccount(self, business_name, settlement_bank, account_number, percentage_charge=5):
         """Create a subaccount for freelancer/vendor"""
         url = f"{self.BASE_URL}/subaccount"
         data = {
@@ -44,7 +44,7 @@ class PaystackAPI:
             "currency": "KES",
             "reference": reference,
             "subaccount": subaccount_code,
-            "transaction_charge": int(amount * 0.1 * 100),  # 10% platform fee
+            "transaction_charge": int(amount * 0.05 * 100),  # 5% platform fee
             "bearer": "subaccount"
         }
         
