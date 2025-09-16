@@ -346,10 +346,47 @@ export default function AdminVerifyUsersPage() {
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Documents
                     </label>
-                    <div className="text-sm space-y-1">
-                      <p><strong>Primary ID:</strong> {selectedRequest.id_document_type}</p>
+                    <div className="text-sm space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span><strong>Primary ID:</strong> {selectedRequest.id_document_type}</span>
+                        {selectedRequest.id_document && (
+                          <a
+                            href={selectedRequest.id_document}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-800 text-xs bg-blue-50 px-2 py-1 rounded"
+                          >
+                            📄 View
+                          </a>
+                        )}
+                      </div>
                       {selectedRequest.secondary_document_type && (
-                        <p><strong>Secondary:</strong> {selectedRequest.secondary_document_type}</p>
+                        <div className="flex items-center justify-between">
+                          <span><strong>Secondary:</strong> {selectedRequest.secondary_document_type}</span>
+                          {selectedRequest.secondary_document && (
+                            <a
+                              href={selectedRequest.secondary_document}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 hover:text-blue-800 text-xs bg-blue-50 px-2 py-1 rounded"
+                            >
+                              📄 View
+                            </a>
+                          )}
+                        </div>
+                      )}
+                      {selectedRequest.certificates && (
+                        <div className="flex items-center justify-between">
+                          <span><strong>Certificates:</strong> Uploaded</span>
+                          <a
+                            href={selectedRequest.certificates}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-800 text-xs bg-blue-50 px-2 py-1 rounded"
+                          >
+                            🏆 View
+                          </a>
+                        </div>
                       )}
                     </div>
                   </div>
