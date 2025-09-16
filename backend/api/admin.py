@@ -484,17 +484,20 @@ class UserVerificationAdmin(admin.ModelAdmin):
 
 @admin.register(VerificationRequest)
 class VerificationRequestAdmin(admin.ModelAdmin):
-    list_display = ['user', 'status', 'document_type', 'created_at', 'reviewed_at', 'reviewed_by']
-    list_filter = ['status', 'document_type', 'created_at']
-    search_fields = ['user__username', 'user__email']
+    list_display = ['user', 'status', 'id_document_type', 'created_at', 'reviewed_at', 'reviewed_by']
+    list_filter = ['status', 'id_document_type', 'created_at']
+    search_fields = ['user__username', 'user__email', 'full_name']
     readonly_fields = ['created_at', 'reviewed_at']
     
     fieldsets = (
         ('User Information', {
-            'fields': ('user', 'status')
+            'fields': ('user', 'status', 'full_name', 'date_of_birth', 'address', 'phone_number')
         }),
-        ('Documents', {
-            'fields': ('document_type', 'id_document', 'selfie_document', 'address_document')
+        ('Identity Documents', {
+            'fields': ('id_document', 'id_document_type', 'secondary_document', 'secondary_document_type')
+        }),
+        ('Professional Verification', {
+            'fields': ('certificates', 'portfolio_link', 'linkedin_profile')
         }),
         ('Admin Review', {
             'fields': ('reviewed_by', 'reviewed_at', 'admin_notes')
@@ -511,6 +514,11 @@ class VerificationBadgeAdmin(admin.ModelAdmin):
     list_filter = ['is_verified', 'verification_level', 'verified_at']
     search_fields = ['user__username', 'user__email']
     readonly_fields = ['verified_at']
+    
+    def save_model(self, request, obj, form, change):
+        if obj.is_verified and not obj.verified_at:
+            obj.verified_at = timezone.now()
+        super().save_model(request, obj, form, change)
 
 @admin.register(SavedSearch)
 class SavedSearchAdmin(admin.ModelAdmin):

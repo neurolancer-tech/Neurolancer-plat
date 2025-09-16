@@ -6,7 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { toast } from 'react-hot-toast';
 import api from '../../lib/api';
-import { getUser, getProfile, isAuthenticated, setProfile, isProfileComplete } from '../../lib/auth';
+import { getUser, getProfile, isAuthenticated, setProfile, isProfileComplete, needsProfileCompletion } from '../../lib/auth';
 
 export default function RoleSelectionPage() {
   const router = useRouter();
@@ -27,8 +27,8 @@ export default function RoleSelectionPage() {
     setUser(currentUser);
     setUserProfile(currentProfile);
 
-    // Check if profile is complete first
-    if (!isProfileComplete()) {
+    // Check if profile needs completion (only for users who haven't completed it)
+    if (needsProfileCompletion()) {
       router.push('/auth/complete-profile');
       return;
     }
