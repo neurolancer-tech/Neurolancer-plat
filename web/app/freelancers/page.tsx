@@ -119,6 +119,12 @@ export default function FreelancersPage() {
           linkedin_url: profile.linkedin_url || '',
           availability: profile.availability || 'freelance',
           completed_projects: profile.completed_projects || 0,
+          // Add category and subcategory data from user_info
+          primary_category_name: userInfo.primary_category_name,
+          category_names: userInfo.category_names,
+          subcategory_names: userInfo.subcategory_names,
+          categories: userInfo.categories || [],
+          subcategories: userInfo.subcategories || [],
           professionalProfile: profile
         };
       });
@@ -208,7 +214,7 @@ export default function FreelancersPage() {
       
       return matchesSearch && matchesSkills && matchesMinRate && matchesMaxRate && matchesRating && matchesMinLikes && matchesCategory && matchesSubcategory;
     });
-  }, [freelancers, filters, categories]);
+  }, [freelancers, filters, categories, subcategories]);
 
   const sortedFreelancers = useMemo(() => {
     const arr = [...filteredFreelancers];

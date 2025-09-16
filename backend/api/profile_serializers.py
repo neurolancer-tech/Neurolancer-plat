@@ -16,7 +16,7 @@ class FreelancerProfileSerializer(serializers.ModelSerializer):
         read_only_fields = ['rating', 'total_reviews', 'completed_projects', 'created_at', 'updated_at']
     
     def get_user_info(self, obj):
-        return {
+        user_info = {
             'id': obj.user.id,
             'username': obj.user.username,
             'first_name': obj.user.first_name,
@@ -26,6 +26,18 @@ class FreelancerProfileSerializer(serializers.ModelSerializer):
             'country': obj.user_profile.country if obj.user_profile else None,
             'city': obj.user_profile.city if obj.user_profile else None,
         }
+        
+        # Add category and subcategory information from UserProfile
+        if obj.user_profile:
+            user_info.update({
+                'primary_category_name': obj.user_profile.primary_category_name,
+                'category_names': obj.user_profile.category_names,
+                'subcategory_names': obj.user_profile.subcategory_names,
+                'categories': [{'id': cat.id, 'name': cat.name} for cat in obj.user_profile.categories.all()] if obj.user_profile.categories.exists() else [],
+                'subcategories': [{'id': sub.id, 'name': sub.name} for sub in obj.user_profile.subcategories.all()] if obj.user_profile.subcategories.exists() else []
+            })
+        
+        return user_info
 
 class ClientProfileSerializer(serializers.ModelSerializer):
     user_info = serializers.SerializerMethodField()
