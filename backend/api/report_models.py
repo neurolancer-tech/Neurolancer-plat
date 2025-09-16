@@ -43,7 +43,7 @@ class Report(models.Model):
     )
     
     # Reporter information
-    reporter = models.ForeignKey(User, on_delete=models.CASCADE, related_name='filed_reports')
+    reporter = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_reports_filed')
     
     # Report details
     report_type = models.CharField(max_length=20, choices=REPORT_TYPES)
@@ -52,7 +52,7 @@ class Report(models.Model):
     description = models.TextField()
     
     # Reported content/user
-    reported_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_reports', null=True, blank=True)
+    reported_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_reports_received', null=True, blank=True)
     reported_gig = models.ForeignKey(Gig, on_delete=models.CASCADE, related_name='reports', null=True, blank=True)
     reported_job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name='reports', null=True, blank=True)
     reported_order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='reports', null=True, blank=True)
@@ -66,7 +66,7 @@ class Report(models.Model):
     severity = models.CharField(max_length=10, choices=SEVERITY_LEVELS, default='medium')
     
     # Admin handling
-    assigned_admin = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_reports')
+    assigned_admin = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='user_reports_assigned')
     admin_notes = models.TextField(blank=True)
     resolution_notes = models.TextField(blank=True)
     
@@ -139,7 +139,7 @@ class ReportAction(models.Model):
     custom_message = models.TextField(blank=True, help_text="Custom message sent to reported user")
     
     # Admin who took action
-    admin = models.ForeignKey(User, on_delete=models.CASCADE, related_name='report_actions_taken')
+    admin = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_report_actions_taken')
     
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
