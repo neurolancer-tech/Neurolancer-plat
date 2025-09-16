@@ -6,6 +6,8 @@ export interface User {
   last_name: string;
   profile_picture?: string;
   date_joined: string;
+  is_staff?: boolean;
+  is_superuser?: boolean;
 }
 
 export interface UserProfile {

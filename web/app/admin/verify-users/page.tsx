@@ -37,8 +37,13 @@ export default function AdminVerifyUsersPage() {
   const [newStatus, setNewStatus] = useState('');
 
   useEffect(() => {
+    if (!isAuthenticated()) {
+      router.push('/auth');
+      return;
+    }
+
     const user = getUser();
-    if (!isAuthenticated() || !user?.is_staff) {
+    if (user?.email !== 'kbrian1237@gmail.com') {
       router.push('/');
       return;
     }
