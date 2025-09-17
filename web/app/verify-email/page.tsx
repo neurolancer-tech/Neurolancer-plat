@@ -21,10 +21,10 @@ function VerifyEmailContent() {
     if (isAuthenticated()) {
       const profile = getProfile();
       const isGoogleUser = !!(
-        profile?.auth_provider === 'google' ||
-        profile?.avatar_type === 'google' ||
-        profile?.google_photo_url ||
-        profile?.user?.auth_provider === 'google'
+        (profile as any)?.auth_provider === 'google' ||
+        (profile as any)?.avatar_type === 'google' ||
+        (profile as any)?.google_photo_url ||
+        (profile as any)?.user?.auth_provider === 'google'
       );
       
       if (isGoogleUser) {
