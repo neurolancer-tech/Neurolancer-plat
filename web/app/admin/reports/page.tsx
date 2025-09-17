@@ -139,11 +139,14 @@ export default function AdminReportsPage() {
       return;
     }
 
-    loadReports();
-    loadStats();
-    loadTickets();
-    loadTicketStats();
-  }, [router, filters, pagination.page]);
+    if (activeTab === 'reports') {
+      loadReports();
+      loadStats();
+    } else {
+      loadTickets();
+      loadTicketStats();
+    }
+  }, [router, filters, pagination.page, activeTab]);
 
   const loadReports = async () => {
     try {

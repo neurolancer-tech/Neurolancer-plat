@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Navigation from '@/components/Navigation';
 import { isAuthenticated } from '@/lib/auth';
 import api from '@/lib/api';
+import toast from 'react-hot-toast';
 
 interface Ticket {
   id: string | number;
@@ -48,6 +49,9 @@ export default function HelpPage() {
     priority: 'medium'
   });
   const [replyMessage, setReplyMessage] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [lastTicketTime, setLastTicketTime] = useState<number | null>(null);
+  const [cooldownRemaining, setCooldownRemaining] = useState(0);
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -55,8 +59,35 @@ export default function HelpPage() {
       return;
     }
 
+    // Check for last ticket time in localStorage
+    const lastTime = localStorage.getItem('lastTicketTime');
+    if (lastTime) {
+      setLastTicketTime(parseInt(lastTime));
+    }
+
     loadData();
   }, [router]);
+
+  useEffect(() => {
+    // Update cooldown timer
+    const interval = setInterval(() => {
+      if (lastTicketTime) {
+        const now = Date.now();
+        const timeDiff = now - lastTicketTime;
+        const twoHours = 2 * 60 * 60 * 1000; // 2 hours in milliseconds
+        
+        if (timeDiff < twoHours) {
+          setCooldownRemaining(Math.ceil((twoHours - timeDiff) / 1000));
+        } else {
+          setCooldownRemaining(0);
+          setLastTicketTime(null);
+          localStorage.removeItem('lastTicketTime');
+        }
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [lastTicketTime]);
 
   const loadData = async () => {
     try {
@@ -75,27 +106,58 @@ export default function HelpPage() {
 
   const handleCreateTicket = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Check cooldown
+    if (cooldownRemaining > 0) {
+      const hours = Math.floor(cooldownRemaining / 3600);
+      const minutes = Math.floor((cooldownRemaining % 3600) / 60);
+      toast.error(`Please wait ${hours}h ${minutes}m before creating another ticket`);
+      return;
+    }
+
+    setSubmitting(true);
     try {
       const response = await api.post('/tickets/', newTicket);
       setTickets([response.data, ...tickets]);
       setNewTicket({ subject: '', description: '', category: 'other', priority: 'medium' });
       setShowCreateForm(false);
+      
+      // Set cooldown
+      const now = Date.now();
+      setLastTicketTime(now);
+      localStorage.setItem('lastTicketTime', now.toString());
+      
+      toast.success('✅ Ticket created successfully!');
       await loadData(); // Refresh stats
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating ticket:', error);
+      toast.error(error.response?.data?.error || 'Failed to create ticket');
+    } finally {
+      setSubmitting(false);
     }
   };
 
   const handleReply = async (ticketId: string | number) => {
+    if (!replyMessage.trim()) return;
+    
     try {
       await api.post(`/tickets/${ticketId}/reply/`, { message: replyMessage });
       setReplyMessage('');
+      toast.success('Reply sent successfully!');
       // Refresh ticket details
       const response = await api.get(`/tickets/${ticketId}/`);
       setSelectedTicket(response.data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error adding reply:', error);
+      toast.error(error.response?.data?.error || 'Failed to send reply');
     }
+  };
+
+  const formatCooldownTime = (seconds: number) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return `${hours}h ${minutes}m ${secs}s`;
   };
 
   const getStatusColor = (status: string) => {
@@ -121,20 +183,20 @@ export default function HelpPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-[#F6F6EB] dark:bg-gray-900">
         <Navigation />
         <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0D9E86]"></div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-[#F6F6EB] dark:bg-gray-900">
       <Navigation />
       
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">Help Center</h1>
           <p className="text-gray-600 dark:text-gray-400">Submit and manage your support tickets</p>
@@ -142,7 +204,7 @@ export default function HelpPage() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="card p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center">
               <div className="p-2 bg-blue-100 rounded-lg">
                 <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -155,7 +217,7 @@ export default function HelpPage() {
               </div>
             </div>
           </div>
-          <div className="card p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center">
               <div className="p-2 bg-green-100 rounded-lg">
                 <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -168,7 +230,7 @@ export default function HelpPage() {
               </div>
             </div>
           </div>
-          <div className="card p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center">
               <div className="p-2 bg-yellow-100 rounded-lg">
                 <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -181,7 +243,7 @@ export default function HelpPage() {
               </div>
             </div>
           </div>
-          <div className="card p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center">
               <div className="p-2 bg-gray-100 rounded-lg">
                 <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -199,15 +261,28 @@ export default function HelpPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Tickets List */}
           <div className="lg:col-span-2">
-            <div className="card">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
               <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                 <div className="flex justify-between items-center">
                   <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Support Tickets</h2>
                   <button
-                    onClick={() => setShowCreateForm(true)}
-                    className="btn btn-primary"
+                    onClick={() => {
+                      if (cooldownRemaining > 0) {
+                        const hours = Math.floor(cooldownRemaining / 3600);
+                        const minutes = Math.floor((cooldownRemaining % 3600) / 60);
+                        toast.error(`Please wait ${hours}h ${minutes}m before creating another ticket`);
+                        return;
+                      }
+                      setShowCreateForm(true);
+                    }}
+                    disabled={cooldownRemaining > 0}
+                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                      cooldownRemaining > 0 
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                        : 'bg-[#0D9E86] text-white hover:bg-teal-700'
+                    }`}
                   >
-                    Create Ticket
+                    {cooldownRemaining > 0 ? `Wait ${formatCooldownTime(cooldownRemaining)}` : 'Create Ticket'}
                   </button>
                 </div>
               </div>
@@ -220,10 +295,23 @@ export default function HelpPage() {
                     </svg>
                     <p className="text-gray-500 dark:text-gray-400">No support tickets yet</p>
                     <button
-                      onClick={() => setShowCreateForm(true)}
-                      className="mt-4 btn btn-primary"
+                      onClick={() => {
+                        if (cooldownRemaining > 0) {
+                          const hours = Math.floor(cooldownRemaining / 3600);
+                          const minutes = Math.floor((cooldownRemaining % 3600) / 60);
+                          toast.error(`Please wait ${hours}h ${minutes}m before creating another ticket`);
+                          return;
+                        }
+                        setShowCreateForm(true);
+                      }}
+                      disabled={cooldownRemaining > 0}
+                      className={`mt-4 px-4 py-2 rounded-lg font-medium transition-colors ${
+                        cooldownRemaining > 0 
+                          ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                          : 'bg-[#0D9E86] text-white hover:bg-teal-700'
+                      }`}
                     >
-                      Create Your First Ticket
+                      {cooldownRemaining > 0 ? `Wait ${formatCooldownTime(cooldownRemaining)}` : 'Create Your First Ticket'}
                     </button>
                   </div>
                 ) : (
@@ -265,7 +353,7 @@ export default function HelpPage() {
           {/* Ticket Details or Create Form */}
           <div className="lg:col-span-1">
             {showCreateForm ? (
-              <div className="card p-6">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Create Support Ticket</h3>
                   <button
@@ -285,7 +373,7 @@ export default function HelpPage() {
                       type="text"
                       value={newTicket.subject}
                       onChange={(e) => setNewTicket({...newTicket, subject: e.target.value})}
-                      className="input"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       required
                     />
                   </div>
@@ -295,7 +383,7 @@ export default function HelpPage() {
                     <select
                       value={newTicket.category}
                       onChange={(e) => setNewTicket({...newTicket, category: e.target.value})}
-                      className="input"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     >
                       <option value="account">Account Issues</option>
                       <option value="payment">Payment & Billing</option>
@@ -312,7 +400,7 @@ export default function HelpPage() {
                     <select
                       value={newTicket.priority}
                       onChange={(e) => setNewTicket({...newTicket, priority: e.target.value})}
-                      className="input"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     >
                       <option value="low">Low</option>
                       <option value="medium">Medium</option>
@@ -327,17 +415,30 @@ export default function HelpPage() {
                       value={newTicket.description}
                       onChange={(e) => setNewTicket({...newTicket, description: e.target.value})}
                       rows={4}
-                      className="input"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       required
                     />
                   </div>
                   
                   <div className="flex space-x-3">
-                    <button type="submit" className="btn btn-primary flex-1">Create Ticket</button>
+                    <button 
+                      type="submit" 
+                      disabled={submitting || cooldownRemaining > 0}
+                      className="flex-1 px-4 py-2 bg-[#0D9E86] text-white rounded-lg hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                    >
+                      {submitting ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Creating...
+                        </>
+                      ) : (
+                        'Create Ticket'
+                      )}
+                    </button>
                     <button
                       type="button"
                       onClick={() => setShowCreateForm(false)}
-                      className="btn btn-secondary"
+                      className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
                     >
                       Cancel
                     </button>
@@ -345,7 +446,7 @@ export default function HelpPage() {
                 </form>
               </div>
             ) : selectedTicket ? (
-              <div className="card p-6">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
                 <div className="flex justify-between items-start mb-6">
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">#{selectedTicket.ticket_id}</h3>
@@ -406,12 +507,12 @@ export default function HelpPage() {
                           onChange={(e) => setReplyMessage(e.target.value)}
                           placeholder="Type your message..."
                           rows={3}
-                          className="input"
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                         />
                         <button
                           onClick={() => handleReply(selectedTicket.id)}
                           disabled={!replyMessage.trim()}
-                          className="btn btn-primary w-full"
+                          className="w-full px-4 py-2 bg-[#0D9E86] text-white rounded-lg hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           Send Reply
                         </button>
@@ -421,7 +522,7 @@ export default function HelpPage() {
                 </div>
               </div>
             ) : (
-              <div className="card p-6">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
                 <div className="text-center py-8">
                   <svg className="w-12 h-12 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
