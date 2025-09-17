@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Navigation from '@/components/Navigation';
 import { Category, Subcategory } from '@/types';
-import { useSubcategories } from '../hooks/useSubcategories';
+import { useSubcategories } from '../../hooks/useSubcategories';
 import { isAuthenticated, getProfile } from '@/lib/auth';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
