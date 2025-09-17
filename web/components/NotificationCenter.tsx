@@ -20,6 +20,7 @@ export default function NotificationCenter() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [hasNewNotification, setHasNewNotification] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -43,8 +44,17 @@ export default function NotificationCenter() {
     try {
       const response = await api.get('/notifications/');
       const notifs = response.data.results || response.data;
+      const newUnreadCount = notifs.filter((n: Notification) => !n.is_read).length;
+      
+      // Check if there are new notifications
+      if (newUnreadCount > unreadCount) {
+        setHasNewNotification(true);
+        // Remove shake animation after 2 seconds
+        setTimeout(() => setHasNewNotification(false), 2000);
+      }
+      
       setNotifications(notifs.slice(0, 10)); // Show latest 10
-      setUnreadCount(notifs.filter((n: Notification) => !n.is_read).length);
+      setUnreadCount(newUnreadCount);
     } catch (error) {
       console.error('Error loading notifications:', error);
     }
@@ -117,15 +127,28 @@ export default function NotificationCenter() {
           e.preventDefault();
           e.stopPropagation();
           setIsOpen(!isOpen);
+          setHasNewNotification(false); // Stop shaking when clicked
         }}
-        className="relative p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 focus:outline-none"
+        className="relative p-2 text-white hover:text-gray-200 focus:outline-none"
         type="button"
       >
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10m0 0V6a2 2 0 00-2-2H9a2 2 0 00-2 2v2m10 0v10a2 2 0 01-2 2H9a2 2 0 01-2-2V8m10 0H7m0 0v10a2 2 0 002 2h6a2 2 0 002-2V8" />
-        </svg>
+        <div className={`transition-transform duration-200 ${hasNewNotification ? 'animate-pulse' : ''}`}>
+          <svg
+            className={`w-6 h-6 transition-transform duration-150 ${hasNewNotification ? 'animate-bounce' : ''}`}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+            />
+          </svg>
+        </div>
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}

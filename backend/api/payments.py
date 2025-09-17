@@ -24,7 +24,8 @@ PAYSTACK_PUBLIC_KEY = getattr(settings, 'PAYSTACK_PUBLIC_KEY', 'pk_test_your_pub
 PAYSTACK_BASE_URL = 'https://api.paystack.co'
 
 # Platform configuration
-PLATFORM_FEE_PERCENTAGE = Decimal('0.05')  # 5% platform fee
+FREELANCER_FEE_PERCENTAGE = Decimal('0.05')  # 5% fee from freelancer earnings
+CLIENT_FEE_PERCENTAGE = Decimal('0.025')  # 2.5% fee from client payment
 PROCESSING_FEE_KES = Decimal('50.00')  # 50 KES processing fee
 PLATFORM_ACCOUNT_NUMBER = '1234567890'  # Platform's M-Pesa account
 KES_TO_USD_RATE = Decimal('0.0077')  # Approximate conversion rate (1 KES = 0.0077 USD)
@@ -212,9 +213,9 @@ def initialize_payment(request):
                 return Response({'error': 'Course not found'}, status=status.HTTP_404_NOT_FOUND)
         
         # Calculate fees
-        platform_fee = base_amount * PLATFORM_FEE_PERCENTAGE
+        client_fee = base_amount * CLIENT_FEE_PERCENTAGE  # 2.5% from client
         processing_fee = PROCESSING_FEE_KES
-        total_amount = base_amount + platform_fee + processing_fee
+        total_amount = base_amount + client_fee + processing_fee
         
         # Generate unique reference
         reference = f'{reference_prefix}_{datetime.now().strftime("%Y%m%d%H%M%S")}'
@@ -225,7 +226,7 @@ def initialize_payment(request):
             'client_id': request.user.id,
             'freelancer_id': freelancer.id,
             'base_amount': str(base_amount),
-            'platform_fee': str(platform_fee),
+            'client_fee': str(client_fee),
             'processing_fee': str(processing_fee),
             'total_amount': str(total_amount),
             'platform_account': PLATFORM_ACCOUNT_NUMBER,
@@ -279,7 +280,7 @@ def initialize_payment(request):
                     'reference': reference,
                     'amount_breakdown': {
                         'base_amount': float(base_amount),
-                        'platform_fee': float(platform_fee),
+                        'client_fee': float(client_fee),
                         'processing_fee': float(processing_fee),
                         'total_amount': float(total_amount)
                     }
@@ -473,9 +474,13 @@ def verify_payment(request):
             # Extract payment details
             payment_type = metadata.get('payment_type', 'gig')
             base_amount = Decimal(metadata.get('base_amount', '0'))
-            platform_fee = Decimal(metadata.get('platform_fee', '0'))
+            client_fee = Decimal(metadata.get('client_fee', '0'))
             processing_fee = Decimal(metadata.get('processing_fee', '0'))
             total_paid = Decimal(str(payment_data['amount'])) / 100  # Convert from cents
+            
+            # Calculate freelancer fee (5% from their earnings)
+            freelancer_fee = base_amount * FREELANCER_FEE_PERCENTAGE
+            freelancer_earnings = base_amount - freelancer_fee
             
             freelancer_id = metadata.get('freelancer_id')
             client_id = metadata.get('client_id')
@@ -490,8 +495,9 @@ def verify_payment(request):
                     order.save()
                     
                     # Update freelancer's escrow balance (convert KES to USD for dashboard)
+                    # Deduct freelancer fee (5%) from their earnings
                     freelancer_profile, created = UserProfile.objects.get_or_create(user=order.freelancer)
-                    usd_amount = convert_kes_to_usd(base_amount)
+                    usd_amount = convert_kes_to_usd(freelancer_earnings)
                     freelancer_profile.escrow_balance += usd_amount
                     freelancer_profile.save()
                     
@@ -509,12 +515,20 @@ def verify_payment(request):
                     Transaction.objects.create(
                         user=order.freelancer,
                         transaction_type='payment',
-                        amount=base_amount,
-                        description=f'Received payment for gig: {order.title}',
+                        amount=freelancer_earnings,
+                        description=f'Received payment for gig: {order.title} (after 5% platform fee)',
                         reference=reference,
                         status='completed',
                         order=order
                     )
+                    
+                    # Process referral earnings for first purchase
+                    try:
+                        from .referral_service import ReferralService
+                        ReferralService.check_first_purchase(order.client)
+                        ReferralService.process_earnings_percentage(order.client, base_amount, order.id)
+                    except Exception as e:
+                        logger.error(f'Error processing referral earnings: {e}')
                     
                     # Create payment notifications
                     from .models import Notification
@@ -529,7 +543,7 @@ def verify_payment(request):
                     Notification.objects.create(
                         user=order.freelancer,
                         title='Payment Received',
-                        message=f'You have received a payment of KES {base_amount:,.2f} for "{order.title}". Funds are held in escrow until order completion.',
+                        message=f'You have received a payment of KES {freelancer_earnings:,.2f} for "{order.title}" (KES {freelancer_fee:,.2f} platform fee deducted). Funds are held in escrow until order completion.',
                         notification_type='payment',
                         action_url=f'/my-orders'
                     )
@@ -668,13 +682,14 @@ def verify_payment(request):
                     return Response({'error': 'Course or user not found'}, status=status.HTTP_404_NOT_FOUND)
             
             # Record platform fees
-            if platform_fee > 0:
+            total_platform_fees = client_fee + freelancer_fee + processing_fee
+            if total_platform_fees > 0:
                 # Create platform fee transaction (could be to admin user or system account)
                 Transaction.objects.create(
                     user_id=1,  # Assuming admin user ID is 1
                     transaction_type='fee',
-                    amount=platform_fee + processing_fee,
-                    description=f'Platform and processing fees for {reference}',
+                    amount=total_platform_fees,
+                    description=f'Platform fees (Client: {client_fee}, Freelancer: {freelancer_fee}) and processing fees for {reference}',
                     reference=f'{reference}_fees',
                     status='completed'
                 )
@@ -684,9 +699,11 @@ def verify_payment(request):
                 'message': 'Payment verified successfully',
                 'payment_breakdown': {
                     'base_amount': float(base_amount),
-                    'platform_fee': float(platform_fee),
+                    'client_fee': float(client_fee),
+                    'freelancer_fee': float(freelancer_fee),
                     'processing_fee': float(processing_fee),
-                    'total_paid': float(total_paid)
+                    'total_paid': float(total_paid),
+                    'freelancer_earnings': float(freelancer_earnings)
                 },
                 **response_data
             })
@@ -880,16 +897,17 @@ def calculate_payment_fees(request):
             base_amount = Decimal(str(amount))
         
         # Calculate fees
-        platform_fee = base_amount * PLATFORM_FEE_PERCENTAGE
+        client_fee = base_amount * CLIENT_FEE_PERCENTAGE  # 2.5% from client
         processing_fee = PROCESSING_FEE_KES
-        total_amount = base_amount + platform_fee + processing_fee
+        total_amount = base_amount + client_fee + processing_fee
         
         return Response({
             'status': 'success',
             'breakdown': {
                 'base_amount': float(base_amount),
-                'platform_fee': float(platform_fee),
-                'platform_fee_percentage': float(PLATFORM_FEE_PERCENTAGE * 100),
+                'client_fee': float(client_fee),
+                'client_fee_percentage': float(CLIENT_FEE_PERCENTAGE * 100),
+                'freelancer_fee_percentage': float(FREELANCER_FEE_PERCENTAGE * 100),
                 'processing_fee': float(processing_fee),
                 'total_amount': float(total_amount),
                 'currency': 'KES'

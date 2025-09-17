@@ -441,9 +441,9 @@ function CheckoutContent() {
                     Payments are processed securely through Paystack. Your payment information is encrypted and protected with industry-standard security.
                   </p>
                   <p className="text-sm text-blue-800 dark:text-blue-200 mt-1">
-                    • Platform fee goes to Neurolancer for service provision<br/>
-                    • Processing fee covers transaction costs<br/>
-                    • Freelancer receives the base amount after completion
+                    • {feeBreakdown.client_fee_percentage}% platform fee from your payment<br/>
+                    • {feeBreakdown.freelancer_fee_percentage}% additional fee deducted from freelancer earnings<br/>
+                    • Processing fee covers transaction costs
                   </p>
                 </div>
               </div>

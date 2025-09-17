@@ -12,6 +12,7 @@ from .paystack_withdrawal import paystack_withdraw, get_paystack_banks, create_r
 from .test_paystack_withdrawal import test_paystack_withdraw
 from .location_views import get_location_by_coordinates, get_location_by_ip
 from .profile_views import freelancer_profile_view, client_profile_view, public_freelancer_profiles
+from .admin_ticket_views import AdminTicketListView, AdminTicketDetailView, admin_ticket_stats, admin_reply_ticket, assign_ticket, update_ticket_status, send_custom_notification
 
 urlpatterns = [
     # Enhanced Authentication URLs
@@ -364,6 +365,21 @@ urlpatterns = [
     
     # Reporting System URLs
     path('', include('api.report_urls')),
+    
+    # Support Ticket System URLs
+    path('', include('api.ticket_urls')),
+    
+    # Admin Ticket Management URLs
+    path('admin/tickets/', AdminTicketListView.as_view(), name='admin-ticket-list'),
+    path('admin/tickets/<int:pk>/', AdminTicketDetailView.as_view(), name='admin-ticket-detail'),
+    path('admin/tickets/stats/', admin_ticket_stats, name='admin-ticket-stats'),
+    path('admin/tickets/<int:ticket_id>/reply/', admin_reply_ticket, name='admin-ticket-reply'),
+    path('admin/tickets/<int:ticket_id>/assign/', assign_ticket, name='admin-assign-ticket'),
+    path('admin/tickets/<int:ticket_id>/status/', update_ticket_status, name='admin-update-ticket-status'),
+    path('admin/tickets/<int:ticket_id>/custom-notification/', send_custom_notification, name='admin-custom-notification'),
+    
+    # Referral System URLs
+    path('referrals/', include('api.referral_urls')),
     
     # Skill Assessment System URLs
     path('assessments/categories/', assessment_views.AssessmentCategoryListView.as_view(), name='assessment-categories'),

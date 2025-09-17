@@ -60,11 +60,11 @@ function CourseCheckoutContent() {
       
       // Convert USD to KES
       const converted = await convertUSDToKES(courseData.price);
-      const fee = Math.round(converted * 0.05);
-      const total = converted + fee;
+      const clientFee = Math.round(converted * 0.025); // 2.5% client fee
+      const total = converted + clientFee;
       
       setKesPrice(converted);
-      setProcessingFee(fee);
+      setProcessingFee(clientFee);
       setTotalAmount(total);
     } catch (error) {
       console.error('Error loading course:', error);
@@ -223,7 +223,7 @@ function CourseCheckoutContent() {
                   <span className="font-medium text-gray-900 dark:text-gray-100">KES {kesPrice.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Processing Fee (5%):</span>
+                  <span className="text-gray-600 dark:text-gray-400">Platform Fee (2.5%):</span>
                   <span className="font-medium text-gray-900 dark:text-gray-100">KES {processingFee.toLocaleString()}</span>
                 </div>
                 <div className="border-t pt-3">

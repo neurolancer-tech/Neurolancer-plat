@@ -139,7 +139,7 @@ export default function FreelancerProfileForm({ onSave }: FreelancerProfileFormP
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -358,15 +358,73 @@ export default function FreelancerProfileForm({ onSave }: FreelancerProfileFormP
         </div>
       </div>
 
-      <div className="flex justify-end pt-6">
-        <button
-          type="submit"
-          disabled={loading}
-          className="px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 disabled:opacity-50 transition-all font-medium shadow-lg"
-        >
-          {loading ? 'Saving...' : 'Save Freelancer Profile'}
-        </button>
-      </div>
+      <FreelancerProfileToggle profile={profile} loading={loading} onSubmit={handleSubmit} />
     </form>
+  );
+}
+
+// Freelancer Profile Toggle Component
+function FreelancerProfileToggle({ profile, loading, onSubmit }: {
+  profile: Partial<FreelancerProfile>;
+  loading: boolean;
+  onSubmit: (e: React.FormEvent) => void;
+}) {
+  const [isPublished, setIsPublished] = useState(false);
+  const [toggling, setToggling] = useState(false);
+
+  useEffect(() => {
+    // Check if profile is published based on whether it has an ID and required fields
+    setIsPublished(Boolean(profile.id && profile.title && profile.bio));
+  }, [profile]);
+
+  const handleToggle = async () => {
+    if (!isPublished) {
+      // If not published, save the profile first
+      const form = new Event('submit', { bubbles: true, cancelable: true });
+      onSubmit(form as any);
+      return;
+    }
+
+    // If published, toggle the published status
+    setToggling(true);
+    try {
+      const newStatus = !isPublished;
+      await api.patch('/profile/freelancer/toggle-publish/', {
+        is_published: newStatus
+      });
+      setIsPublished(newStatus);
+      toast.success(newStatus ? 'Freelancer profile published!' : 'Freelancer profile unpublished!');
+    } catch (error: any) {
+      toast.error('Failed to update profile status');
+    } finally {
+      setToggling(false);
+    }
+  };
+
+  return (
+    <div className="flex justify-end pt-6">
+      <div className="flex items-center space-x-4">
+        <span className="text-sm text-gray-600 dark:text-gray-400">
+          {isPublished ? 'Profile is live and visible to clients' : 'Profile is not published'}
+        </span>
+        <button
+          type="button"
+          onClick={handleToggle}
+          disabled={loading || toggling}
+          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 ${
+            isPublished ? 'bg-green-600' : 'bg-gray-200 dark:bg-gray-700'
+          }`}
+        >
+          <span
+            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+              isPublished ? 'translate-x-6' : 'translate-x-1'
+            }`}
+          />
+        </button>
+        <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+          {loading || toggling ? 'Processing...' : isPublished ? 'Published' : 'Unpublished'}
+        </span>
+      </div>
+    </div>
   );
 }

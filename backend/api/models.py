@@ -676,6 +676,7 @@ class Notification(models.Model):
         ('help', 'Help Request'),
         ('group_invite', 'Group Invitation'),
         ('verification', 'Verification Update'),
+        ('support', 'Support Ticket'),
     )
     
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
@@ -1787,3 +1788,9 @@ from .verification_models import VerificationRequest, VerificationBadge
 
 # Import report models
 from .report_models import Report, ReportAction, UserReportStats
+
+# Import ticket models
+from .ticket_models import SupportTicket, TicketReply
+
+# Import referral models
+from .referral_models import ReferralSettings, ReferralCode, Referral, ReferralEarning, ReferralWithdrawal

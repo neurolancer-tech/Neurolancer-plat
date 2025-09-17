@@ -17,6 +17,8 @@ from .models import (
 )
 from .report_models import Report, ReportAction, UserReportStats
 from .verification_models import VerificationRequest, VerificationBadge
+from .ticket_models import SupportTicket, TicketReply
+from .referral_models import ReferralSettings, ReferralCode, Referral, ReferralEarning, ReferralWithdrawal
 
 # Learning & Development Admin
 @admin.register(Course)
@@ -786,6 +788,178 @@ class UserReportStatsAdmin(admin.ModelAdmin):
             stats.update_stats()
         self.message_user(request, f"Updated statistics for {queryset.count()} users.")
     update_stats.short_description = "Update report statistics"
+
+# Support Ticket System Admin
+@admin.register(SupportTicket)
+class SupportTicketAdmin(admin.ModelAdmin):
+    list_display = ['ticket_id', 'user', 'subject', 'category', 'priority', 'status', 'assigned_to', 'created_at']
+    list_filter = ['status', 'category', 'priority', 'created_at']
+    search_fields = ['ticket_id', 'user__username', 'subject', 'description']
+    readonly_fields = ['ticket_id', 'created_at', 'updated_at', 'resolved_at']
+    
+    fieldsets = (
+        ('Ticket Information', {
+            'fields': ('ticket_id', 'user', 'subject', 'description', 'category', 'priority')
+        }),
+        ('Status & Assignment', {
+            'fields': ('status', 'assigned_to')
+        }),
+        ('Attachments', {
+            'fields': ('attachment',)
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at', 'resolved_at'),
+            'classes': ['collapse']
+        })
+    )
+    
+    def save_model(self, request, obj, form, change):
+        if change and obj.status == 'resolved' and not obj.resolved_at:
+            obj.resolved_at = timezone.now()
+        super().save_model(request, obj, form, change)
+
+class TicketReplyInline(admin.TabularInline):
+    model = TicketReply
+    extra = 0
+    fields = ['user', 'message', 'is_staff_reply', 'created_at']
+    readonly_fields = ['created_at']
+    ordering = ['created_at']
+
+@admin.register(TicketReply)
+class TicketReplyAdmin(admin.ModelAdmin):
+    list_display = ['ticket', 'user', 'message_preview', 'is_staff_reply', 'created_at']
+    list_filter = ['is_staff_reply', 'created_at']
+    search_fields = ['ticket__ticket_id', 'user__username', 'message']
+    readonly_fields = ['created_at']
+    
+    def message_preview(self, obj):
+        return obj.message[:50] + '...' if len(obj.message) > 50 else obj.message
+    message_preview.short_description = 'Message Preview'
+
+# Referral System Admin
+@admin.register(ReferralSettings)
+class ReferralSettingsAdmin(admin.ModelAdmin):
+    list_display = ['is_active', 'signup_bonus_enabled', 'earnings_percentage_enabled', 'signup_bonus_amount', 'earnings_percentage', 'updated_by', 'updated_at']
+    list_filter = ['is_active', 'signup_bonus_enabled', 'earnings_percentage_enabled', 'updated_at']
+    readonly_fields = ['updated_at', 'created_at']
+    
+    fieldsets = (
+        ('System Controls', {
+            'fields': ('is_active', 'signup_bonus_enabled', 'earnings_percentage_enabled')
+        }),
+        ('Bonus Settings', {
+            'fields': ('signup_bonus_amount', 'earnings_percentage')
+        }),
+        ('Limits & Restrictions', {
+            'fields': ('max_referrals_per_user', 'min_payout_amount', 'earnings_duration_days')
+        }),
+        ('Anti-Fraud Measures', {
+            'fields': ('require_email_verification', 'require_first_purchase', 'min_account_age_hours')
+        }),
+        ('Metadata', {
+            'fields': ('updated_by', 'created_at', 'updated_at'),
+            'classes': ['collapse']
+        })
+    )
+    
+    def save_model(self, request, obj, form, change):
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+@admin.register(ReferralCode)
+class ReferralCodeAdmin(admin.ModelAdmin):
+    list_display = ['user', 'code', 'total_signups', 'total_earnings', 'pending_earnings', 'withdrawn_earnings', 'is_active', 'created_at']
+    list_filter = ['is_active', 'created_at']
+    search_fields = ['user__username', 'user__email', 'code']
+    readonly_fields = ['code', 'created_at', 'updated_at']
+    
+    fieldsets = (
+        ('User Information', {
+            'fields': ('user', 'code', 'is_active')
+        }),
+        ('Statistics', {
+            'fields': ('total_signups', 'total_earnings', 'pending_earnings', 'withdrawn_earnings')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ['collapse']
+        })
+    )
+
+@admin.register(Referral)
+class ReferralAdmin(admin.ModelAdmin):
+    list_display = ['referrer', 'referred_user', 'status', 'signup_bonus_paid', 'signup_bonus_amount', 'signed_up_at', 'verified_at']
+    list_filter = ['status', 'signup_bonus_paid', 'signed_up_at', 'verified_at']
+    search_fields = ['referrer__username', 'referred_user__username', 'referral_code__code']
+    readonly_fields = ['signed_up_at', 'verified_at', 'first_purchase_at']
+    
+    fieldsets = (
+        ('Referral Information', {
+            'fields': ('referrer', 'referred_user', 'referral_code', 'status')
+        }),
+        ('Bonus Tracking', {
+            'fields': ('signup_bonus_paid', 'signup_bonus_amount')
+        }),
+        ('Fraud Prevention', {
+            'fields': ('ip_address', 'user_agent')
+        }),
+        ('Timestamps', {
+            'fields': ('signed_up_at', 'verified_at', 'first_purchase_at'),
+            'classes': ['collapse']
+        })
+    )
+
+@admin.register(ReferralEarning)
+class ReferralEarningAdmin(admin.ModelAdmin):
+    list_display = ['referrer', 'referred_user', 'earning_type', 'amount', 'status', 'created_at', 'approved_at', 'paid_at']
+    list_filter = ['earning_type', 'status', 'created_at']
+    search_fields = ['referrer__username', 'referred_user__username', 'description']
+    readonly_fields = ['created_at', 'approved_at', 'paid_at']
+    
+    fieldsets = (
+        ('Earning Information', {
+            'fields': ('referrer', 'referred_user', 'referral', 'earning_type', 'amount', 'status')
+        }),
+        ('Source Transaction', {
+            'fields': ('source_transaction_id', 'source_amount', 'percentage_rate')
+        }),
+        ('Description', {
+            'fields': ('description',)
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'approved_at', 'paid_at'),
+            'classes': ['collapse']
+        })
+    )
+
+@admin.register(ReferralWithdrawal)
+class ReferralWithdrawalAdmin(admin.ModelAdmin):
+    list_display = ['user', 'amount', 'withdrawal_method', 'status', 'created_at', 'processed_at', 'processed_by']
+    list_filter = ['withdrawal_method', 'status', 'created_at']
+    search_fields = ['user__username', 'payment_reference']
+    readonly_fields = ['created_at', 'processed_at']
+    
+    fieldsets = (
+        ('Withdrawal Information', {
+            'fields': ('user', 'amount', 'withdrawal_method', 'status')
+        }),
+        ('Payment Details', {
+            'fields': ('account_details', 'payment_reference')
+        }),
+        ('Processing', {
+            'fields': ('processed_by', 'processed_at')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at',),
+            'classes': ['collapse']
+        })
+    )
+    
+    def save_model(self, request, obj, form, change):
+        if change and obj.status in ['completed', 'failed'] and not obj.processed_at:
+            obj.processed_at = timezone.now()
+            obj.processed_by = request.user
+        super().save_model(request, obj, form, change)
 
 # Customize admin site
 admin.site.site_header = 'Neurolancer Admin Panel'

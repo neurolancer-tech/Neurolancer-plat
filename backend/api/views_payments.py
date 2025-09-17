@@ -49,7 +49,7 @@ def create_subaccount(request):
         business_name=business_name,
         settlement_bank=bank_code,
         account_number=account_number,
-        percentage_charge=10  # 10% platform fee
+        percentage_charge=5  # 5% platform fee from freelancer earnings
     )
     
     if subaccount_response.get('status'):

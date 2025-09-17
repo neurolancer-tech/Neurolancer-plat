@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { toast } from 'react-hot-toast';
 import api from '../../lib/api';
 import { setAuthToken, setUser, setProfile, isProfileComplete } from '../../lib/auth';
-import { signInWithGoogle, getGoogleRedirectResult } from '../../lib/firebase';
+import { signInWithGoogle, getGoogleRedirectResult, RecaptchaVerifier } from '../../lib/firebase';
 
 interface PasswordStrength {
   score: number;
@@ -72,6 +72,8 @@ function AuthContent() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState<PasswordStrength>({ score: 0, label: '', color: '', suggestions: [] });
+  const [recaptchaVerifier, setRecaptchaVerifier] = useState<any>(null);
+  const [recaptchaResolved, setRecaptchaResolved] = useState(false);
 
   useEffect(() => {
     const tab = searchParams.get('tab');
@@ -79,6 +81,31 @@ function AuthContent() {
       setActiveTab('login');
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    if (activeTab === 'signup' && !recaptchaVerifier) {
+      try {
+        const verifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+          size: 'normal',
+          callback: () => {
+            setRecaptchaResolved(true);
+          },
+          'expired-callback': () => {
+            setRecaptchaResolved(false);
+          }
+        });
+        setRecaptchaVerifier(verifier);
+        verifier.render();
+      } catch (error) {
+        console.error('reCAPTCHA setup error:', error);
+      }
+    }
+    return () => {
+      if (recaptchaVerifier) {
+        recaptchaVerifier.clear();
+      }
+    };
+  }, [activeTab, recaptchaVerifier]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -346,6 +373,16 @@ function AuthContent() {
     return false;
   };
 
+  const validatePassword = (password: string): boolean => {
+    const minLength = password.length >= 8;
+    const hasUpper = /[A-Z]/.test(password);
+    const hasLower = /[a-z]/.test(password);
+    const hasNumber = /\d/.test(password);
+    const hasSpecial = /[^\w\s]/.test(password);
+    
+    return minLength && hasUpper && hasLower && hasNumber && hasSpecial;
+  };
+
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -354,8 +391,13 @@ function AuthContent() {
       return;
     }
 
-    if (formData.password.length < 8) {
-      toast.error('Password must be at least 8 characters long');
+    if (!validatePassword(formData.password)) {
+      toast.error('Password must be at least 8 characters with uppercase, lowercase, number, and special character');
+      return;
+    }
+
+    if (!recaptchaResolved) {
+      toast.error('Please complete the reCAPTCHA verification');
       return;
     }
 
@@ -857,9 +899,14 @@ function AuthContent() {
                     )}
                   </div>
 
+                  {/* reCAPTCHA */}
+                  <div className="flex justify-center">
+                    <div id="recaptcha-container"></div>
+                  </div>
+
                   <button
                     type="submit"
-                    disabled={loading || Boolean(formData.password && formData.confirmPassword && formData.password !== formData.confirmPassword)}
+                    disabled={loading || !recaptchaResolved || Boolean(formData.password && formData.confirmPassword && formData.password !== formData.confirmPassword)}
                     className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 sm:py-3 rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:transform-none font-medium text-sm sm:text-base"
                   >
                     {loading ? (

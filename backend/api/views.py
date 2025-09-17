@@ -135,6 +135,31 @@ def register(request):
         profile.email_verification_sent_at = timezone.now()
         profile.save()
         
+        # Process referral if provided
+        referral_code = request.data.get('referral_code')
+        if referral_code:
+            try:
+                from .referral_service import ReferralService
+                
+                # Get client IP for fraud prevention
+                x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+                ip_address = x_forwarded_for.split(',')[0] if x_forwarded_for else request.META.get('REMOTE_ADDR')
+                user_agent = request.META.get('HTTP_USER_AGENT', '')
+                
+                referral = ReferralService.process_referral_signup(
+                    referred_user=user,
+                    referral_code=referral_code,
+                    ip_address=ip_address,
+                    user_agent=user_agent
+                )
+                
+                if referral:
+                    print(f"Referral processed for {user.username} with code {referral_code}")
+                else:
+                    print(f"Failed to process referral for {user.username} with code {referral_code}")
+            except Exception as e:
+                print(f"Error processing referral: {e}")
+        
         # Send verification email
         send_verification_email(user, verification_token)
         
@@ -497,6 +522,14 @@ def verify_email(request):
         profile.email_verification_token = None
         profile.email_verification_sent_at = None
         profile.save()
+        
+        # Process referral verification if user was referred
+        try:
+            if hasattr(profile.user, 'referral_info'):
+                from .referral_service import ReferralService
+                ReferralService.verify_referral(profile.user.referral_info)
+        except Exception as e:
+            print(f"Error verifying referral for {profile.user.username}: {e}")
         
         return Response({
             'message': 'Email verified successfully',

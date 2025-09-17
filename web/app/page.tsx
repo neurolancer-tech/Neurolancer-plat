@@ -254,7 +254,7 @@ export default function HomePage() {
         </video>
         <div className="absolute inset-0 bg-black bg-opacity-50 z-10"></div>
         <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-5xl font-bold mb-6">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6">
             Find Top AI Experts & Freelancers
           </h1>
           <p className="text-xl mb-8 max-w-3xl mx-auto">
