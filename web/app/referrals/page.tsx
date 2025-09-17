@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
+import { isAuthenticated } from '@/lib/auth';
+import Navigation from '@/components/Navigation';
 
 interface ReferralInfo {
   referral_code: string;
@@ -39,20 +41,22 @@ export default function ReferralsPage() {
   const router = useRouter();
 
   useEffect(() => {
+    // Check authentication first
+    if (!isAuthenticated()) {
+      router.push('/auth');
+      return;
+    }
     fetchReferralData();
-  }, []);
+  }, [router]);
 
   const fetchReferralData = async () => {
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
+      if (!isAuthenticated()) {
         router.push('/auth');
         return;
       }
 
-      const response = await api.get('/referrals/info/', {
-        headers: { Authorization: `Token ${token}` }
-      });
+      const response = await api.get('/referrals/info/');
 
       setReferralInfo(response.data.data);
     } catch (err: any) {
@@ -91,12 +95,9 @@ export default function ReferralsPage() {
 
     setWithdrawing(true);
     try {
-      const token = localStorage.getItem('token');
       await api.post('/referrals/withdraw/', {
         amount: amount,
         method: 'balance'
-      }, {
-        headers: { Authorization: `Token ${token}` }
       });
 
       setWithdrawAmount('');
@@ -134,31 +135,39 @@ export default function ReferralsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <Navigation />
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+        </div>
       </div>
     );
   }
 
   if (error && !referralInfo) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-red-600 text-xl mb-4">Error loading referral data</div>
-          <div className="text-gray-600">{error}</div>
-          <button 
-            onClick={fetchReferralData}
-            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-          >
-            Retry
-          </button>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <Navigation />
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="text-red-600 text-xl mb-4">Error loading referral data</div>
+            <div className="text-gray-600 dark:text-gray-400">{error}</div>
+            <button 
+              onClick={fetchReferralData}
+              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              Retry
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <Navigation />
+      <div className="py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Referral Program</h1>
@@ -170,67 +179,67 @@ export default function ReferralsPage() {
         {referralInfo && (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              <div className="bg-white rounded-lg shadow p-6">
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
-                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                      <span className="text-blue-600 font-semibold">👥</span>
+                    <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                      <span className="text-blue-600 dark:text-blue-400 font-semibold">👥</span>
                     </div>
                   </div>
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-500">Total Referrals</p>
-                    <p className="text-2xl font-semibold text-gray-900">{referralInfo.total_referrals}</p>
+                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Referrals</p>
+                    <p className="text-2xl font-semibold text-gray-900 dark:text-gray-100">{referralInfo.total_referrals}</p>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg shadow p-6">
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
-                    <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                      <span className="text-green-600 font-semibold">💰</span>
+                    <div className="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+                      <span className="text-green-600 dark:text-green-400 font-semibold">💰</span>
                     </div>
                   </div>
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-500">Total Earnings</p>
-                    <p className="text-2xl font-semibold text-gray-900">${referralInfo.total_earnings.toFixed(2)}</p>
+                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Earnings</p>
+                    <p className="text-2xl font-semibold text-gray-900 dark:text-gray-100">${referralInfo.total_earnings.toFixed(2)}</p>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg shadow p-6">
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
-                    <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
-                      <span className="text-yellow-600 font-semibold">⏳</span>
+                    <div className="w-8 h-8 bg-yellow-100 dark:bg-yellow-900 rounded-full flex items-center justify-center">
+                      <span className="text-yellow-600 dark:text-yellow-400 font-semibold">⏳</span>
                     </div>
                   </div>
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-500">Pending Earnings</p>
-                    <p className="text-2xl font-semibold text-gray-900">${referralInfo.pending_earnings.toFixed(2)}</p>
+                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Pending Earnings</p>
+                    <p className="text-2xl font-semibold text-gray-900 dark:text-gray-100">${referralInfo.pending_earnings.toFixed(2)}</p>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg shadow p-6">
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
-                    <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
-                      <span className="text-purple-600 font-semibold">💸</span>
+                    <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
+                      <span className="text-purple-600 dark:text-purple-400 font-semibold">💸</span>
                     </div>
                   </div>
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-500">Withdrawn</p>
-                    <p className="text-2xl font-semibold text-gray-900">${referralInfo.withdrawn_earnings.toFixed(2)}</p>
+                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Withdrawn</p>
+                    <p className="text-2xl font-semibold text-gray-900 dark:text-gray-100">${referralInfo.withdrawn_earnings.toFixed(2)}</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow mb-8">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h2 className="text-lg font-semibold text-gray-900">Your Referral Link</h2>
-                <p className="text-sm text-gray-600">Share this link to earn ${referralInfo.settings.signup_bonus_amount} for each signup!</p>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow mb-8">
+              <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Your Referral Link</h2>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Share this link to earn ${referralInfo.settings.signup_bonus_amount} for each signup!</p>
               </div>
               <div className="p-6">
                 <div className="flex items-center space-x-4 mb-4">
@@ -239,7 +248,7 @@ export default function ReferralsPage() {
                       type="text"
                       value={referralInfo.referral_url}
                       readOnly
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     />
                   </div>
                   <button
@@ -287,9 +296,9 @@ export default function ReferralsPage() {
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow mb-8">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h2 className="text-lg font-semibold text-gray-900">How It Works</h2>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow mb-8">
+              <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">How It Works</h2>
               </div>
               <div className="p-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -297,32 +306,32 @@ export default function ReferralsPage() {
                     <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                       <span className="text-2xl">🔗</span>
                     </div>
-                    <h3 className="font-semibold text-gray-900 mb-2">Share Your Link</h3>
-                    <p className="text-sm text-gray-600">Share your unique referral link with friends and colleagues</p>
+                    <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Share Your Link</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Share your unique referral link with friends and colleagues</p>
                   </div>
                   <div className="text-center">
                     <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                       <span className="text-2xl">✅</span>
                     </div>
-                    <h3 className="font-semibold text-gray-900 mb-2">They Sign Up</h3>
-                    <p className="text-sm text-gray-600">When someone signs up using your link and verifies their email</p>
+                    <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">They Sign Up</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">When someone signs up using your link and verifies their email</p>
                   </div>
                   <div className="text-center">
                     <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
                       <span className="text-2xl">💰</span>
                     </div>
-                    <h3 className="font-semibold text-gray-900 mb-2">You Earn Money</h3>
-                    <p className="text-sm text-gray-600">Earn ${referralInfo.settings.signup_bonus_amount} instantly{referralInfo.settings.earnings_percentage_enabled && ` + ${referralInfo.settings.earnings_percentage}% of their earnings`}</p>
+                    <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">You Earn Money</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Earn ${referralInfo.settings.signup_bonus_amount} instantly{referralInfo.settings.earnings_percentage_enabled && ` + ${referralInfo.settings.earnings_percentage}% of their earnings`}</p>
                   </div>
                 </div>
               </div>
             </div>
 
             {referralInfo.pending_earnings >= referralInfo.settings.min_payout_amount && (
-              <div className="bg-white rounded-lg shadow mb-8">
-                <div className="px-6 py-4 border-b border-gray-200">
-                  <h2 className="text-lg font-semibold text-gray-900">Withdraw Earnings</h2>
-                  <p className="text-sm text-gray-600">Minimum withdrawal: ${referralInfo.settings.min_payout_amount}</p>
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow mb-8">
+                <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Withdraw Earnings</h2>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Minimum withdrawal: ${referralInfo.settings.min_payout_amount}</p>
                 </div>
                 <div className="p-6">
                   <div className="flex items-center space-x-4">
@@ -333,7 +342,7 @@ export default function ReferralsPage() {
                         onChange={(e) => setWithdrawAmount(e.target.value)}
                         placeholder={`Min $${referralInfo.settings.min_payout_amount}`}
                         max={referralInfo.pending_earnings}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                       />
                     </div>
                     <button
@@ -352,6 +361,7 @@ export default function ReferralsPage() {
             )}
           </>
         )}
+        </div>
       </div>
     </div>
   );
