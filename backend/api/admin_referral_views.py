@@ -107,7 +107,7 @@ def admin_referral_stats(request):
         
         active_referrers = ReferralCode.objects.filter(
             is_active=True,
-            total_referrals__gt=0
+            total_signups__gt=0
         ).count()
         
         pending_withdrawals = ReferralWithdrawal.objects.filter(

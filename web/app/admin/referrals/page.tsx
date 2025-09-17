@@ -80,9 +80,9 @@ export default function AdminReferralsPage() {
       const headers = { Authorization: `Token ${token}` };
 
       const [settingsRes, statsRes, usersRes] = await Promise.all([
-        api.get('/admin/referrals/settings/', { headers }).catch(() => ({ data: { data: getDefaultSettings() } })),
-        api.get('/admin/referrals/stats/', { headers }).catch(() => ({ data: { data: getDefaultStats() } })),
-        api.get('/admin/referrals/users/', { headers }).catch(() => ({ data: { data: [] } }))
+        api.get('/referrals/admin/settings/', { headers }).catch(() => ({ data: { data: getDefaultSettings() } })),
+        api.get('/referrals/admin/stats/', { headers }).catch(() => ({ data: { data: getDefaultStats() } })),
+        api.get('/referrals/admin/users/', { headers }).catch(() => ({ data: { data: [] } }))
       ]);
 
       setSettings(settingsRes.data.data || settingsRes.data);
@@ -128,7 +128,7 @@ export default function AdminReferralsPage() {
     setSaving(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await api.patch('/admin/referrals/settings/', newSettings, {
+      const response = await api.patch('/referrals/admin/settings/', newSettings, {
         headers: { Authorization: `Token ${token}` }
       });
 
@@ -153,7 +153,7 @@ export default function AdminReferralsPage() {
   const toggleUserStatus = async (userId: number, isActive: boolean) => {
     try {
       const token = localStorage.getItem('token');
-      await api.patch(`/admin/referrals/users/${userId}/`, { is_active: isActive }, {
+      await api.patch(`/referrals/admin/users/${userId}/`, { is_active: isActive }, {
         headers: { Authorization: `Token ${token}` }
       });
 

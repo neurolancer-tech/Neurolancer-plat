@@ -85,7 +85,7 @@ export default function CreateGigPage() {
   const loadSubcategories = async (categoryId: string) => {
     setSubcategoriesLoading(true);
     try {
-      const response = await api.get(`/subcategories/?category=${categoryId}`);
+      const response = await api.get(`/categories/${categoryId}/subcategories/`);
       setSubcategories(response.data.results || response.data);
     } catch (error) {
       console.error('Error loading subcategories:', error);
@@ -148,15 +148,17 @@ export default function CreateGigPage() {
       
       // Add all form fields
       Object.entries(formData).forEach(([key, value]) => {
-        if (value) {
+        if (value !== '' && value !== null && value !== undefined) {
           // Convert category to category_id for backend compatibility
           if (key === 'category') {
             submitData.append('category_id', value as string);
           } else if (key === 'subcategories') {
-            // Handle subcategories array - send as subcategory_ids
-            (value as string[]).forEach(subId => {
-              submitData.append('subcategory_ids', subId);
-            });
+            // Handle subcategories array - send as JSON string for FormData
+            if (Array.isArray(value) && value.length > 0) {
+              value.forEach(subId => {
+                submitData.append('subcategory_ids', subId);
+              });
+            }
           } else {
             submitData.append(key, value as string);
           }
@@ -181,7 +183,8 @@ export default function CreateGigPage() {
       toast.success('Gig created successfully!');
       router.push('/my-gigs');
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Failed to create gig');
+      console.error('Gig creation error:', error.response?.data);
+      toast.error(error.response?.data?.error || error.response?.data?.message || 'Failed to create gig');
     } finally {
       setLoading(false);
     }
@@ -204,7 +207,7 @@ export default function CreateGigPage() {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Gig Title *
                 </label>
                 <input
@@ -219,7 +222,7 @@ export default function CreateGigPage() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Category *
                 </label>
                 <select
@@ -240,13 +243,13 @@ export default function CreateGigPage() {
             {/* Subcategories */}
             {formData.category && (
               <div className="mt-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Subcategories (Select relevant ones)
                 </label>
                 {subcategoriesLoading ? (
                   <div className="text-sm text-gray-500">Loading subcategories...</div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-48 overflow-y-auto border border-gray-300 rounded-md p-3">
+                ) : subcategories.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-48 overflow-y-auto border border-gray-300 dark:border-gray-600 rounded-md p-3">
                     {subcategories.map(sub => (
                       <label key={sub.id} className="flex items-start space-x-2 text-sm">
                         <input
@@ -255,10 +258,12 @@ export default function CreateGigPage() {
                           onChange={() => handleSubcategoryChange(sub.id.toString())}
                           className="mt-0.5 rounded border-gray-300 text-primary focus:ring-primary"
                         />
-                        <span className="text-gray-700">{sub.name}</span>
+                        <span className="text-gray-700 dark:text-gray-300">{sub.name}</span>
                       </label>
                     ))}
                   </div>
+                ) : (
+                  <div className="text-sm text-gray-500">No subcategories available for this category.</div>
                 )}
               </div>
             )}
