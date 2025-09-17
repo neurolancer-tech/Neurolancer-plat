@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import api from '../../lib/api';
+import { getProfile, isAuthenticated } from '../../lib/auth';
 
 function VerifyEmailContent() {
   const [status, setStatus] = useState<'loading' | 'success' | 'error' | 'expired'>('loading');
@@ -16,13 +17,34 @@ function VerifyEmailContent() {
   const token = searchParams.get('token');
 
   useEffect(() => {
+    // Check if user is Google user and redirect them
+    if (isAuthenticated()) {
+      const profile = getProfile();
+      const isGoogleUser = !!(
+        profile?.auth_provider === 'google' ||
+        profile?.avatar_type === 'google' ||
+        profile?.google_photo_url ||
+        profile?.user?.auth_provider === 'google'
+      );
+      
+      if (isGoogleUser) {
+        // Google users don't need email verification
+        if (!profile?.user_type || profile?.user_type === '') {
+          router.push('/role-selection');
+        } else {
+          router.push('/dashboard');
+        }
+        return;
+      }
+    }
+    
     if (token) {
       verifyEmail(token);
     } else {
       setStatus('expired');
       setMessage('Please verify your email. A verification email was sent to your inbox.');
     }
-  }, [token]);
+  }, [token, router]);
 
   const verifyEmail = async (verificationToken: string) => {
     try {
