@@ -473,12 +473,16 @@ class GigListSerializer(serializers.ModelSerializer):
     freelancer_profile = serializers.SerializerMethodField()
     category = CategorySerializer(read_only=True)
     image = serializers.SerializerMethodField()
+    # Include quick-access name fields expected by frontend
+    category_name = serializers.CharField(read_only=True)
+    subcategory_names = serializers.CharField(read_only=True, allow_blank=True)
     
     class Meta:
         model = Gig
         fields = [
             'id', 'title', 'image', 'basic_price', 'rating', 'total_reviews',
-            'freelancer', 'freelancer_profile', 'category', 'likes_count', 'dislikes_count', 'created_at'
+            'freelancer', 'freelancer_profile', 'category', 'category_name', 'subcategory_names',
+            'likes_count', 'dislikes_count', 'created_at'
         ]
     
     def get_image(self, obj):
@@ -1174,13 +1178,16 @@ class JobListSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
     skills_list = serializers.SerializerMethodField()
     time_until_deadline = serializers.SerializerMethodField()
+    # Include quick-access name fields for frontend
+    category_name = serializers.CharField(read_only=True)
+    subcategory_names = serializers.CharField(read_only=True, allow_blank=True)
     
     class Meta:
         model = Job
         fields = [
             'id', 'title', 'budget_min', 'budget_max', 'experience_level', 
             'job_type', 'proposal_count', 'created_at', 'deadline',
-            'client', 'category', 'skills_list', 'time_until_deadline', 'location',
+            'client', 'category', 'category_name', 'subcategory_names', 'skills_list', 'time_until_deadline', 'location',
             'likes_count', 'dislikes_count'
         ]
     
@@ -1198,8 +1205,8 @@ class JobListSerializer(serializers.ModelSerializer):
             if days > 0:
                 return f"{days} days left"
             else:
-                hours = delta.seconds // 3600
-                return f"{hours} hours left"
+                return "Less than 1 day left"
+        return "Expired" if obj.deadline else "No deadline"
         return "Expired" if obj.deadline else "No deadline"
 
 class ProposalSerializer(serializers.ModelSerializer):

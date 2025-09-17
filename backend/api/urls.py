@@ -2,6 +2,7 @@ from django.urls import path, include
 from . import views
 from . import views_payments
 from . import assessment_views
+from .debug_views import debug_gigs
 from .payments import (
     initialize_payment, verify_payment, paystack_webhook,
     get_banks, release_escrow,
@@ -214,6 +215,7 @@ urlpatterns = [
     path('jobs/<int:job_id>/proposals/<int:proposal_id>/', views.job_proposal_details, name='job-proposal-details'),
     
     # Debug URLs
+    path('debug/gigs/', debug_gigs, name='debug-gigs'),
     path('debug/proposals/<int:proposal_id>/', views.debug_proposal_status, name='debug-proposal-status'),
     path('debug/jobs/<int:job_id>/proposals/', views.debug_job_proposals, name='debug-job-proposals'),
     path('debug/notifications/', views.debug_notifications, name='debug-notifications'),
