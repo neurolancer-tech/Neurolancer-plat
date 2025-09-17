@@ -143,12 +143,10 @@ export default function CreateGigPage() {
       // Add image based on selection
       if (imageOption === 'upload' && imageFile) {
         submitData.append('image', imageFile);
-        submitData.append('image_url', ''); // Clear URL when uploading file
       } else if (imageOption === 'url' && imageUrl) {
         submitData.append('image_url', imageUrl);
-      } else if (imageOption === 'none') {
-        submitData.append('image_url', ''); // Clear both image fields
       }
+      // For 'none' option, don't add image_url field at all
       
       const response = await api.post('/gigs/create/', submitData, {
         headers: {
