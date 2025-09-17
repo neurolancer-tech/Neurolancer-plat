@@ -23,8 +23,9 @@ class NotificationService:
     
     @staticmethod
     def send_new_user_setup(user):
-        """Send welcome notifications for new users"""
+        """Send welcome notifications and email for new users"""
         try:
+            # Create welcome notification
             NotificationService.create_notification(
                 user=user,
                 title="Welcome to Neurolancer!",
@@ -32,5 +33,10 @@ class NotificationService:
                 notification_type='system',
                 action_url='/profile'
             )
+            
+            # Send welcome email
+            from .email_service import EmailService
+            EmailService.send_welcome_email(user)
+            
         except Exception as e:
-            print(f"Error sending welcome notification: {e}")
+            print(f"Error sending welcome setup: {e}")
