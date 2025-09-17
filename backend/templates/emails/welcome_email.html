@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Neurolancer - AI Freelance Marketplace</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; }
+        .email-container { 
+            max-width: 600px; 
+            margin: 0 auto; 
+            background: #ffffff; 
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .hero-section {
+            position: relative;
+            height: 300px;
+            background: linear-gradient(135deg, rgba(13, 158, 134, 0.9), rgba(45, 55, 72, 0.9)), 
+                        url('https://github.com/kbrian1237/portifolioclone/blob/main/Gemini_Generated_Image_pirmrzpirmrzpirm.png?raw=true');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+        }
+        .hero-content img {
+            max-width: 200px;
+            height: auto;
+            margin-bottom: 20px;
+        }
+        .hero-content h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .hero-content p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+        .content-section {
+            padding: 40px 30px;
+        }
+        .welcome-message {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .welcome-message h2 {
+            color: #2d3748;
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+        }
+        .welcome-message p {
+            color: #4a5568;
+            font-size: 1.1rem;
+            line-height: 1.7;
+        }
+        .features-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .feature-card {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #0d9e86;
+            text-align: center;
+        }
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        .feature-card h3 {
+            color: #2d3748;
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+        .feature-card p {
+            color: #718096;
+            font-size: 0.9rem;
+        }
+        .cta-section {
+            background: linear-gradient(135deg, #0d9e86, #38b2ac);
+            padding: 30px;
+            text-align: center;
+            margin: 30px 0;
+            border-radius: 8px;
+        }
+        .cta-section h3 {
+            color: white;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+        .cta-section p {
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 20px;
+        }
+        .btn-primary {
+            display: inline-block;
+            background: #ffffff;
+            color: #0d9e86;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            margin: 5px 10px;
+            transition: all 0.3s ease;
+        }
+        .btn-secondary {
+            display: inline-block;
+            background: transparent;
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border: 2px solid white;
+            border-radius: 6px;
+            font-weight: 600;
+            margin: 5px 10px;
+            transition: all 0.3s ease;
+        }
+        .next-steps {
+            background: #edf2f7;
+            padding: 25px;
+            border-radius: 8px;
+            margin: 25px 0;
+        }
+        .next-steps h3 {
+            color: #2d3748;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .steps-list {
+            list-style: none;
+            counter-reset: step-counter;
+        }
+        .steps-list li {
+            counter-increment: step-counter;
+            margin-bottom: 12px;
+            padding-left: 40px;
+            position: relative;
+            color: #4a5568;
+        }
+        .steps-list li::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 0;
+            top: 0;
+            background: #0d9e86;
+            color: white;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+        .footer {
+            background: #2d3748;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .footer h4 {
+            margin-bottom: 15px;
+            color: #0d9e86;
+        }
+        .footer p {
+            color: #a0aec0;
+            margin-bottom: 10px;
+        }
+        .social-links {
+            margin: 20px 0;
+        }
+        .social-links a {
+            color: #0d9e86;
+            text-decoration: none;
+            margin: 0 10px;
+            font-weight: 500;
+        }
+        @media (max-width: 600px) {
+            .hero-content h1 { font-size: 2rem; }
+            .features-grid { grid-template-columns: 1fr; }
+            .content-section { padding: 30px 20px; }
+            .btn-primary, .btn-secondary { display: block; margin: 10px 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Hero Section -->
+        <div class="hero-section">
+            <div class="hero-content">
+                <img src="https://github.com/kbrian1237/portifolioclone/blob/main/default-monochrome-white.svg?raw=true" alt="Neurolancer Logo">
+                <h1>Welcome to Neurolancer</h1>
+                <p>Your AI Freelance Journey Starts Here</p>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="content-section">
+            <div class="welcome-message">
+                <h2>Hello {{ user_name }}! 👋</h2>
+                <p>Welcome to Neurolancer, the premier AI freelance marketplace where innovation meets opportunity. We're thrilled to have you join our community of talented AI experts and forward-thinking clients.</p>
+            </div>
+
+            <!-- Features Grid -->
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🤖</div>
+                    <h3>AI Expertise</h3>
+                    <p>Connect with specialists in ML, NLP, Computer Vision, and more</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💼</div>
+                    <h3>Quality Projects</h3>
+                    <p>Access high-value AI projects from innovative companies</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🚀</div>
+                    <h3>Fast Matching</h3>
+                    <p>Our smart algorithm connects you with perfect opportunities</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔒</div>
+                    <h3>Secure Payments</h3>
+                    <p>Protected transactions with milestone-based payments</p>
+                </div>
+            </div>
+
+            <!-- Call to Action -->
+            <div class="cta-section">
+                <h3>Ready to Get Started?</h3>
+                <p>Complete your profile and start exploring amazing AI opportunities today!</p>
+                <a href="https://www.neurolancer.work/auth/complete-profile" class="btn-primary">Complete Profile</a>
+                <a href="https://www.neurolancer.work/browse" class="btn-secondary">Browse Projects</a>
+            </div>
+
+            <!-- Next Steps -->
+            <div class="next-steps">
+                <h3>Your Next Steps</h3>
+                <ol class="steps-list">
+                    <li><strong>Complete your profile</strong> - Add your skills, experience, and portfolio</li>
+                    <li><strong>Verify your identity</strong> - Build trust with clients through verification</li>
+                    <li><strong>Browse opportunities</strong> - Explore jobs and gigs in your expertise area</li>
+                    <li><strong>Submit proposals</strong> - Apply to projects that match your skills</li>
+                    <li><strong>Start earning</strong> - Deliver quality work and build your reputation</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <h4>Need Help Getting Started?</h4>
+            <p>Our support team is here to help you succeed on Neurolancer.</p>
+            <p>Visit our <a href="https://www.neurolancer.work/help" style="color: #0d9e86;">Help Center</a> or contact us anytime.</p>
+            
+            <div class="social-links">
+                <a href="https://www.neurolancer.work/">Website</a> |
+                <a href="https://www.neurolancer.work/about">About Us</a> |
+                <a href="https://www.neurolancer.work/contact">Contact</a>
+            </div>
+            
+            <p style="margin-top: 20px; font-size: 0.9rem;">
+                Best regards,<br>
+                <strong>The Neurolancer Team</strong><br>
+                <em>Connecting AI Talent with Innovation</em>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

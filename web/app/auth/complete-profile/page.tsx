@@ -363,9 +363,12 @@ export default function CompleteProfilePage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Phone Number Section */}
             <div className="border-b pb-6">
-              <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">
-                Phone Verification
+              <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">
+                Phone Number (Optional)
               </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                Add your phone number to receive important notifications and improve account security.
+              </p>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
@@ -376,7 +379,6 @@ export default function CompleteProfilePage() {
                     value={formData.country}
                     onChange={(e) => handleCountryChange(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:text-white"
-                    required
                   >
                     <option value="">Select Country</option>
                     {countries.map(country => (
@@ -401,23 +403,19 @@ export default function CompleteProfilePage() {
                       value={formData.phone_number}
                       onChange={(e) => setFormData(prev => ({ ...prev, phone_number: e.target.value }))}
                       className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-r-md focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:text-white"
-                      placeholder="1234567890"
-                      required
+                      placeholder="1234567890 (optional)"
                       disabled={phoneVerified}
                     />
                   </div>
                 </div>
               </div>
 
-              {!phoneVerified && (
-                <button
-                  type="button"
-                  onClick={() => setShowPhoneVerification(true)}
-                  className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all"
-                  disabled={!formData.phone_number || !selectedCountry}
-                >
-                  Verify Phone Number
-                </button>
+              {formData.phone_number && !phoneVerified && (
+                <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <p className="text-sm text-blue-700 dark:text-blue-300 mb-2">
+                    Phone verification is temporarily unavailable. You can add your phone number and verify it later in your profile settings.
+                  </p>
+                </div>
               )}
 
               {phoneVerified && (

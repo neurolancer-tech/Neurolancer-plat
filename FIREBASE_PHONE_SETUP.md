@@ -2,12 +2,20 @@
 
 ## 1. Firebase Console Configuration
 
-### Enable Phone Authentication
+### ⚠️ IMPORTANT: Billing Required
+Firebase Phone Authentication requires a **Blaze (Pay-as-you-go)** plan even for free tier usage.
+
 1. Go to [Firebase Console](https://console.firebase.google.com/)
 2. Select your project: `neurolancer-9aee7`
-3. Navigate to **Authentication** > **Sign-in method**
-4. Enable **Phone** provider
-5. Add your domain to authorized domains:
+3. **Upgrade to Blaze Plan**:
+   - Click "Upgrade" in the left sidebar
+   - Select "Blaze (Pay as you go)"
+   - Add billing information (required even for free usage)
+
+### Enable Phone Authentication
+1. Navigate to **Authentication** > **Sign-in method**
+2. Enable **Phone** provider
+3. Add your domain to authorized domains:
    - `neurolancer-9omq.vercel.app`
    - `localhost` (for development)
 
@@ -109,6 +117,25 @@ function MyComponent() {
 
 ## 8. Cost Considerations
 
-- **Free Tier**: 10,000 phone verifications/month
+- **Billing Required**: Must upgrade to Blaze plan (billing account required)
+- **Free Tier**: 10,000 phone verifications/month (still free, just need billing setup)
 - **Paid**: $0.05 per verification after free tier
 - Monitor usage in Firebase Console > Usage tab
+
+## 9. Alternative Solutions (No Billing Required)
+
+If you prefer not to set up billing, consider these alternatives:
+
+### Option 1: Use Existing Backend SMS Service
+- Your backend already has Twilio SMS integration
+- Modify the existing phone verification flow
+- No Firebase billing required
+
+### Option 2: Skip Phone Verification
+- Make phone verification optional
+- Use email verification only
+- Add phone verification later when ready for billing
+
+### Option 3: Mock Verification (Development)
+- Use a simple mock verification for testing
+- Implement real verification before production

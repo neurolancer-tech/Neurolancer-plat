@@ -219,6 +219,71 @@ class NotificationService:
             logger.error(f"Failed to send verification notification: {e}")
     
     @staticmethod
+    def send_welcome_notifications(user):
+        """Send welcome notifications to new users"""
+        try:
+            # Welcome notification
+            NotificationService.create_notification(
+                user=user,
+                title="Welcome to Neurolancer! 🎉",
+                message="Welcome to the premier AI freelance marketplace! We're excited to have you join our community of talented professionals.",
+                notification_type='system',
+                action_url='/dashboard'
+            )
+            
+            # Complete profile notification
+            NotificationService.create_notification(
+                user=user,
+                title="Complete Your Profile",
+                message="Complete your profile to unlock all features and start connecting with clients or freelancers. Add your skills, experience, and portfolio.",
+                notification_type='system',
+                action_url='/auth/complete-profile'
+            )
+            
+            # Browse opportunities notification
+            NotificationService.create_notification(
+                user=user,
+                title="Explore AI Opportunities",
+                message="Discover amazing AI projects and gigs waiting for your expertise. Browse jobs in Machine Learning, NLP, Computer Vision, and more!",
+                notification_type='system',
+                action_url='/browse'
+            )
+            
+            # Verification reminder
+            NotificationService.create_notification(
+                user=user,
+                title="Verify Your Identity",
+                message="Get verified to build trust with clients and unlock premium features. Verified users get 3x more project invitations!",
+                notification_type='system',
+                action_url='/verify'
+            )
+            
+            logger.info(f"Welcome notifications sent to {user.username}")
+            
+        except Exception as e:
+            logger.error(f"Failed to send welcome notifications: {e}")
+    
+    @staticmethod
+    def send_new_user_setup(user):
+        """Complete new user setup with email and notifications"""
+        try:
+            from .email_service import EmailService
+            
+            # Send welcome email
+            EmailService.send_welcome_email(user)
+            
+            # Send welcome notifications
+            NotificationService.send_welcome_notifications(user)
+            
+            # Create default notification preferences
+            NotificationService.get_default_preferences(user)
+            
+            logger.info(f"New user setup completed for {user.username}")
+            
+        except Exception as e:
+            logger.error(f"Failed to complete new user setup: {e}")
+    
+    @staticmethod
     def get_default_preferences(user):
         """Create default notification preferences for user"""
         try:

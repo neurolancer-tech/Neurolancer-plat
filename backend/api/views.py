@@ -138,6 +138,13 @@ def register(request):
         # Send verification email
         send_verification_email(user, verification_token)
         
+        # Send welcome email and notifications for new users
+        try:
+            from .notification_service import NotificationService
+            NotificationService.send_new_user_setup(user)
+        except Exception as e:
+            print(f"Failed to send welcome setup for user {user.username}: {e}")
+        
         token, created = Token.objects.get_or_create(user=user)
         return Response({
             'user': EnhancedUserSerializer(user).data,
@@ -415,6 +422,14 @@ def google_auth(request):
                 if profile.avatar_type not in ['upload', 'google']:
                     profile.avatar_type = 'google'
             profile.save()
+        
+        # Send welcome email and notifications for new Google users
+        if is_new_user:
+            try:
+                from .notification_service import NotificationService
+                NotificationService.send_new_user_setup(user)
+            except Exception as e:
+                print(f"Failed to send welcome setup for Google user {user.username}: {e}")
         
         # Create or get token
         token, created = Token.objects.get_or_create(user=user)
