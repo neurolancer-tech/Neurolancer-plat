@@ -29,7 +29,7 @@ function VerifyEmailContent() {
       
       if (isGoogleUser) {
         // Google users don't need email verification
-        if (!profile?.user_type || profile?.user_type === '') {
+        if (!(profile as any)?.user_type) {
           router.push('/role-selection');
         } else {
           router.push('/dashboard');
