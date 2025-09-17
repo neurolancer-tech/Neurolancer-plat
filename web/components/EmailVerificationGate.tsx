@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { isAuthenticated, getProfile, setProfile } from '@/lib/auth';
 import api from '@/lib/api';
 
-// Redirects any authenticated but unverified user to the verify-email page
+// Redirects any authenticated but unverified user to the verify-email page (except Google users)
 export default function EmailVerificationGate() {
   const router = useRouter();
   const pathname = usePathname();
@@ -21,6 +21,7 @@ export default function EmailVerificationGate() {
       '/payment',
       '/_next',
       '/api',
+      '/role-selection', // Add role-selection to bypass
     ];
 
     // Skip if not authenticated
@@ -38,12 +39,14 @@ export default function EmailVerificationGate() {
       (localProfile as any)?.user?.auth_provider === 'google'
     );
 
+    // Google users should NEVER be redirected to verify-email
+    if (isGoogleLocal) return;
+
     const isVerifiedLocal = !!(
       (localProfile as any)?.email_verified ||
       (localProfile as any)?.is_verified ||
       (localProfile as any)?.verified ||
-      (localProfile as any)?.user?.is_verified ||
-      isGoogleLocal
+      (localProfile as any)?.user?.is_verified
     );
 
     const redirectToVerify = () => {
@@ -66,12 +69,15 @@ export default function EmailVerificationGate() {
             res.data?.google_photo_url ||
             res.data?.user?.auth_provider === 'google'
           );
+          
+          // Google users should never be redirected to verify-email
+          if (isGoogleRemote) return;
+          
           const verified = !!(
             res.data?.email_verified ||
             res.data?.is_verified ||
             res.data?.verified ||
-            res.data?.user?.is_verified ||
-            isGoogleRemote
+            res.data?.user?.is_verified
           );
           if (!verified) redirectToVerify();
         } else {
