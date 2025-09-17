@@ -3,15 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Navigation from '@/components/Navigation';
-import { Category } from '@/types';
-
-interface Subcategory {
-  id: number;
-  category: number;
-  name: string;
-  description: string;
-  created_at: string;
-}
+import { Category, Subcategory } from '@/types';
+import { useSubcategories } from '../hooks/useSubcategories';
 import { isAuthenticated, getProfile } from '@/lib/auth';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
@@ -20,8 +13,6 @@ import toast from 'react-hot-toast';
 export default function CreateGigPage() {
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
-  const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
-  const [subcategoriesLoading, setSubcategoriesLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
@@ -65,33 +56,17 @@ export default function CreateGigPage() {
     loadCategories();
   }, [router]);
 
-  useEffect(() => {
-    if (formData.category) {
-      loadSubcategories(formData.category);
-    } else {
-      setSubcategories([]);
-    }
-  }, [formData.category]);
+  // Use the subcategories hook
+  const { subcategories, loading: subcategoriesLoading } = useSubcategories(formData.category);
 
   const loadCategories = async () => {
     try {
       const response = await api.get('/categories/');
-      setCategories(response.data.results || response.data);
+      const categoriesData = response.data.results || response.data;
+      console.log('Loaded categories:', categoriesData);
+      setCategories(categoriesData);
     } catch (error) {
       console.error('Error loading categories:', error);
-    }
-  };
-
-  const loadSubcategories = async (categoryId: string) => {
-    setSubcategoriesLoading(true);
-    try {
-      const response = await api.get(`/categories/${categoryId}/subcategories/`);
-      setSubcategories(response.data.results || response.data);
-    } catch (error) {
-      console.error('Error loading subcategories:', error);
-      setSubcategories([]);
-    } finally {
-      setSubcategoriesLoading(false);
     }
   };
 
