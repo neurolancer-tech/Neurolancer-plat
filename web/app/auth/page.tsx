@@ -206,18 +206,10 @@ function AuthContent() {
       setUser(backendUser);
       setProfile(updatedProfile);
       
-      // Google users always go to role selection first
-      if (!updatedProfile.user_type || updatedProfile.user_type === '') {
-        console.log('Google user needs role selection');
-        toast.success('Please select your role to continue.');
-        router.push('/role-selection');
-        return;
-      }
-      
-      // Google user with role goes to dashboard
-      console.log('Google user with role, going to dashboard');
-      toast.success('Successfully signed in with Google!');
-      router.push('/dashboard');
+      // Google users ALWAYS go to role selection on every login
+      console.log('Google user always goes to role selection');
+      toast.success('Please select your role to continue.');
+      router.push('/role-selection');
     } catch (error: any) {
       console.error('Backend authentication error:', error);
       
@@ -253,13 +245,9 @@ function AuthContent() {
             setUser(backendUser);
             setProfile(updatedProfile);
             
-            if (!updatedProfile.user_type || updatedProfile.user_type === '') {
-              toast.success('Successfully registered with Google!');
-              router.push('/role-selection');
-            } else {
-              toast.success('Successfully signed in with Google!');
-              router.push('/dashboard');
-            }
+            // Google users always go to role selection
+            toast.success('Successfully signed in with Google!');
+            router.push('/role-selection');
             setLoading(false);
           } catch (retryError: any) {
             console.error('Retry also failed:', retryError);

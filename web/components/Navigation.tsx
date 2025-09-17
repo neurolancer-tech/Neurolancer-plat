@@ -44,14 +44,23 @@ export default function Navigation() {
       setUser(userData);
       setProfile(profileData);
       
-      // Check if user is Google user
+      // More comprehensive Google user detection
       const googleUser = !!(
         (profileData as any)?.auth_provider === 'google' ||
         (profileData as any)?.avatar_type === 'google' ||
         (profileData as any)?.google_photo_url ||
-        (profileData as any)?.user?.auth_provider === 'google'
+        (profileData as any)?.user?.auth_provider === 'google' ||
+        (userData as any)?.auth_provider === 'google' ||
+        (userData as any)?.google_photo_url
       );
       setIsGoogleUser(googleUser);
+      
+      // Debug log
+      console.log('Google user detection:', {
+        profileData: profileData,
+        userData: userData,
+        isGoogleUser: googleUser
+      });
     }
   }, []);
 
