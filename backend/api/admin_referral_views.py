@@ -36,4 +36,316 @@ def admin_referral_settings(request):
                     'require_first_purchase': settings.require_first_purchase,
                     'min_account_age_hours': settings.min_account_age_hours,
                 }
-            })\n        \n        elif request.method == 'PATCH':\n            # Update settings\n            data = request.data\n            \n            # Update fields if provided\n            if 'is_active' in data:\n                settings.is_active = data['is_active']\n            if 'signup_bonus_enabled' in data:\n                settings.signup_bonus_enabled = data['signup_bonus_enabled']\n            if 'earnings_percentage_enabled' in data:\n                settings.earnings_percentage_enabled = data['earnings_percentage_enabled']\n            if 'signup_bonus_amount' in data:\n                settings.signup_bonus_amount = data['signup_bonus_amount']\n            if 'earnings_percentage' in data:\n                settings.earnings_percentage = data['earnings_percentage']\n            if 'max_referrals_per_user' in data:\n                settings.max_referrals_per_user = data['max_referrals_per_user']\n            if 'min_payout_amount' in data:\n                settings.min_payout_amount = data['min_payout_amount']\n            if 'earnings_duration_days' in data:\n                settings.earnings_duration_days = data['earnings_duration_days']\n            if 'require_email_verification' in data:\n                settings.require_email_verification = data['require_email_verification']\n            if 'require_first_purchase' in data:\n                settings.require_first_purchase = data['require_first_purchase']\n            if 'min_account_age_hours' in data:\n                settings.min_account_age_hours = data['min_account_age_hours']\n            \n            settings.updated_by = request.user\n            settings.save()\n            \n            return Response({\n                'success': True,\n                'message': 'Settings updated successfully',\n                'data': {\n                    'is_active': settings.is_active,\n                    'signup_bonus_enabled': settings.signup_bonus_enabled,\n                    'earnings_percentage_enabled': settings.earnings_percentage_enabled,\n                    'signup_bonus_amount': float(settings.signup_bonus_amount),\n                    'earnings_percentage': float(settings.earnings_percentage),\n                    'max_referrals_per_user': settings.max_referrals_per_user,\n                    'min_payout_amount': float(settings.min_payout_amount),\n                    'earnings_duration_days': settings.earnings_duration_days,\n                    'require_email_verification': settings.require_email_verification,\n                    'require_first_purchase': settings.require_first_purchase,\n                    'min_account_age_hours': settings.min_account_age_hours,\n                }\n            })\n            \n    except Exception as e:\n        logger.error(f\"Error in admin_referral_settings: {e}\")\n        return Response({\n            'success': False,\n            'error': 'Failed to process referral settings'\n        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)\n\n@api_view(['GET'])\n@permission_classes([IsAuthenticated, IsAdminUser])\ndef admin_referral_stats(request):\n    \"\"\"Get referral system statistics\"\"\"\n    try:\n        # Get overall stats\n        total_referrals = Referral.objects.count()\n        total_earnings_paid = ReferralEarning.objects.filter(\n            status='approved'\n        ).aggregate(total=Sum('amount'))['total'] or 0\n        \n        active_referrers = ReferralCode.objects.filter(\n            is_active=True,\n            total_referrals__gt=0\n        ).count()\n        \n        pending_withdrawals = ReferralWithdrawal.objects.filter(\n            status='pending'\n        ).count()\n        \n        # Get recent referrals\n        recent_referrals = Referral.objects.select_related(\n            'referrer', 'referred_user'\n        ).order_by('-signed_up_at')[:10]\n        \n        recent_referrals_data = []\n        for referral in recent_referrals:\n            recent_referrals_data.append({\n                'id': referral.id,\n                'referrer_username': referral.referrer.username,\n                'referred_username': referral.referred_user.username,\n                'status': referral.status,\n                'signup_bonus_amount': float(referral.signup_bonus_amount),\n                'created_at': referral.signed_up_at.isoformat()\n            })\n        \n        return Response({\n            'success': True,\n            'data': {\n                'total_referrals': total_referrals,\n                'total_earnings_paid': float(total_earnings_paid),\n                'active_referrers': active_referrers,\n                'pending_withdrawals': pending_withdrawals,\n                'recent_referrals': recent_referrals_data\n            }\n        })\n        \n    except Exception as e:\n        logger.error(f\"Error in admin_referral_stats: {e}\")\n        return Response({\n            'success': False,\n            'error': 'Failed to get referral statistics'\n        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)\n\n@api_view(['GET'])\n@permission_classes([IsAuthenticated, IsAdminUser])\ndef admin_referral_users(request):\n    \"\"\"Get all users with referral codes\"\"\"\n    try:\n        referral_codes = ReferralCode.objects.select_related('user').all()\n        \n        users_data = []\n        for ref_code in referral_codes:\n            users_data.append({\n                'id': ref_code.user.id,\n                'username': ref_code.user.username,\n                'email': ref_code.user.email,\n                'referral_code': ref_code.code,\n                'total_referrals': ref_code.total_signups,\n                'total_earnings': float(ref_code.total_earnings),\n                'pending_earnings': float(ref_code.pending_earnings),\n                'withdrawn_earnings': float(ref_code.withdrawn_earnings),\n                'is_active': ref_code.is_active,\n                'created_at': ref_code.created_at.isoformat()\n            })\n        \n        return Response({\n            'success': True,\n            'data': users_data\n        })\n        \n    except Exception as e:\n        logger.error(f\"Error in admin_referral_users: {e}\")\n        return Response({\n            'success': False,\n            'error': 'Failed to get referral users'\n        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)\n\n@api_view(['PATCH'])\n@permission_classes([IsAuthenticated, IsAdminUser])\ndef admin_update_referral_user(request, user_id):\n    \"\"\"Update referral user status\"\"\"\n    try:\n        user = User.objects.get(id=user_id)\n        referral_code = ReferralCode.objects.get(user=user)\n        \n        data = request.data\n        if 'is_active' in data:\n            referral_code.is_active = data['is_active']\n            referral_code.save()\n        \n        return Response({\n            'success': True,\n            'message': f\"User {user.username} referral status updated\"\n        })\n        \n    except User.DoesNotExist:\n        return Response({\n            'success': False,\n            'error': 'User not found'\n        }, status=status.HTTP_404_NOT_FOUND)\n    except ReferralCode.DoesNotExist:\n        return Response({\n            'success': False,\n            'error': 'Referral code not found'\n        }, status=status.HTTP_404_NOT_FOUND)\n    except Exception as e:\n        logger.error(f\"Error in admin_update_referral_user: {e}\")\n        return Response({\n            'success': False,\n            'error': 'Failed to update user'\n        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)\n\n@api_view(['GET'])\n@permission_classes([IsAuthenticated, IsAdminUser])\ndef admin_referral_withdrawals(request):\n    \"\"\"Get all referral withdrawals\"\"\"\n    try:\n        withdrawals = ReferralWithdrawal.objects.select_related('user').order_by('-created_at')\n        \n        withdrawals_data = []\n        for withdrawal in withdrawals:\n            withdrawals_data.append({\n                'id': withdrawal.id,\n                'user_id': withdrawal.user.id,\n                'username': withdrawal.user.username,\n                'email': withdrawal.user.email,\n                'amount': float(withdrawal.amount),\n                'withdrawal_method': withdrawal.withdrawal_method,\n                'status': withdrawal.status,\n                'created_at': withdrawal.created_at.isoformat(),\n                'processed_at': withdrawal.processed_at.isoformat() if withdrawal.processed_at else None,\n                'payment_reference': withdrawal.payment_reference\n            })\n        \n        return Response({\n            'success': True,\n            'data': withdrawals_data\n        })\n        \n    except Exception as e:\n        logger.error(f\"Error in admin_referral_withdrawals: {e}\")\n        return Response({\n            'success': False,\n            'error': 'Failed to get withdrawals'\n        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)\n\n@api_view(['PATCH'])\n@permission_classes([IsAuthenticated, IsAdminUser])\ndef admin_process_withdrawal(request, withdrawal_id):\n    \"\"\"Process a referral withdrawal\"\"\"\n    try:\n        withdrawal = ReferralWithdrawal.objects.get(id=withdrawal_id)\n        data = request.data\n        \n        if 'status' in data:\n            withdrawal.status = data['status']\n            \n        if 'payment_reference' in data:\n            withdrawal.payment_reference = data['payment_reference']\n            \n        if withdrawal.status in ['completed', 'failed']:\n            withdrawal.processed_at = timezone.now()\n            withdrawal.processed_by = request.user\n            \n            # If completed, update user's referral code\n            if withdrawal.status == 'completed':\n                referral_code = ReferralCode.objects.get(user=withdrawal.user)\n                referral_code.pending_earnings -= withdrawal.amount\n                referral_code.withdrawn_earnings += withdrawal.amount\n                referral_code.save()\n        \n        withdrawal.save()\n        \n        return Response({\n            'success': True,\n            'message': f\"Withdrawal {withdrawal.id} updated to {withdrawal.status}\"\n        })\n        \n    except ReferralWithdrawal.DoesNotExist:\n        return Response({\n            'success': False,\n            'error': 'Withdrawal not found'\n        }, status=status.HTTP_404_NOT_FOUND)\n    except Exception as e:\n        logger.error(f\"Error in admin_process_withdrawal: {e}\")\n        return Response({\n            'success': False,\n            'error': 'Failed to process withdrawal'\n        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)\n\n@api_view(['POST'])\n@permission_classes([IsAuthenticated, IsAdminUser])\ndef admin_award_bonus(request):\n    \"\"\"Award special bonus to user\"\"\"\n    try:\n        data = request.data\n        user_id = data.get('user_id')\n        amount = data.get('amount')\n        description = data.get('description', 'Admin bonus')\n        \n        if not user_id or not amount:\n            return Response({\n                'success': False,\n                'error': 'User ID and amount are required'\n            }, status=status.HTTP_400_BAD_REQUEST)\n        \n        user = User.objects.get(id=user_id)\n        \n        # Create earning record\n        earning = ReferralEarning.objects.create(\n            referrer=user,\n            referred_user=user,  # Self-referral for admin bonus\n            referral=None,  # No specific referral\n            earning_type='bonus',\n            amount=amount,\n            status='approved',\n            description=description\n        )\n        \n        # Add to user's balance\n        ReferralService.add_to_referral_balance(user, amount)\n        \n        # Update referral code stats\n        referral_code, created = ReferralCode.objects.get_or_create(user=user)\n        referral_code.total_earnings += amount\n        referral_code.pending_earnings += amount\n        referral_code.save()\n        \n        return Response({\n            'success': True,\n            'message': f\"Bonus of ${amount} awarded to {user.username}\"\n        })\n        \n    except User.DoesNotExist:\n        return Response({\n            'success': False,\n            'error': 'User not found'\n        }, status=status.HTTP_404_NOT_FOUND)\n    except Exception as e:\n        logger.error(f\"Error in admin_award_bonus: {e}\")\n        return Response({\n            'success': False,\n            'error': 'Failed to award bonus'\n        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            })
+        
+        elif request.method == 'PATCH':
+            # Update settings
+            data = request.data
+            
+            # Update fields if provided
+            if 'is_active' in data:
+                settings.is_active = data['is_active']
+            if 'signup_bonus_enabled' in data:
+                settings.signup_bonus_enabled = data['signup_bonus_enabled']
+            if 'earnings_percentage_enabled' in data:
+                settings.earnings_percentage_enabled = data['earnings_percentage_enabled']
+            if 'signup_bonus_amount' in data:
+                settings.signup_bonus_amount = data['signup_bonus_amount']
+            if 'earnings_percentage' in data:
+                settings.earnings_percentage = data['earnings_percentage']
+            if 'max_referrals_per_user' in data:
+                settings.max_referrals_per_user = data['max_referrals_per_user']
+            if 'min_payout_amount' in data:
+                settings.min_payout_amount = data['min_payout_amount']
+            if 'earnings_duration_days' in data:
+                settings.earnings_duration_days = data['earnings_duration_days']
+            if 'require_email_verification' in data:
+                settings.require_email_verification = data['require_email_verification']
+            if 'require_first_purchase' in data:
+                settings.require_first_purchase = data['require_first_purchase']
+            if 'min_account_age_hours' in data:
+                settings.min_account_age_hours = data['min_account_age_hours']
+            
+            settings.updated_by = request.user
+            settings.save()
+            
+            return Response({
+                'success': True,
+                'message': 'Settings updated successfully',
+                'data': {
+                    'is_active': settings.is_active,
+                    'signup_bonus_enabled': settings.signup_bonus_enabled,
+                    'earnings_percentage_enabled': settings.earnings_percentage_enabled,
+                    'signup_bonus_amount': float(settings.signup_bonus_amount),
+                    'earnings_percentage': float(settings.earnings_percentage),
+                    'max_referrals_per_user': settings.max_referrals_per_user,
+                    'min_payout_amount': float(settings.min_payout_amount),
+                    'earnings_duration_days': settings.earnings_duration_days,
+                    'require_email_verification': settings.require_email_verification,
+                    'require_first_purchase': settings.require_first_purchase,
+                    'min_account_age_hours': settings.min_account_age_hours,
+                }
+            })
+            
+    except Exception as e:
+        logger.error(f"Error in admin_referral_settings: {e}")
+        return Response({
+            'success': False,
+            'error': 'Failed to process referral settings'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def admin_referral_stats(request):
+    """Get referral system statistics"""
+    try:
+        # Get overall stats
+        total_referrals = Referral.objects.count()
+        total_earnings_paid = ReferralEarning.objects.filter(
+            status='approved'
+        ).aggregate(total=Sum('amount'))['total'] or 0
+        
+        active_referrers = ReferralCode.objects.filter(
+            is_active=True,
+            total_referrals__gt=0
+        ).count()
+        
+        pending_withdrawals = ReferralWithdrawal.objects.filter(
+            status='pending'
+        ).count()
+        
+        # Get recent referrals
+        recent_referrals = Referral.objects.select_related(
+            'referrer', 'referred_user'
+        ).order_by('-signed_up_at')[:10]
+        
+        recent_referrals_data = []
+        for referral in recent_referrals:
+            recent_referrals_data.append({
+                'id': referral.id,
+                'referrer_username': referral.referrer.username,
+                'referred_username': referral.referred_user.username,
+                'status': referral.status,
+                'signup_bonus_amount': float(referral.signup_bonus_amount),
+                'created_at': referral.signed_up_at.isoformat()
+            })
+        
+        return Response({
+            'success': True,
+            'data': {
+                'total_referrals': total_referrals,
+                'total_earnings_paid': float(total_earnings_paid),
+                'active_referrers': active_referrers,
+                'pending_withdrawals': pending_withdrawals,
+                'recent_referrals': recent_referrals_data
+            }
+        })
+        
+    except Exception as e:
+        logger.error(f"Error in admin_referral_stats: {e}")
+        return Response({
+            'success': False,
+            'error': 'Failed to get referral statistics'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def admin_referral_users(request):
+    """Get all users with referral codes"""
+    try:
+        referral_codes = ReferralCode.objects.select_related('user').all()
+        
+        users_data = []
+        for ref_code in referral_codes:
+            users_data.append({
+                'id': ref_code.user.id,
+                'username': ref_code.user.username,
+                'email': ref_code.user.email,
+                'referral_code': ref_code.code,
+                'total_referrals': ref_code.total_signups,
+                'total_earnings': float(ref_code.total_earnings),
+                'pending_earnings': float(ref_code.pending_earnings),
+                'withdrawn_earnings': float(ref_code.withdrawn_earnings),
+                'is_active': ref_code.is_active,
+                'created_at': ref_code.created_at.isoformat()
+            })
+        
+        return Response({
+            'success': True,
+            'data': users_data
+        })
+        
+    except Exception as e:
+        logger.error(f"Error in admin_referral_users: {e}")
+        return Response({
+            'success': False,
+            'error': 'Failed to get referral users'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def admin_update_referral_user(request, user_id):
+    """Update referral user status"""
+    try:
+        user = User.objects.get(id=user_id)
+        referral_code = ReferralCode.objects.get(user=user)
+        
+        data = request.data
+        if 'is_active' in data:
+            referral_code.is_active = data['is_active']
+            referral_code.save()
+        
+        return Response({
+            'success': True,
+            'message': f"User {user.username} referral status updated"
+        })
+        
+    except User.DoesNotExist:
+        return Response({
+            'success': False,
+            'error': 'User not found'
+        }, status=status.HTTP_404_NOT_FOUND)
+    except ReferralCode.DoesNotExist:
+        return Response({
+            'success': False,
+            'error': 'Referral code not found'
+        }, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        logger.error(f"Error in admin_update_referral_user: {e}")
+        return Response({
+            'success': False,
+            'error': 'Failed to update user'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def admin_referral_withdrawals(request):
+    """Get all referral withdrawals"""
+    try:
+        withdrawals = ReferralWithdrawal.objects.select_related('user').order_by('-created_at')
+        
+        withdrawals_data = []
+        for withdrawal in withdrawals:
+            withdrawals_data.append({
+                'id': withdrawal.id,
+                'user_id': withdrawal.user.id,
+                'username': withdrawal.user.username,
+                'email': withdrawal.user.email,
+                'amount': float(withdrawal.amount),
+                'withdrawal_method': withdrawal.withdrawal_method,
+                'status': withdrawal.status,
+                'created_at': withdrawal.created_at.isoformat(),
+                'processed_at': withdrawal.processed_at.isoformat() if withdrawal.processed_at else None,
+                'payment_reference': withdrawal.payment_reference
+            })
+        
+        return Response({
+            'success': True,
+            'data': withdrawals_data
+        })
+        
+    except Exception as e:
+        logger.error(f"Error in admin_referral_withdrawals: {e}")
+        return Response({
+            'success': False,
+            'error': 'Failed to get withdrawals'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def admin_process_withdrawal(request, withdrawal_id):
+    """Process a referral withdrawal"""
+    try:
+        withdrawal = ReferralWithdrawal.objects.get(id=withdrawal_id)
+        data = request.data
+        
+        if 'status' in data:
+            withdrawal.status = data['status']
+            
+        if 'payment_reference' in data:
+            withdrawal.payment_reference = data['payment_reference']
+            
+        if withdrawal.status in ['completed', 'failed']:
+            withdrawal.processed_at = timezone.now()
+            withdrawal.processed_by = request.user
+            
+            # If completed, update user's referral code
+            if withdrawal.status == 'completed':
+                referral_code = ReferralCode.objects.get(user=withdrawal.user)
+                referral_code.pending_earnings -= withdrawal.amount
+                referral_code.withdrawn_earnings += withdrawal.amount
+                referral_code.save()
+        
+        withdrawal.save()
+        
+        return Response({
+            'success': True,
+            'message': f"Withdrawal {withdrawal.id} updated to {withdrawal.status}"
+        })
+        
+    except ReferralWithdrawal.DoesNotExist:
+        return Response({
+            'success': False,
+            'error': 'Withdrawal not found'
+        }, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        logger.error(f"Error in admin_process_withdrawal: {e}")
+        return Response({
+            'success': False,
+            'error': 'Failed to process withdrawal'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def admin_award_bonus(request):
+    """Award special bonus to user"""
+    try:
+        data = request.data
+        user_id = data.get('user_id')
+        amount = data.get('amount')
+        description = data.get('description', 'Admin bonus')
+        
+        if not user_id or not amount:
+            return Response({
+                'success': False,
+                'error': 'User ID and amount are required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        user = User.objects.get(id=user_id)
+        
+        # Create earning record
+        earning = ReferralEarning.objects.create(
+            referrer=user,
+            referred_user=user,  # Self-referral for admin bonus
+            referral=None,  # No specific referral
+            earning_type='bonus',
+            amount=amount,
+            status='approved',
+            description=description
+        )
+        
+        # Add to user's balance
+        ReferralService.add_to_referral_balance(user, amount)
+        
+        # Update referral code stats
+        referral_code, created = ReferralCode.objects.get_or_create(user=user)
+        referral_code.total_earnings += amount
+        referral_code.pending_earnings += amount
+        referral_code.save()
+        
+        return Response({
+            'success': True,
+            'message': f"Bonus of ${amount} awarded to {user.username}"
+        })
+        
+    except User.DoesNotExist:
+        return Response({
+            'success': False,
+            'error': 'User not found'
+        }, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        logger.error(f"Error in admin_award_bonus: {e}")
+        return Response({
+            'success': False,
+            'error': 'Failed to award bonus'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -441,8 +441,8 @@ function CheckoutContent() {
                     Payments are processed securely through Paystack. Your payment information is encrypted and protected with industry-standard security.
                   </p>
                   <p className="text-sm text-blue-800 dark:text-blue-200 mt-1">
-                    • {feeBreakdown.client_fee_percentage}% platform fee from your payment<br/>
-                    • {feeBreakdown.freelancer_fee_percentage}% additional fee deducted from freelancer earnings<br/>
+                    • 2.5% platform fee from your payment<br/>
+                    • 5% additional fee deducted from freelancer earnings<br/>
                     • Processing fee covers transaction costs
                   </p>
                 </div>

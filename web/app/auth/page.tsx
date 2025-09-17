@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { toast } from 'react-hot-toast';
 import api from '../../lib/api';
 import { setAuthToken, setUser, setProfile, isProfileComplete } from '../../lib/auth';
-import { signInWithGoogle, getGoogleRedirectResult, RecaptchaVerifier } from '../../lib/firebase';
+import { signInWithGoogle, getGoogleRedirectResult, RecaptchaVerifier, auth } from '../../lib/firebase';
 
 interface PasswordStrength {
   score: number;
