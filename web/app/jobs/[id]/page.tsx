@@ -34,8 +34,12 @@ export default function JobDetailPage() {
   }, [jobId]);
 
   const loadAllSubcategories = async () => {
-    // API endpoint not available, skip loading
-    console.log('Subcategories API not available, using fallback display');
+    try {
+      const resp = await api.get('/subcategories/');
+      setAllSubcategories(resp.data.results || resp.data || []);
+    } catch (e) {
+      console.log('Subcategories API not available, using fallback display');
+    }
   };
 
   const getSubcategoryName = (subcategoryId: number) => {
@@ -227,22 +231,31 @@ export default function JobDetailPage() {
                       {job.category?.name || 'Uncategorized'}
                     </span>
                     {/* Subcategories */}
-                    {((job as any).subcategories) && Array.isArray((job as any).subcategories) && ((job as any).subcategories).length > 0 && (
-                      ((job as any).subcategories).slice(0, 2).map((sub: any, index: number) => {
-                        let subcategoryName;
-                        if (typeof sub === 'object' && sub.name) {
-                          subcategoryName = sub.name;
-                        } else if (typeof sub === 'number') {
-                          subcategoryName = getSubcategoryName(sub);
-                        } else {
-                          subcategoryName = String(sub);
-                        }
-                        return (
-                          <span key={sub.id || sub.name || sub || index} className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs">
-                            {subcategoryName}
-                          </span>
-                        );
-                      })
+                    {(((job as any).subcategories && Array.isArray((job as any).subcategories) && ((job as any).subcategories).length > 0) || (job as any).subcategory_names) && (
+                      <>
+                        {Array.isArray((job as any).subcategories) && ((job as any).subcategories).slice(0, 2).map((sub: any, index: number) => {
+                          let subcategoryName;
+                          if (typeof sub === 'object' && sub.name) {
+                            subcategoryName = sub.name;
+                          } else if (typeof sub === 'number') {
+                            subcategoryName = getSubcategoryName(sub);
+                          } else {
+                            subcategoryName = String(sub);
+                          }
+                          return (
+                            <span key={sub.id || sub.name || sub || index} className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs">
+                              {subcategoryName}
+                            </span>
+                          );
+                        })}
+                        {!((job as any).subcategories) && (job as any).subcategory_names && (
+                          (job as any).subcategory_names.split(', ').slice(0, 2).map((name: string, idx: number) => (
+                            <span key={idx} className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs">
+                              {name}
+                            </span>
+                          ))
+                        )}
+                      </>
                     )}
                     {((job as any).subcategories) && Array.isArray((job as any).subcategories) && ((job as any).subcategories).length > 2 && (
                       <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs">
@@ -263,11 +276,11 @@ export default function JobDetailPage() {
             </div>
 
             {/* Subcategories */}
-            {((job as any).subcategories) && Array.isArray((job as any).subcategories) && ((job as any).subcategories).length > 0 && (
+            {(((job as any).subcategories && Array.isArray((job as any).subcategories) && ((job as any).subcategories).length > 0) || (job as any).subcategory_names) && (
               <div className="card p-6 mb-6">
                 <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Subcategories</h3>
                 <div className="flex flex-wrap gap-2">
-                  {((job as any).subcategories).map((sub: any, index: number) => {
+                  {Array.isArray((job as any).subcategories) && ((job as any).subcategories).map((sub: any, index: number) => {
                     let subcategoryName;
                     if (typeof sub === 'object' && sub.name) {
                       subcategoryName = sub.name;
@@ -282,6 +295,13 @@ export default function JobDetailPage() {
                       </span>
                     );
                   })}
+                  {!((job as any).subcategories) && (job as any).subcategory_names && (
+                    (job as any).subcategory_names.split(', ').map((name: string, idx: number) => (
+                      <span key={idx} className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm">
+                        {name}
+                      </span>
+                    ))
+                  )}
                 </div>
               </div>
             )}

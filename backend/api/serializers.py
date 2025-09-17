@@ -358,6 +358,8 @@ class GigSerializer(serializers.ModelSerializer):
     freelancer_profile = serializers.SerializerMethodField()
     category = CategorySerializer(read_only=True)
     category_id = serializers.IntegerField(write_only=True)
+    # expose nested subcategories for detail pages, while still accepting ids for create/update
+    subcategories = SubcategorySerializer(many=True, read_only=True)
     subcategory_ids = serializers.ListField(child=serializers.IntegerField(), write_only=True, required=False)
     image_url = serializers.URLField(required=False, allow_blank=True)
     image = serializers.SerializerMethodField()
@@ -1094,6 +1096,8 @@ class JobSerializer(serializers.ModelSerializer):
     client = UserSerializer(read_only=True)
     category = CategorySerializer(read_only=True)
     category_id = serializers.IntegerField(write_only=True, required=False)
+    # expose nested subcategories for detail pages
+    subcategories = SubcategorySerializer(many=True, read_only=True)
     subcategory_ids = serializers.ListField(child=serializers.IntegerField(), write_only=True, required=False)
     skills_list = serializers.SerializerMethodField()
     time_until_deadline = serializers.SerializerMethodField()

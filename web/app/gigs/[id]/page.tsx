@@ -174,12 +174,22 @@ export default function GigDetailPage() {
               <div className="flex flex-wrap items-center gap-2 mb-4">
                 <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">{gig.category.name}</span>
                 {/* Subcategories */}
-                {((gig as any).subcategories) && ((gig as any).subcategories).length > 0 && (
-                  ((gig as any).subcategories).map((sub: any) => (
-                    <span key={sub.id} className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs">
-                      {sub.name}
-                    </span>
-                  ))
+                {((gig as any).subcategories || (gig as any).subcategory_names) && (
+                  <>
+                    {Array.isArray((gig as any).subcategories) && ((gig as any).subcategories).length > 0 ? (
+                      ((gig as any).subcategories).map((sub: any, idx: number) => (
+                        <span key={sub.id || idx} className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs">
+                          {typeof sub === 'object' ? sub.name : String(sub)}
+                        </span>
+                      ))
+                    ) : ((gig as any).subcategory_names ? (
+                      ((gig as any).subcategory_names as string).split(', ').map((name: string, idx: number) => (
+                        <span key={idx} className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs">
+                          {name}
+                        </span>
+                      ))
+                    ) : null)}
+                  </>
                 )}
                 <span className="text-gray-500 dark:text-gray-400">{gig.freelancer_profile?.completed_gigs || 0} orders completed</span>
               </div>

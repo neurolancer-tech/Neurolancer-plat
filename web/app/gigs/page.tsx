@@ -24,6 +24,7 @@ export default function GigsPage() {
   const [filters, setFilters] = useState({
     search: '',
     category: '',
+    subcategory: '',
     minPrice: '',
     maxPrice: '',
     rating: '',
@@ -35,11 +36,22 @@ export default function GigsPage() {
   const gigsPerPage = 12;
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportData, setReportData] = useState<any>(null);
+  const [subcategories, setSubcategories] = useState<{id:number;name:string}[]>([]);
+  const [subcategoriesLoading, setSubcategoriesLoading] = useState(false);
 
   useEffect(() => {
     loadCategories();
     loadGigs();
   }, []);
+
+  useEffect(() => {
+    if (filters.category) {
+      loadSubcategories(filters.category);
+    } else {
+      setSubcategories([]);
+      setFilters(prev => ({ ...prev, subcategory: '' }));
+    }
+  }, [filters.category]);
 
 
 
@@ -77,14 +89,45 @@ export default function GigsPage() {
       const matchesSearch = gig.title.toLowerCase().includes(filters.search.toLowerCase()) ||
                            gig.description.toLowerCase().includes(filters.search.toLowerCase());
       const matchesCategory = !filters.category || gig.category.id.toString() === filters.category;
+      
+      // Subcategory match: handle either nested subcategory objects or stored names
+      let matchesSubcategory = true;
+      if (filters.subcategory) {
+        const subId = filters.subcategory;
+        const hasSubByObj = Array.isArray((gig as any).subcategories) && ((gig as any).subcategories).some((sub: any) => {
+          const id = typeof sub === 'object' ? sub.id : sub;
+          return id?.toString() === subId;
+        });
+        const selectedSub = subcategories.find(s => s.id.toString() === subId);
+        const hasSubByName = !!(gig as any).subcategory_names && selectedSub
+          ? ((gig as any).subcategory_names as string).includes(selectedSub.name)
+          : false;
+        matchesSubcategory = hasSubByObj || hasSubByName;
+      }
+
       const matchesMinPrice = !filters.minPrice || gig.basic_price >= parseFloat(filters.minPrice);
       const matchesMaxPrice = !filters.maxPrice || gig.basic_price <= parseFloat(filters.maxPrice);
       const matchesRating = !filters.rating || gig.rating >= parseFloat(filters.rating);
       const matchesMinLikes = !filters.minLikes || ((gig.likes_count || 0) >= parseInt(filters.minLikes));
       
-      return matchesSearch && matchesCategory && matchesMinPrice && matchesMaxPrice && matchesRating && matchesMinLikes;
+      return matchesSearch && matchesCategory && matchesSubcategory && matchesMinPrice && matchesMaxPrice && matchesRating && matchesMinLikes;
     });
-  }, [gigs, filters]);
+  }, [gigs, filters, subcategories]);
+
+  const loadSubcategories = async (categoryId: string) => {
+    setSubcategoriesLoading(true);
+    try {
+      // Prefer category-specific endpoint but fallback to query param variant
+      const resp = await api.get(`/categories/${categoryId}/subcategories/`).catch(() => api.get(`/subcategories/?category=${categoryId}`));
+      const data = resp.data.results || resp.data;
+      setSubcategories((data || []).map((s: any) => ({ id: s.id, name: s.name })));
+    } catch (e) {
+      console.error('Error loading subcategories:', e);
+      setSubcategories([]);
+    } finally {
+      setSubcategoriesLoading(false);
+    }
+  };
 
   const sortedGigs = useMemo(() => {
     const arr = [...filteredGigs];
@@ -172,7 +215,7 @@ export default function GigsPage() {
                 <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
                 <select
                   value={filters.category}
-                  onChange={(e) => setFilters({...filters, category: e.target.value})}
+                  onChange={(e) => setFilters({...filters, category: e.target.value, subcategory: ''})}
                   className="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:text-white"
                 >
                   <option value="">All Categories</option>
@@ -181,6 +224,27 @@ export default function GigsPage() {
                   ))}
                 </select>
               </div>
+
+              {/* Subcategory Filter (dependent) */}
+              {filters.category && (
+                <div className="mb-3">
+                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Subcategory</label>
+                  <select
+                    value={filters.subcategory}
+                    onChange={(e) => setFilters({...filters, subcategory: e.target.value})}
+                    className="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:text-white"
+                    disabled={subcategoriesLoading}
+                  >
+                    <option value="">All Subcategories</option>
+                    {subcategories.map(sub => (
+                      <option key={sub.id} value={sub.id}>{sub.name}</option>
+                    ))}
+                  </select>
+                  {subcategoriesLoading && (
+                    <div className="text-xs text-gray-500 mt-1">Loading subcategories...</div>
+                  )}
+                </div>
+              )}
 
 
 
@@ -235,6 +299,7 @@ export default function GigsPage() {
                 onClick={() => setFilters({
                   search: '',
                   category: '',
+                  subcategory: '',
                   minPrice: '',
                   maxPrice: '',
                   rating: '',

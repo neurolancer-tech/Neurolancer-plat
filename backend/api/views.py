@@ -908,9 +908,15 @@ def get_subcategories_by_category(request, category_id):
 @api_view(['GET'])
 @permission_classes([permissions.AllowAny])
 def get_all_subcategories(request):
-    """Get all subcategories"""
-    subcategories = Subcategory.objects.select_related('category').all()
-    serializer = SubcategorySerializer(subcategories, many=True, context={'request': request})
+    """Get all subcategories, optionally filtered by ?category=<id>"""
+    qs = Subcategory.objects.select_related('category').all()
+    category_id = request.GET.get('category')
+    if category_id:
+        try:
+            qs = qs.filter(category_id=int(category_id))
+        except (ValueError, TypeError):
+            pass
+    serializer = SubcategorySerializer(qs, many=True, context={'request': request})
     return Response(serializer.data)
 
 # Category Views
@@ -947,6 +953,24 @@ class GigListView(generics.ListAPIView):
     search_fields = ['title', 'description', 'tags']
     ordering_fields = ['created_at', 'rating', 'basic_price']
     ordering = ['-freelancer__userprofile__completed_gigs', '-rating', '-created_at']
+
+    def get_queryset(self):
+        qs = Gig.objects.filter(is_active=True)
+        # Optional filter by category (handled by filterset too, but keep for safety)
+        category_id = self.request.query_params.get('category')
+        if category_id:
+            try:
+                qs = qs.filter(category_id=int(category_id))
+            except (ValueError, TypeError):
+                pass
+        # Optional filter by subcategory id
+        subcategory_id = self.request.query_params.get('subcategory')
+        if subcategory_id:
+            try:
+                qs = qs.filter(subcategories__id=int(subcategory_id))
+            except (ValueError, TypeError):
+                pass
+        return qs.distinct()
 
 class GigDetailView(generics.RetrieveAPIView):
     queryset = Gig.objects.filter(is_active=True)
@@ -2656,6 +2680,24 @@ class JobListView(generics.ListAPIView):
     search_fields = ['title', 'description', 'skills_required']
     ordering_fields = ['created_at', 'budget_min', 'deadline', 'proposal_count']
     ordering = ['-created_at']
+
+    def get_queryset(self):
+        qs = Job.objects.filter(status='open')
+        # Optional filter by category id
+        category_id = self.request.query_params.get('category')
+        if category_id:
+            try:
+                qs = qs.filter(category_id=int(category_id))
+            except (ValueError, TypeError):
+                pass
+        # Optional filter by subcategory id
+        subcategory_id = self.request.query_params.get('subcategory')
+        if subcategory_id:
+            try:
+                qs = qs.filter(subcategories__id=int(subcategory_id))
+            except (ValueError, TypeError):
+                pass
+        return qs.distinct()
 
 class JobDetailView(generics.RetrieveAPIView):
     serializer_class = JobSerializer
@@ -5802,38 +5844,6 @@ def debug_conversation_messages(request, conversation_id):
     except Conversation.DoesNotExist:
         return Response({'error': 'Conversation not found or no access'}, status=404)
 
-# Subcategory API Views
-@api_view(['GET'])
-@permission_classes([permissions.AllowAny])
-def get_subcategories_by_category(request):
-    """Get subcategories for a specific category"""
-    from .models import Subcategory
-    from .serializers import SubcategorySerializer
-    
-    category_id = request.GET.get('category')
-    if not category_id:
-        return Response({'error': 'Category parameter is required'}, status=400)
-    
-    try:
-        subcategories = Subcategory.objects.filter(category_id=category_id)
-        serializer = SubcategorySerializer(subcategories, many=True)
-        return Response(serializer.data)
-    except Exception as e:
-        return Response({'error': str(e)}, status=500)
-
-@api_view(['GET'])
-@permission_classes([permissions.AllowAny])
-def get_categories_with_subcategories(request):
-    """Get all categories with their subcategories"""
-    from .models import Category
-    from .serializers import CategorySerializer
-    
-    try:
-        categories = Category.objects.prefetch_related('subcategories').all()
-        serializer = CategorySerializer(categories, many=True)
-        return Response(serializer.data)
-    except Exception as e:
-        return Response({'error': str(e)}, status=500)
 
 # Individual Profile Views
 @api_view(['GET'])

@@ -43,7 +43,7 @@ urlpatterns = [
     path('categories/', views.CategoryListView.as_view(), name='category-list'),
     path('categories/<int:pk>/', views.CategoryUpdateView.as_view(), name='category-update'),
     
-    # Subcategory URLs
+# Subcategory URLs
     path('categories/with-subcategories/', views.get_categories_with_subcategories, name='categories-with-subcategories'),
     path('categories-with-subcategories/', views.get_categories_with_subcategories, name='categories-with-subcategories-alt'),
     path('categories/<int:category_id>/subcategories/', views.get_subcategories_by_category, name='subcategories-by-category'),
