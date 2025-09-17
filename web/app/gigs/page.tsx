@@ -75,7 +75,7 @@ export default function GigsPage() {
       console.log('API response status:', response.status);
       console.log('Full response:', response);
       setGigs(gigsData);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading gigs:', error);
       console.error('Error details:', error.response?.data);
       console.error('Error status:', error.response?.status);
