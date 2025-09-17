@@ -92,13 +92,15 @@ export default function HelpPage() {
   const loadData = async () => {
     try {
       const [ticketsRes, statsRes] = await Promise.all([
-        api.get('/tickets/'),
-        api.get('/tickets/stats/')
+        api.get('/tickets/').catch(() => ({ data: [] })),
+        api.get('/tickets/stats/').catch(() => ({ data: {} }))
       ]);
-      setTickets(ticketsRes.data.results || ticketsRes.data);
-      setStats(statsRes.data);
+      setTickets(ticketsRes.data.results || ticketsRes.data || []);
+      setStats(statsRes.data || {});
     } catch (error) {
       console.error('Error loading data:', error);
+      setTickets([]);
+      setStats({});
     } finally {
       setLoading(false);
     }
@@ -118,20 +120,28 @@ export default function HelpPage() {
     setSubmitting(true);
     try {
       const response = await api.post('/tickets/', newTicket);
-      setTickets([response.data, ...tickets]);
-      setNewTicket({ subject: '', description: '', category: 'other', priority: 'medium' });
-      setShowCreateForm(false);
       
-      // Set cooldown
+      // Set cooldown immediately after successful response
       const now = Date.now();
       setLastTicketTime(now);
       localStorage.setItem('lastTicketTime', now.toString());
       
+      // Update UI immediately
+      setTickets([response.data, ...tickets]);
+      setNewTicket({ subject: '', description: '', category: 'other', priority: 'medium' });
+      setShowCreateForm(false);
+      
       toast.success('✅ Ticket created successfully!');
-      await loadData(); // Refresh stats
+      
+      // Refresh data in background
+      loadData().catch(console.error);
     } catch (error: any) {
       console.error('Error creating ticket:', error);
-      toast.error(error.response?.data?.error || 'Failed to create ticket');
+      if (error.response?.status === 500) {
+        toast.error('Server error. Please try again later or contact support.');
+      } else {
+        toast.error(error.response?.data?.error || error.message || 'Failed to create ticket');
+      }
     } finally {
       setSubmitting(false);
     }

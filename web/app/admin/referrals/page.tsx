@@ -1,7 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { api } from '@/lib/api';
+import { useRouter } from 'next/navigation';
+import AdminLayout from '@/components/AdminLayout';
+import { isAuthenticated, getUser } from '@/lib/auth';
+import api from '@/lib/api';
+import toast from 'react-hot-toast';
 
 interface ReferralSettings {
   is_active: boolean;
@@ -46,6 +50,7 @@ interface ReferralUser {
 }
 
 export default function AdminReferralsPage() {
+  const router = useRouter();
   const [settings, setSettings] = useState<ReferralSettings | null>(null);
   const [stats, setStats] = useState<ReferralStats | null>(null);
   const [users, setUsers] = useState<ReferralUser[]>([]);
@@ -55,8 +60,19 @@ export default function AdminReferralsPage() {
   const [activeTab, setActiveTab] = useState('settings');
 
   useEffect(() => {
+    if (!isAuthenticated()) {
+      router.push('/auth');
+      return;
+    }
+
+    const user = getUser();
+    if (user?.email !== 'kbrian1237@gmail.com') {
+      router.push('/');
+      return;
+    }
+
     fetchData();
-  }, []);
+  }, [router]);
 
   const fetchData = async () => {
     try {
@@ -64,21 +80,47 @@ export default function AdminReferralsPage() {
       const headers = { Authorization: `Token ${token}` };
 
       const [settingsRes, statsRes, usersRes] = await Promise.all([
-        api.get('/admin/referrals/settings/', { headers }),
-        api.get('/admin/referrals/stats/', { headers }),
-        api.get('/admin/referrals/users/', { headers })
+        api.get('/admin/referrals/settings/', { headers }).catch(() => ({ data: { data: getDefaultSettings() } })),
+        api.get('/admin/referrals/stats/', { headers }).catch(() => ({ data: { data: getDefaultStats() } })),
+        api.get('/admin/referrals/users/', { headers }).catch(() => ({ data: { data: [] } }))
       ]);
 
-      setSettings(settingsRes.data.data);
-      setStats(statsRes.data.data);
-      setUsers(usersRes.data.data);
+      setSettings(settingsRes.data.data || settingsRes.data);
+      setStats(statsRes.data.data || statsRes.data);
+      setUsers(usersRes.data.data || usersRes.data || []);
     } catch (err: any) {
       console.error('Error fetching referral data:', err);
       setError(err.response?.data?.error || 'Failed to load referral data');
+      // Set fallback data
+      setSettings(getDefaultSettings());
+      setStats(getDefaultStats());
+      setUsers([]);
     } finally {
       setLoading(false);
     }
   };
+
+  const getDefaultSettings = (): ReferralSettings => ({
+    is_active: false,
+    signup_bonus_enabled: false,
+    earnings_percentage_enabled: false,
+    signup_bonus_amount: 0,
+    earnings_percentage: 0,
+    max_referrals_per_user: 0,
+    min_payout_amount: 10,
+    earnings_duration_days: 0,
+    require_email_verification: true,
+    require_first_purchase: false,
+    min_account_age_hours: 0
+  });
+
+  const getDefaultStats = (): ReferralStats => ({
+    total_referrals: 0,
+    total_earnings_paid: 0,
+    active_referrers: 0,
+    pending_withdrawals: 0,
+    recent_referrals: []
+  });
 
   const updateSettings = async (newSettings: Partial<ReferralSettings>) => {
     if (!settings) return;
@@ -118,60 +160,64 @@ export default function AdminReferralsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
-      </div>
+      <AdminLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0D9E86]"></div>
+        </div>
+      </AdminLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Referral System Management</h1>
-          <p className="mt-2 text-gray-600">Configure and monitor the referral program</p>
+    <AdminLayout>
+      <div className="space-y-6">
+        <div className="bg-gradient-to-r from-[#0D9E86] to-teal-600 rounded-xl p-6 text-white">
+          <h1 className="text-2xl font-bold mb-2">Referral System Management</h1>
+          <p className="opacity-90">Configure and monitor the referral program</p>
         </div>
 
         {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
-            <div className="text-red-800">{error}</div>
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4">
+            <div className="text-red-800 dark:text-red-200">{error}</div>
           </div>
         )}
 
         {/* Tab Navigation */}
-        <div className="mb-8">
-          <nav className="flex space-x-8">
-            <button
-              onClick={() => setActiveTab('settings')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'settings'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              Settings
-            </button>
-            <button
-              onClick={() => setActiveTab('stats')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'stats'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              Statistics
-            </button>
-            <button
-              onClick={() => setActiveTab('users')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'users'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              Users
-            </button>
-          </nav>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg">
+          <div className="border-b border-gray-200 dark:border-gray-700">
+            <nav className="flex space-x-8 px-6">
+              <button
+                onClick={() => setActiveTab('settings')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'settings'
+                    ? 'border-[#0D9E86] text-[#0D9E86]'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Settings
+              </button>
+              <button
+                onClick={() => setActiveTab('stats')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'stats'
+                    ? 'border-[#0D9E86] text-[#0D9E86]'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Statistics
+              </button>
+              <button
+                onClick={() => setActiveTab('users')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'users'
+                    ? 'border-[#0D9E86] text-[#0D9E86]'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Users
+              </button>
+            </nav>
+          </div>
         </div>
 
         {/* Settings Tab */}
@@ -474,13 +520,13 @@ export default function AdminReferralsPage() {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {stats.recent_referrals.map((referral) => (
+                    {stats.recent_referrals && stats.recent_referrals.length > 0 ? stats.recent_referrals.map((referral) => (
                       <tr key={referral.id}>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {referral.referrer_username}
+                          {referral.referrer_username || 'N/A'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {referral.referred_username}
+                          {referral.referred_username || 'N/A'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
@@ -498,7 +544,13 @@ export default function AdminReferralsPage() {
                           {new Date(referral.created_at).toLocaleDateString()}
                         </td>
                       </tr>
-                    ))}
+                    )) : (
+                      <tr>
+                        <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                          No recent referrals found
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -540,12 +592,12 @@ export default function AdminReferralsPage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {users.map((user) => (
+                  {users && users.length > 0 ? users.map((user) => (
                     <tr key={user.id}>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
-                          <div className="text-sm font-medium text-gray-900">{user.username}</div>
-                          <div className="text-sm text-gray-500">{user.email}</div>
+                          <div className="text-sm font-medium text-gray-900">{user.username || 'N/A'}</div>
+                          <div className="text-sm text-gray-500">{user.email || 'N/A'}</div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -580,13 +632,19 @@ export default function AdminReferralsPage() {
                         </button>
                       </td>
                     </tr>
-                  ))}
+                  )) : (
+                    <tr>
+                      <td colSpan={7} className="px-6 py-4 text-center text-gray-500">
+                        No referral users found
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
           </div>
         )}
       </div>
-    </div>
+    </AdminLayout>
   );
 }

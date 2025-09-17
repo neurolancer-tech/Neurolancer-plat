@@ -6,7 +6,8 @@ interface ChartProps {
 }
 
 export default function SimpleChart({ data, labels, type, colors = ['#0D9E86', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6', '#22C55E'] }: ChartProps) {
-  const maxValue = Math.max(...data.filter(val => val != null && !isNaN(val))) || 1;
+  const validData = data.filter(val => val != null && !isNaN(val));
+  const maxValue = validData.length > 0 ? Math.max(...validData) : 1;
   
   if (type === 'line') {
     return (
@@ -19,30 +20,38 @@ export default function SimpleChart({ data, labels, type, colors = ['#0D9E86', '
             </linearGradient>
           </defs>
           <path
-            d={`M 50 ${180 - ((data[0] || 0) / maxValue) * 120} ${data.map((value, i) => 
-              `L ${50 + (i * 40)} ${180 - ((value || 0) / maxValue) * 120}`
-            ).join(' ')}`}
+            d={`M 50 ${180 - ((data[0] || 0) / maxValue) * 120} ${data.map((value, i) => {
+              const safeValue = (value || 0);
+              const y = 180 - (safeValue / maxValue) * 120;
+              return `L ${50 + (i * 40)} ${isNaN(y) ? 180 : y}`;
+            }).join(' ')}`}
             stroke="#0D9E86"
             strokeWidth="3"
             fill="none"
             className="animate-pulse"
           />
           <path
-            d={`M 50 180 L 50 ${180 - ((data[0] || 0) / maxValue) * 120} ${data.map((value, i) => 
-              `L ${50 + (i * 40)} ${180 - ((value || 0) / maxValue) * 120}`
-            ).join(' ')} L ${50 + ((data.length - 1) * 40)} 180 Z`}
+            d={`M 50 180 L 50 ${180 - ((data[0] || 0) / maxValue) * 120} ${data.map((value, i) => {
+              const safeValue = (value || 0);
+              const y = 180 - (safeValue / maxValue) * 120;
+              return `L ${50 + (i * 40)} ${isNaN(y) ? 180 : y}`;
+            }).join(' ')} L ${50 + ((data.length - 1) * 40)} 180 Z`}
             fill="url(#lineGradient)"
           />
-          {data.map((value, i) => (
-            <circle
-              key={i}
-              cx={50 + (i * 40)}
-              cy={180 - ((value || 0) / (maxValue || 1)) * 120}
-              r="4"
-              fill="#0D9E86"
-              className="animate-pulse"
-            />
-          ))}
+          {data.map((value, i) => {
+            const safeValue = (value || 0);
+            const y = 180 - (safeValue / maxValue) * 120;
+            return (
+              <circle
+                key={i}
+                cx={50 + (i * 40)}
+                cy={isNaN(y) ? 180 : y}
+                r="4"
+                fill="#0D9E86"
+                className="animate-pulse"
+              />
+            );
+          })}
         </svg>
         <div className="absolute bottom-0 left-0 right-0 flex justify-between px-4 text-xs text-gray-500">
           {labels.map((label, i) => (
@@ -56,31 +65,47 @@ export default function SimpleChart({ data, labels, type, colors = ['#0D9E86', '
   if (type === 'bar') {
     return (
       <div className="h-full flex items-end justify-between px-4 pb-8 space-x-2">
-        {data.map((value, i) => (
-          <div key={i} className="flex flex-col items-center flex-1">
-            <div 
-              className="w-full rounded-t-lg transition-all duration-1000 ease-out"
-              style={{
-                height: `${(value / maxValue) * 200}px`,
-                backgroundColor: colors[i % colors.length],
-                animationDelay: `${i * 0.1}s`
-              }}
-            />
-            <span className="text-xs text-gray-500 mt-2">{labels[i]}</span>
-          </div>
-        ))}
+        {data.map((value, i) => {
+          const safeValue = (value || 0);
+          const height = isNaN(safeValue) ? 0 : (safeValue / maxValue) * 200;
+          return (
+            <div key={i} className="flex flex-col items-center flex-1">
+              <div 
+                className="w-full rounded-t-lg transition-all duration-1000 ease-out"
+                style={{
+                  height: `${Math.max(0, height)}px`,
+                  backgroundColor: colors[i % colors.length],
+                  animationDelay: `${i * 0.1}s`
+                }}
+              />
+              <span className="text-xs text-gray-500 mt-2">{labels[i]}</span>
+            </div>
+          );
+        })}
       </div>
     );
   }
 
   if (type === 'doughnut') {
-    const total = data.reduce((sum, val) => sum + val, 0);
+    const validData = data.filter(val => val != null && !isNaN(val) && val > 0);
+    const total = validData.reduce((sum, val) => sum + val, 0);
+    
+    if (total === 0 || validData.length === 0) {
+      return (
+        <div className="relative h-full flex items-center justify-center">
+          <div className="text-gray-400 text-sm">No data available</div>
+        </div>
+      );
+    }
+    
     let currentAngle = 0;
     
     return (
       <div className="relative h-full flex items-center justify-center">
         <svg className="w-48 h-48" viewBox="0 0 200 200">
           {data.map((value, i) => {
+            if (!value || isNaN(value) || value <= 0) return null;
+            
             const percentage = value / total;
             const angle = percentage * 360;
             const startAngle = currentAngle;
@@ -93,10 +118,15 @@ export default function SimpleChart({ data, labels, type, colors = ['#0D9E86', '
             
             const largeArc = angle > 180 ? 1 : 0;
             
+            // Ensure all values are valid numbers
+            if (isNaN(x1) || isNaN(y1) || isNaN(x2) || isNaN(y2)) {
+              return null;
+            }
+            
             const pathData = [
               `M 100 100`,
-              `L ${x1} ${y1}`,
-              `A 70 70 0 ${largeArc} 1 ${x2} ${y2}`,
+              `L ${x1.toFixed(2)} ${y1.toFixed(2)}`,
+              `A 70 70 0 ${largeArc} 1 ${x2.toFixed(2)} ${y2.toFixed(2)}`,
               'Z'
             ].join(' ');
             

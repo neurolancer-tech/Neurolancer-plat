@@ -597,7 +597,7 @@ export default function AdminReportsPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
-                        {ticket.user.username}
+                        {ticket.user?.username || 'N/A'}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                         {new Date(ticket.created_at).toLocaleDateString()}
