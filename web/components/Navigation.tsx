@@ -35,11 +35,23 @@ export default function Navigation() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [isGoogleUser, setIsGoogleUser] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated()) {
-      setUser(getUser());
-      setProfile(getProfile());
+      const userData = getUser();
+      const profileData = getProfile();
+      setUser(userData);
+      setProfile(profileData);
+      
+      // Check if user is Google user
+      const googleUser = !!(
+        (profileData as any)?.auth_provider === 'google' ||
+        (profileData as any)?.avatar_type === 'google' ||
+        (profileData as any)?.google_photo_url ||
+        (profileData as any)?.user?.auth_provider === 'google'
+      );
+      setIsGoogleUser(googleUser);
     }
   }, []);
 
@@ -49,7 +61,7 @@ export default function Navigation() {
 
   return (
     <>
-      <EmailVerificationGate />
+      {!isGoogleUser && <EmailVerificationGate />}
       <nav className="fixed top-0 left-0 right-0 shadow-sm border-b border-gray-200 dark:border-gray-700 z-50 hover:z-[60] transition-colors duration-200" style={{backgroundColor: '#0D9E86'}}>
         <div className="px-2 sm:px-3 lg:px-4">
           <div className="flex justify-between items-center h-20">

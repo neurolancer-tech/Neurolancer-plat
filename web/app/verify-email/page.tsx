@@ -11,13 +11,14 @@ function VerifyEmailContent() {
   const [status, setStatus] = useState<'loading' | 'success' | 'error' | 'expired'>('loading');
   const [message, setMessage] = useState('');
   const [isResending, setIsResending] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
   
   const searchParams = useSearchParams();
   const router = useRouter();
   const token = searchParams.get('token');
 
   useEffect(() => {
-    // Check if user is Google user and redirect them
+    // Check if user is Google user and redirect them immediately
     if (isAuthenticated()) {
       const profile = getProfile();
       const isGoogleUser = !!(
@@ -28,11 +29,12 @@ function VerifyEmailContent() {
       );
       
       if (isGoogleUser) {
+        setIsRedirecting(true);
         // Google users don't need email verification
         if (!(profile as any)?.user_type) {
-          router.push('/role-selection');
+          router.replace('/role-selection');
         } else {
-          router.push('/dashboard');
+          router.replace('/dashboard');
         }
         return;
       }
@@ -45,6 +47,18 @@ function VerifyEmailContent() {
       setMessage('Please verify your email. A verification email was sent to your inbox.');
     }
   }, [token, router]);
+
+  // Show loading if redirecting Google user
+  if (isRedirecting) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p>Redirecting...</p>
+        </div>
+      </div>
+    );
+  }
 
   const verifyEmail = async (verificationToken: string) => {
     try {
