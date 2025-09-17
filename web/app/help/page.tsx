@@ -99,7 +99,7 @@ export default function HelpPage() {
   };
 
   const getStatusColor = (status: string) => {
-    const colors = {
+    const colors: Record<string, string> = {
       'open': 'bg-green-100 text-green-800',
       'in_progress': 'bg-blue-100 text-blue-800',
       'waiting_response': 'bg-yellow-100 text-yellow-800',
@@ -110,7 +110,7 @@ export default function HelpPage() {
   };
 
   const getPriorityColor = (priority: string) => {
-    const colors = {
+    const colors: Record<string, string> = {
       'low': 'text-green-600',
       'medium': 'text-yellow-600',
       'high': 'text-orange-600',
