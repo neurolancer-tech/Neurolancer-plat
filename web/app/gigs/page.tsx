@@ -69,7 +69,10 @@ export default function GigsPage() {
   const loadGigs = async () => {
     try {
       const response = await api.get('/gigs/');
-      setGigs(response.data.results || response.data);
+      const gigsData = response.data.results || response.data;
+      console.log('Raw gigs data:', gigsData);
+      console.log('Number of gigs loaded:', gigsData.length);
+      setGigs(gigsData);
     } catch (error) {
       console.error('Error loading gigs:', error);
     } finally {
@@ -91,7 +94,8 @@ export default function GigsPage() {
   };
 
   const filteredGigs = useMemo(() => {
-    return gigs.filter(gig => {
+    console.log('Filtering gigs:', gigs.length, 'with filters:', filters);
+    const filtered = gigs.filter(gig => {
       const matchesSearch = gig.title.toLowerCase().includes(filters.search.toLowerCase()) ||
                            gig.description.toLowerCase().includes(filters.search.toLowerCase());
       const matchesCategory = !filters.category || gig.category.id.toString() === filters.category;
@@ -117,8 +121,12 @@ export default function GigsPage() {
       const matchesRating = !filters.rating || gig.rating >= parseFloat(filters.rating);
       const matchesMinLikes = !filters.minLikes || ((gig.likes_count || 0) >= parseInt(filters.minLikes));
       
+      console.log(`Gig ${gig.id}: search=${matchesSearch}, category=${matchesCategory}, subcategory=${matchesSubcategory}, minPrice=${matchesMinPrice}, maxPrice=${matchesMaxPrice}, rating=${matchesRating}, likes=${matchesMinLikes}`);
+      
       return matchesSearch && matchesCategory && matchesSubcategory && matchesMinPrice && matchesMaxPrice && matchesRating && matchesMinLikes;
     });
+    console.log('Filtered gigs count:', filtered.length);
+    return filtered;
   }, [gigs, filters, subcategories]);
 
   const sortedGigs = useMemo(() => {

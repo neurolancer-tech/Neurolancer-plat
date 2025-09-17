@@ -121,32 +121,46 @@ export default function CreateGigPage() {
     try {
       const submitData = new FormData();
       
-      // Add all form fields
-      Object.entries(formData).forEach(([key, value]) => {
+      // Add form fields explicitly to avoid conflicts
+      const fieldsToSubmit = [
+        'title', 'description', 'tags',
+        'basic_title', 'basic_description', 'basic_price', 'basic_delivery_time',
+        'standard_title', 'standard_description', 'standard_price', 'standard_delivery_time',
+        'premium_title', 'premium_description', 'premium_price', 'premium_delivery_time'
+      ];
+      
+      fieldsToSubmit.forEach(field => {
+        const value = formData[field as keyof typeof formData];
         if (value !== '' && value !== null && value !== undefined) {
-          // Convert category to category_id for backend compatibility
-          if (key === 'category') {
-            submitData.append('category_id', value as string);
-          } else if (key === 'subcategories') {
-            // Handle subcategories array - send as JSON string for FormData
-            if (Array.isArray(value) && value.length > 0) {
-              value.forEach(subId => {
-                submitData.append('subcategory_ids', subId);
-              });
-            }
-          } else {
-            submitData.append(key, value as string);
-          }
+          submitData.append(field, value as string);
         }
       });
       
-      // Add image based on selection
+      // Add category_id
+      if (formData.category) {
+        submitData.append('category_id', formData.category);
+      }
+      
+      // Add subcategories
+      if (formData.subcategories.length > 0) {
+        formData.subcategories.forEach(subId => {
+          submitData.append('subcategory_ids', subId);
+        });
+      }
+      
+      // Add image based on selection - be very explicit
       if (imageOption === 'upload' && imageFile) {
         submitData.append('image', imageFile);
-      } else if (imageOption === 'url' && imageUrl) {
-        submitData.append('image_url', imageUrl);
+      } else if (imageOption === 'url' && imageUrl.trim()) {
+        submitData.append('image_url', imageUrl.trim());
       }
-      // For 'none' option, don't add image_url field at all
+      // For 'none' option, don't add any image fields
+      
+      // Debug: Log what we're sending
+      console.log('FormData entries:');
+      for (let [key, value] of submitData.entries()) {
+        console.log(key, value);
+      }
       
       const response = await api.post('/gigs/create/', submitData, {
         headers: {
