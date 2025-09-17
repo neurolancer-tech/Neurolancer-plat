@@ -47,7 +47,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [notifications, setNotifications] = useState([]);
-  const [completedCoursesCount, setCompletedCoursesCount] = useState(0);
+
   const [showOnboardingReminder, setShowOnboardingReminder] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [hasIncompleteOnboarding, setHasIncompleteOnboarding] = useState(false);
@@ -58,11 +58,20 @@ export default function DashboardPage() {
       return;
     }
 
-    setUser(getUser());
-    setProfile(getProfile());
+    const currentUser = getUser();
+    const currentProfile = getProfile();
+    
+    setUser(currentUser);
+    setProfile(currentProfile);
+    
+    // Check if user needs role selection
+    if (!currentProfile?.user_type) {
+      router.push('/role-selection');
+      return;
+    }
+    
     loadDashboardStats();
     loadNotifications();
-    loadCompletedCourses();
     checkOnboardingStatus();
     
     // Update time every second
@@ -91,16 +100,7 @@ export default function DashboardPage() {
     }
   };
 
-  const loadCompletedCourses = async () => {
-    try {
-      const response = await api.get('/learning/dashboard/');
-      const learningData = response.data;
-      setCompletedCoursesCount(learningData.completed_courses_count || 0);
-    } catch (error) {
-      console.error('Error loading completed courses:', error);
-      setCompletedCoursesCount(0);
-    }
-  };
+
 
   const checkOnboardingStatus = async () => {
     try {
@@ -325,15 +325,7 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              <div className="relative overflow-hidden bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-3 sm:p-4 text-white shadow-lg card-hover animate-slide-in animate-gradient neural-pulse">
-                <div className="absolute top-0 right-0 w-12 h-12 sm:w-16 sm:h-16 bg-white bg-opacity-10 rounded-full -mr-6 sm:-mr-8 -mt-6 sm:-mt-8 animate-float"></div>
-                <div className="absolute inset-0 neural-glow opacity-30"></div>
-                <div className="relative">
-                  <div className="text-lg sm:text-2xl mb-1 animate-float">🧠</div>
-                  <p className="text-indigo-100 text-xs break-words">AI Learning</p>
-                  <p className="text-lg sm:text-2xl font-bold break-words">{completedCoursesCount}</p>
-                </div>
-              </div>
+
 
               <div className="relative overflow-hidden bg-gradient-to-br from-green-400 to-green-500 rounded-xl p-3 sm:p-4 text-white shadow-lg card-hover animate-slide-in animate-gradient neural-pulse">
                 <div className="absolute top-0 right-0 w-12 h-12 sm:w-16 sm:h-16 bg-white bg-opacity-10 rounded-full -mr-6 sm:-mr-8 -mt-6 sm:-mt-8 animate-float"></div>
@@ -377,14 +369,7 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              <div className="relative overflow-hidden bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-3 sm:p-4 text-white shadow-lg card-hover animate-slide-in animate-gradient">
-                <div className="absolute top-0 right-0 w-12 h-12 sm:w-16 sm:h-16 bg-white bg-opacity-10 rounded-full -mr-6 sm:-mr-8 -mt-6 sm:-mt-8 animate-float"></div>
-                <div className="relative">
-                  <div className="text-lg sm:text-2xl mb-1 animate-float">🎓</div>
-                  <p className="text-indigo-100 text-xs break-words">Courses</p>
-                  <p className="text-lg sm:text-2xl font-bold break-words">{completedCoursesCount}</p>
-                </div>
-              </div>
+
 
               <div className="relative overflow-hidden bg-gradient-to-br from-green-400 to-green-500 rounded-xl p-3 sm:p-4 text-white shadow-lg card-hover animate-slide-in animate-gradient">
                 <div className="absolute top-0 right-0 w-12 h-12 sm:w-16 sm:h-16 bg-white bg-opacity-10 rounded-full -mr-6 sm:-mr-8 -mt-6 sm:-mt-8 animate-float"></div>

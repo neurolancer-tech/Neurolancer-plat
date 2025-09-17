@@ -27,11 +27,7 @@ export default function RoleSelectionPage() {
     setUser(currentUser);
     setUserProfile(currentProfile);
 
-    // Check if profile needs completion (only for users who haven't completed it)
-    if (needsProfileCompletion()) {
-      router.push('/auth/complete-profile');
-      return;
-    }
+    // Skip profile completion check - users go directly to dashboard after role selection
     
     // If user already has a role, redirect to dashboard
     if (currentProfile?.user_type) {

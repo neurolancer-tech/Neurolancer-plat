@@ -206,24 +206,16 @@ function AuthContent() {
       setUser(backendUser);
       setProfile(updatedProfile);
       
-      // Only show profile completion for new users or users who haven't completed it
-      if (is_new_user && !isProfileComplete()) {
-        console.log('New user needs profile completion, redirecting to complete-profile');
-        toast.success('Welcome to Neurolancer! Please complete your profile.');
-        router.push('/auth/complete-profile');
-        return;
-      }
-      
-      // Check if user needs role selection (no user_type set)
+      // Google users always go to role selection first
       if (!updatedProfile.user_type || updatedProfile.user_type === '') {
-        console.log('User has no user_type, redirecting to role selection');
+        console.log('Google user needs role selection');
         toast.success('Please select your role to continue.');
         router.push('/role-selection');
         return;
       }
       
-      // User has completed profile and has role, go to dashboard
-      console.log('User has completed profile and role, going to dashboard');
+      // Google user with role goes to dashboard
+      console.log('Google user with role, going to dashboard');
       toast.success('Successfully signed in with Google!');
       router.push('/dashboard');
     } catch (error: any) {
@@ -265,21 +257,8 @@ function AuthContent() {
               toast.success('Successfully registered with Google!');
               router.push('/role-selection');
             } else {
-              // Check profile completion in retry as well
-              const retryRequiresCompletion = !updatedProfile.phone ||
-                                            updatedProfile.phone === '' ||
-                                            !updatedProfile.country ||
-                                            updatedProfile.country === '' ||
-                                            !updatedProfile.city ||
-                                            updatedProfile.city === '';
-              
-              if (retryRequiresCompletion) {
-                toast.success('Welcome! Please complete your profile.');
-                router.push('/auth/complete-profile');
-              } else {
-                toast.success('Successfully signed in with Google!');
-                router.push('/dashboard');
-              }
+              toast.success('Successfully signed in with Google!');
+              router.push('/dashboard');
             }
             setLoading(false);
           } catch (retryError: any) {
@@ -341,15 +320,8 @@ function AuthContent() {
       
       toast.success(`Welcome back! Signed in as ${loginRole}.`);
       
-      // Only show profile completion for users who haven't completed it yet
-      if (requires_completion || (!updatedProfile.profile_completed && !isProfileComplete())) {
-        console.log('Profile needs completion, redirecting to complete-profile');
-        router.push('/auth/complete-profile');
-        return;
-      }
-      
-      // Profile is complete, go to dashboard
-      console.log('Profile is complete, going to dashboard');
+      // All logins go to dashboard
+      console.log('Login successful, going to dashboard');
       router.push('/dashboard');
     } catch (error: any) {
       toast.error((error as any).response?.data?.error || 'Login failed');
@@ -437,9 +409,9 @@ function AuthContent() {
       const successMsg = (data as any)?.message || 'Registration successful!';
       toast.success(successMsg);
       
-      // All new registrations need profile completion
-      console.log('New registration successful, redirecting to complete-profile');
-      router.push('/auth/complete-profile');
+      // All new registrations need email verification
+      console.log('New registration successful, redirecting to dashboard for email verification');
+      router.push('/dashboard');
     } catch (error: any) {
       const errorMsg = (error as any).response?.data?.username?.[0] || 
                       (error as any).response?.data?.email?.[0] || 
@@ -458,8 +430,8 @@ function AuthContent() {
           setAuthToken(token);
           setUser(user);
           if (profile) setProfile(profile);
-          toast.success('Account created! Please complete your profile.');
-          router.push('/auth/complete-profile');
+          toast.success('Account created! Please verify your email.');
+          router.push('/dashboard');
           return;
         }
       } catch (_) {

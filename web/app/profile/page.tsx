@@ -39,7 +39,7 @@ export default function ProfilePage() {
   const [user, setUserState] = useState<User | null>(null);
   const [profile, setProfileState] = useState<UserProfile | null>(null);
   const [onboardingData, setOnboardingData] = useState<OnboardingData | null>(null);
-  const [completedCoursesCount, setCompletedCoursesCount] = useState(0);
+
   const [loading, setLoading] = useState(false);
   const [showAvatarSelector, setShowAvatarSelector] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -114,8 +114,7 @@ export default function ProfilePage() {
       // Fetch onboarding data
       fetchOnboardingData();
       
-      // Load completed courses count
-      loadCompletedCourses();
+
 
       // Load dashboard stats for role-based metrics
       loadDashboardStats();
@@ -145,16 +144,7 @@ export default function ProfilePage() {
     }
   };
 
-  const loadCompletedCourses = async () => {
-    try {
-      const response = await api.get('/enrollments/?status=completed');
-      const completedCourses = response.data.results || response.data || [];
-      setCompletedCoursesCount(completedCourses.length);
-    } catch (error) {
-      console.error('Error loading completed courses:', error);
-      setCompletedCoursesCount(0);
-    }
-  };
+
 
   const loadDashboardStats = async () => {
     try {
@@ -524,10 +514,7 @@ export default function ProfilePage() {
                       <div className="text-xl font-bold text-purple-600">{dashboardStats?.completed_orders ?? (profile as any)?.completed_gigs ?? 0}</div>
                       <div className="text-xs text-gray-600 dark:text-gray-400">Completed</div>
                     </div>
-                    <div className="text-center">
-                      <div className="text-xl font-bold text-orange-600">{completedCoursesCount}</div>
-                      <div className="text-xs text-gray-600 dark:text-gray-400">Courses</div>
-                    </div>
+
                     <div className="text-center">
                       <div className="text-xl font-bold text-green-500">👍 {profile?.likes_count || 0}</div>
                       <div className="text-xs text-gray-600 dark:text-gray-400">Likes</div>
@@ -1139,15 +1126,7 @@ export default function ProfilePage() {
                           <div className="text-white text-2xl">✅</div>
                         </div>
                       </div>
-                      <div className="bg-gradient-to-br from-orange-500 to-orange-600 p-6 rounded-xl text-white">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-sm font-medium text-orange-100">Completed Courses</p>
-                            <p className="text-3xl font-bold text-white">{completedCoursesCount}</p>
-                          </div>
-                          <div className="text-white text-2xl">🎓</div>
-                        </div>
-                      </div>
+
                       <div className="bg-gradient-to-br from-green-500 to-green-600 p-6 rounded-xl text-white">
                         <div className="flex items-center justify-between">
                           <div>
