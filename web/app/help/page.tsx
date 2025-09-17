@@ -6,13 +6,41 @@ import Navigation from '@/components/Navigation';
 import { isAuthenticated } from '@/lib/auth';
 import api from '@/lib/api';
 
+interface Ticket {
+  id: string | number;
+  ticket_id: string;
+  subject: string;
+  description: string;
+  category: string;
+  priority: string;
+  status: string;
+  created_at: string;
+  replies?: Reply[];
+}
+
+interface Reply {
+  id: string | number;
+  message: string;
+  is_staff_reply: boolean;
+  user_name?: string;
+  user_username?: string;
+  created_at: string;
+}
+
+interface Stats {
+  total_tickets?: number;
+  open_tickets?: number;
+  in_progress_tickets?: number;
+  resolved_tickets?: number;
+}
+
 export default function HelpPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [tickets, setTickets] = useState([]);
-  const [stats, setStats] = useState({});
+  const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [stats, setStats] = useState<Stats>({});
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [selectedTicket, setSelectedTicket] = useState(null);
+  const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [newTicket, setNewTicket] = useState({
     subject: '',
     description: '',
@@ -45,7 +73,7 @@ export default function HelpPage() {
     }
   };
 
-  const handleCreateTicket = async (e) => {
+  const handleCreateTicket = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const response = await api.post('/tickets/', newTicket);
@@ -58,7 +86,7 @@ export default function HelpPage() {
     }
   };
 
-  const handleReply = async (ticketId) => {
+  const handleReply = async (ticketId: string | number) => {
     try {
       await api.post(`/tickets/${ticketId}/reply/`, { message: replyMessage });
       setReplyMessage('');
@@ -70,7 +98,7 @@ export default function HelpPage() {
     }
   };
 
-  const getStatusColor = (status) => {
+  const getStatusColor = (status: string) => {
     const colors = {
       'open': 'bg-green-100 text-green-800',
       'in_progress': 'bg-blue-100 text-blue-800',
@@ -81,7 +109,7 @@ export default function HelpPage() {
     return colors[status] || 'bg-gray-100 text-gray-800';
   };
 
-  const getPriorityColor = (priority) => {
+  const getPriorityColor = (priority: string) => {
     const colors = {
       'low': 'text-green-600',
       'medium': 'text-yellow-600',
