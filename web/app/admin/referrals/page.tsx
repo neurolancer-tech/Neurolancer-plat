@@ -134,9 +134,17 @@ export default function AdminReferralsPage() {
 
       setSettings(response.data.data);
       setError('');
+      toast.success('Settings updated successfully');
     } catch (err: any) {
       console.error('Error updating settings:', err);
-      setError(err.response?.data?.error || 'Failed to update settings');
+      if (err.response?.status === 404) {
+        toast.error('Referral system not implemented yet');
+        setError('Referral system APIs are not available');
+      } else {
+        const errorMsg = err.response?.data?.error || 'Failed to update settings';
+        toast.error(errorMsg);
+        setError(errorMsg);
+      }
     } finally {
       setSaving(false);
     }
@@ -224,19 +232,19 @@ export default function AdminReferralsPage() {
         {activeTab === 'settings' && settings && (
           <div className="space-y-6">
             {/* System Controls */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">System Controls</h2>
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">System Controls</h2>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <label className="text-sm font-medium text-gray-700">Referral System</label>
-                    <p className="text-sm text-gray-500">Enable or disable the entire referral system</p>
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Referral System</label>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Enable or disable the entire referral system</p>
                   </div>
                   <button
                     onClick={() => updateSettings({ is_active: !settings.is_active })}
                     disabled={saving}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      settings.is_active ? 'bg-blue-600' : 'bg-gray-200'
+                      settings.is_active ? 'bg-[#0D9E86]' : 'bg-gray-200 dark:bg-gray-600'
                     }`}
                   >
                     <span
@@ -290,11 +298,11 @@ export default function AdminReferralsPage() {
             </div>
 
             {/* Bonus Settings */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Bonus Settings</h2>
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Bonus Settings</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Signup Bonus Amount ($)
                   </label>
                   <input
@@ -303,7 +311,7 @@ export default function AdminReferralsPage() {
                     min="0"
                     value={settings.signup_bonus_amount}
                     onChange={(e) => updateSettings({ signup_bonus_amount: parseFloat(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0D9E86]"
                   />
                 </div>
 
@@ -325,8 +333,8 @@ export default function AdminReferralsPage() {
             </div>
 
             {/* Limits and Restrictions */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Limits & Restrictions</h2>
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Limits & Restrictions</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -384,8 +392,8 @@ export default function AdminReferralsPage() {
             </div>
 
             {/* Anti-Fraud Measures */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Anti-Fraud Measures</h2>
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Anti-Fraud Measures</h2>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
@@ -436,7 +444,7 @@ export default function AdminReferralsPage() {
           <div className="space-y-6">
             {/* Overview Stats */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="bg-white rounded-lg shadow p-6">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
                     <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
@@ -444,8 +452,8 @@ export default function AdminReferralsPage() {
                     </div>
                   </div>
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-500">Total Referrals</p>
-                    <p className="text-2xl font-semibold text-gray-900">{stats.total_referrals}</p>
+                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Referrals</p>
+                    <p className="text-2xl font-semibold text-gray-900 dark:text-gray-100">{stats.total_referrals}</p>
                   </div>
                 </div>
               </div>
@@ -494,15 +502,15 @@ export default function AdminReferralsPage() {
             </div>
 
             {/* Recent Referrals */}
-            <div className="bg-white rounded-lg shadow">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h2 className="text-lg font-semibold text-gray-900">Recent Referrals</h2>
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+              <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Recent Referrals</h2>
               </div>
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+                  <thead className="bg-gray-50 dark:bg-gray-700">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         Referrer
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
