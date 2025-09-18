@@ -40,6 +40,11 @@ export default function FreelancersPage() {
     loadCategories();
   }, []);
 
+  // Refetch freelancers when dependent filters change to leverage backend filtering
+  useEffect(() => {
+    loadFreelancers();
+  }, [filters.category, filters.subcategory]);
+
   const loadCategories = async () => {
     try {
       const response = await api.get('/categories/with-subcategories/');
@@ -85,7 +90,11 @@ export default function FreelancersPage() {
 
   const loadFreelancers = async () => {
     try {
-      const response = await api.get('/profiles/freelancers/public/');
+      const params = new URLSearchParams();
+      if (filters.category) params.set('category', filters.category);
+      if (filters.subcategory) params.set('subcategory', filters.subcategory);
+      const query = params.toString();
+      const response = await api.get(`/profiles/freelancers/public/${query ? `?${query}` : ''}`);
       const freelancerProfiles = response.data.profiles || response.data || [];
       
       const freelancersWithProfiles = freelancerProfiles.map((profile: any) => {

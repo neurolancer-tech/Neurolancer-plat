@@ -355,6 +355,7 @@ export default function GigsPage() {
                       onClick={() => setFilters({
                         search: '',
                         category: '',
+                        subcategory: '',
                         minPrice: '',
                         maxPrice: '',
                         rating: '',

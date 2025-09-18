@@ -97,7 +97,7 @@ def freelancer_profile_view(request):
                 'message': 'Freelancer profile not found'
             }, status=status.HTTP_404_NOT_FOUND)
 
-@api_view(['GET', 'POST', 'PUT', 'DELETE'])
+@api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def client_profile_view(request):
     """Manage client profiles"""
@@ -187,10 +187,45 @@ def client_profile_view(request):
 
 @api_view(['GET'])
 def public_freelancer_profiles(request):
-    """Get all active freelancer profiles for public listing"""
-    freelancer_profiles = FreelancerProfile.objects.filter(is_active=True).select_related('user', 'user_profile')
-    serializer = FreelancerProfileSerializer(freelancer_profiles, many=True)
-    
+    """Get active freelancer profiles with optional filtering by category/subcategory.
+    Query params:
+      - category: Category ID
+      - subcategory: Subcategory ID
+    """
+    from django.db.models import Q
+
+    qs = FreelancerProfile.objects.filter(is_active=True).select_related('user', 'user_profile')
+
+    category_id = request.GET.get('category')
+    subcategory_id = request.GET.get('subcategory')
+
+    # Filter by category (match primary, any categories, subcategory's category, or onboarding interested subcategories' category)
+    if category_id:
+        try:
+            cid = int(category_id)
+            qs = qs.filter(
+                Q(user_profile__primary_category_id=cid)
+                | Q(user_profile__categories__id=cid)
+                | Q(user_profile__subcategories__category_id=cid)
+                | Q(user__onboarding__interested_subcategories__category_id=cid)
+            )
+        except (ValueError, TypeError):
+            pass
+
+    # Filter by subcategory (match profile subcategories or onboarding interested_subcategories)
+    if subcategory_id:
+        try:
+            sid = int(subcategory_id)
+            qs = qs.filter(
+                Q(user_profile__subcategories__id=sid)
+                | Q(user__onboarding__interested_subcategories__id=sid)
+            )
+        except (ValueError, TypeError):
+            pass
+
+    qs = qs.distinct()
+
+    serializer = FreelancerProfileSerializer(qs, many=True)
     return Response({
         'success': True,
         'profiles': serializer.data,
