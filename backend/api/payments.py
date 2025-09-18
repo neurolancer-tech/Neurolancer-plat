@@ -897,20 +897,19 @@ def calculate_payment_fees(request):
             base_amount = Decimal(str(amount))
         
         # Calculate fees
-        client_fee = base_amount * CLIENT_FEE_PERCENTAGE  # 2.5% from client
-        processing_fee = PROCESSING_FEE_KES
-        total_amount = base_amount + client_fee + processing_fee
+        platform_fee = base_amount * Decimal('0.05')  # 5% platform fee
+        processing_fee = base_amount * Decimal('0.025')  # 2.5% processing fee
+        total_amount = base_amount + platform_fee + processing_fee
         
         return Response({
             'status': 'success',
             'breakdown': {
                 'base_amount': float(base_amount),
-                'client_fee': float(client_fee),
-                'client_fee_percentage': float(CLIENT_FEE_PERCENTAGE * 100),
-                'freelancer_fee_percentage': float(FREELANCER_FEE_PERCENTAGE * 100),
+                'platform_fee': float(platform_fee),
+                'platform_fee_percentage': 5,
                 'processing_fee': float(processing_fee),
                 'total_amount': float(total_amount),
-                'currency': 'KES'
+                'currency': 'USD'
             }
         })
         

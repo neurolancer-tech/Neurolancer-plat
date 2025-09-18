@@ -372,6 +372,47 @@ def create_payment_notification(user, payment_method, amount, reference, status)
         action_url=f'/transactions?ref={reference}'
     )
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def calculate_fees(request):
+    """Calculate payment fees breakdown"""
+    data = request.data
+    amount = data.get('amount')
+    hours_worked = data.get('hours_worked')
+    hourly_rate = data.get('hourly_rate')
+    
+    # Calculate base amount
+    if amount:
+        base_amount = float(amount)
+    elif hours_worked and hourly_rate:
+        base_amount = float(hours_worked) * float(hourly_rate)
+    else:
+        return Response({
+            'status': 'error',
+            'message': 'Either amount or hours_worked and hourly_rate are required'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Calculate fees
+    platform_fee_percentage = 5  # 5% platform fee
+    platform_fee = base_amount * (platform_fee_percentage / 100)
+    
+    # Processing fee is 2.5% of base amount
+    processing_fee = base_amount * 0.025
+    
+    total_amount = base_amount + platform_fee + processing_fee
+    
+    return Response({
+        'status': 'success',
+        'breakdown': {
+            'base_amount': base_amount,
+            'platform_fee': platform_fee,
+            'platform_fee_percentage': platform_fee_percentage,
+            'processing_fee': processing_fee,
+            'total_amount': total_amount,
+            'currency': 'USD'
+        }
+    })
+
 def get_exchange_rate():
     """Get USD to KES exchange rate"""
     try:

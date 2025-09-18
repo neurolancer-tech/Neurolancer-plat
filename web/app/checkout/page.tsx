@@ -178,7 +178,7 @@ function CheckoutContent() {
         ? parseFloat(hours_worked) * parseFloat(hourly_rate)
         : parseFloat(amount || '0');
       const platformFeeUSD = baseAmountUSD * 0.05;
-      const processingFeeUSD = 2; // $2 processing fee
+      const processingFeeUSD = baseAmountUSD * 0.025; // 2.5% processing fee
       
       setFeeBreakdown({
         base_amount: await convertUSDToKES(baseAmountUSD),
