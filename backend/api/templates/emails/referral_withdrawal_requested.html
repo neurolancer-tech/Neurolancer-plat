@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Referral Withdrawal Requested</title>
+  </head>
+  <body style="font-family: Arial, sans-serif; color: #1f2937;">
+    <h2>📤 Withdrawal request received</h2>
+    <p>Hi {{ user_name }},</p>
+    <p>
+      We've received your referral withdrawal request of
+      <strong>${{ amount }}</strong> via <strong>{{ method }}</strong>.
+    </p>
+    <p>
+      We'll notify you once it's processed. You can track the status in your
+      referrals dashboard.
+    </p>
+    <p>
+      <a href="{{ FRONTEND_URL|default:'https://neurolancer.ai' }}/referrals" style="display:inline-block;padding:10px 16px;background:#4f46e5;color:#fff;text-decoration:none;border-radius:6px;">View status</a>
+    </p>
+  </body>
+</html>
+

@@ -118,6 +118,18 @@ def request_referral_withdrawal(request):
         referral_code.pending_earnings -= amount
         referral_code.save()
         
+        # Notify user and send email
+        from .notification_service import NotificationService
+        NotificationService.create_notification(
+            user=request.user,
+            title=f"Referral withdrawal requested: ${amount}",
+            message=f"Your referral withdrawal of ${amount} via {withdrawal_method} has been received.",
+            notification_type='referral',
+            action_url='/referrals'
+        )
+        from .email_service import EmailService
+        EmailService.send_referral_withdrawal_requested_email(request.user, amount, withdrawal_method)
+        
         return Response({
             'status': 'success',
             'message': 'Withdrawal request submitted successfully',

@@ -73,6 +73,8 @@ export default function ClientProfileForm({ onSave }: ClientProfileFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Publish Toggle */}
+      <ClientPublishToggle />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -195,5 +197,64 @@ export default function ClientProfileForm({ onSave }: ClientProfileFormProps) {
         </button>
       </div>
     </form>
+  );
+}
+
+function ClientPublishToggle() {
+  const [isPublished, setIsPublished] = useState<boolean>(true);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    // Load current client profile and reflect publish state
+    (async () => {
+      try {
+        const res = await profileApi.getClientProfile();
+        setIsPublished(Boolean((res as any)?.is_active !== false));
+      } catch (e) {
+        // default true
+        setIsPublished(true);
+      }
+    })();
+  }, []);
+
+  const togglePublish = async () => {
+    setLoading(true);
+    try {
+      const newState = !isPublished;
+      await profileApi.updateClientProfile({ is_active: newState });
+      setIsPublished(newState);
+      toast.success(newState ? 'Client profile published!' : 'Client profile unpublished!');
+    } catch (e: any) {
+      toast.error('Failed to update client publish status');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="flex justify-end">
+      <div className="flex items-center gap-3">
+        <span className="text-sm text-gray-600 dark:text-gray-400">
+          {isPublished ? 'Profile is live and can open jobs' : 'Profile is not published (jobs will remain closed)'}
+        </span>
+        <button
+          type="button"
+          onClick={togglePublish}
+          disabled={loading}
+          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 ${
+            isPublished ? 'bg-green-600' : 'bg-gray-200 dark:bg-gray-700'
+          }`}
+        >
+          <span
+            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+              isPublished ? 'translate-x-6' : 'translate-x-1'
+            }`}
+          />
+        </button>
+        <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+          {loading ? 'Processing...' : isPublished ? 'Published' : 'Unpublished'}
+        </span>
+      </div>
+    </div>
   );
 }

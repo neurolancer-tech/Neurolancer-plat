@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Referral Bonus Earned</title>
+  </head>
+  <body style="font-family: Arial, sans-serif; color: #1f2937;">
+    <h2>🎉 You earned a referral bonus!</h2>
+    <p>Hi {{ referrer_name }},</p>
+    <p>
+      Great news! You just earned <strong>${{ amount }}</strong> for referring
+      <strong>{{ referred_username }}</strong> to Neurolancer.
+    </p>
+    <p>
+      Thank you for helping grow the community. You can view your referral stats
+      and withdrawal options in your dashboard.
+    </p>
+    <p>
+      <a href="{{ FRONTEND_URL|default:'https://neurolancer.ai' }}/referrals" style="display:inline-block;padding:10px 16px;background:#4f46e5;color:#fff;text-decoration:none;border-radius:6px;">View referrals</a>
+    </p>
+    <p style="color:#6b7280; font-size: 12px;">If this wasn't you, please contact support.</p>
+  </body>
+</html>
+

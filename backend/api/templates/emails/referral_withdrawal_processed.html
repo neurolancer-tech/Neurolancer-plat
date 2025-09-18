@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Referral Withdrawal Update</title>
+  </head>
+  <body style="font-family: Arial, sans-serif; color: #1f2937;">
+    <h2>📬 Withdrawal update</h2>
+    <p>Hi {{ user_name }},</p>
+    <p>
+      Your referral withdrawal of <strong>${{ amount }}</strong> via
+      <strong>{{ method }}</strong> is now <strong>{{ status }}</strong>.
+    </p>
+    {% if payment_reference %}
+    <p>Payment reference: <code>{{ payment_reference }}</code></p>
+    {% endif %}
+    <p>
+      <a href="{{ FRONTEND_URL|default:'https://neurolancer.ai' }}/referrals" style="display:inline-block;padding:10px 16px;background:#4f46e5;color:#fff;text-decoration:none;border-radius:6px;">View details</a>
+    </p>
+  </body>
+</html>
+

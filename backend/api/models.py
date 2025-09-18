@@ -676,6 +676,7 @@ class Notification(models.Model):
         ('help', 'Help Request'),
         ('group_invite', 'Group Invitation'),
         ('verification', 'Verification Update'),
+        ('referral', 'Referral'),
         ('support', 'Support Ticket'),
     )
     

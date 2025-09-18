@@ -278,6 +278,24 @@ def admin_process_withdrawal(request, withdrawal_id):
         
         withdrawal.save()
         
+        # Notify user and send email about processing update
+        from .notification_service import NotificationService
+        NotificationService.create_notification(
+            user=withdrawal.user,
+            title=f"Referral withdrawal {withdrawal.status}",
+            message=f"Your referral withdrawal of ${withdrawal.amount} via {withdrawal.withdrawal_method} is now {withdrawal.status}.",
+            notification_type='referral',
+            action_url='/referrals'
+        )
+        from .email_service import EmailService
+        EmailService.send_referral_withdrawal_processed_email(
+            withdrawal.user,
+            float(withdrawal.amount),
+            withdrawal.withdrawal_method,
+            withdrawal.status,
+            withdrawal.payment_reference or None,
+        )
+        
         return Response({
             'success': True,
             'message': f"Withdrawal {withdrawal.id} updated to {withdrawal.status}"

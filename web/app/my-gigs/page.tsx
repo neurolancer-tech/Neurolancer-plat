@@ -72,7 +72,15 @@ export default function MyGigsPage() {
       toast.success(`Gig ${!isActive ? 'activated' : 'deactivated'} successfully`);
       loadMyGigs();
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Failed to update gig status');
+      const msg = error.response?.data?.is_active?.[0]
+        || error.response?.data?.is_active
+        || error.response?.data?.error
+        || error.message;
+      if (msg && String(msg).toLowerCase().includes('publish your freelancer profile')) {
+        toast.error('You need to publish your freelancer profile first to activate gigs. Go to Profile Setup > Publish.');
+      } else {
+        toast.error(msg || 'Failed to update gig status');
+      }
     }
   };
 

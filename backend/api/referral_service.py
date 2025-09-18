@@ -108,6 +108,20 @@ class ReferralService:
             referral.verified_at = timezone.now()
             referral.save()
             
+            # Notify referrer
+            from .notification_service import NotificationService
+            NotificationService.create_notification(
+                user=referral.referrer,
+                title="Referral Verified",
+                message=f"Your referral {referral.referred_user.username} has been verified.",
+                notification_type='referral',
+                action_url='/referrals'
+            )
+            
+            # Send email to referrer
+            from .email_service import EmailService
+            EmailService.send_referral_verified_email(referral.referrer, referral.referred_user)
+            
             logger.info(f"Referral verified: {referral}")
             return True
             
@@ -149,9 +163,13 @@ class ReferralService:
                 user=referral.referrer,
                 title=f"Referral Bonus Earned: ${amount}",
                 message=f"You earned ${amount} for referring {referral.referred_user.username}!",
-                notification_type='payment',
+                notification_type='referral',
                 action_url='/referrals'
             )
+            
+            # Send email
+            from .email_service import EmailService
+            EmailService.send_referral_bonus_email(referral.referrer, referral.referred_user, amount)
             
             logger.info(f"Signup bonus awarded: ${amount} to {referral.referrer.username}")
             return earning
@@ -213,6 +231,24 @@ class ReferralService:
             referral.referral_code.total_earnings += earning_amount
             referral.referral_code.pending_earnings += earning_amount
             referral.referral_code.save()
+            
+            # Notify and email referrer
+            from .notification_service import NotificationService
+            NotificationService.create_notification(
+                user=referral.referrer,
+                title=f"Referral Earning: ${earning_amount}",
+                message=f"You earned ${earning_amount} ({settings.earnings_percentage}%) from {referred_user.username}.",
+                notification_type='referral',
+                action_url='/referrals'
+            )
+            from .email_service import EmailService
+            EmailService.send_referral_percentage_earning_email(
+                referral.referrer,
+                referred_user,
+                earning_amount,
+                settings.earnings_percentage,
+                transaction_amount,
+            )
             
             logger.info(f"Percentage earning: ${earning_amount} to {referral.referrer.username}")
             return earning

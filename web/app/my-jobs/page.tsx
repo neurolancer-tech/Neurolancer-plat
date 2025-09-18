@@ -300,9 +300,33 @@ export default function MyJobsPage() {
                         <div className="text-lg font-bold text-gray-900 dark:text-gray-100">
                           ${job.budget_min} - ${job.budget_max}
                         </div>
-                        <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(job.status)}`}>
-                          {job.status.replace('_', ' ').toUpperCase()}
-                        </span>
+                        <div className="flex items-center justify-end gap-2 mt-1">
+                          <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(job.status)}`}>
+                            {job.status.replace('_', ' ').toUpperCase()}
+                          </span>
+                          {/* Activate Job button for owner when job is not open */}
+                          {isJobOwner(job) && job.status !== 'open' && (
+                            <button
+                              onClick={async () => {
+                                try {
+                                  await api.post(`/jobs/${job.id}/update-status/`, { status: 'open' });
+                                  toast.success('Job opened successfully');
+                                  loadJobs();
+                                } catch (error: any) {
+                                  const statusErr = error.response?.data?.status?.[0] || error.response?.data?.status || error.response?.data?.error;
+                                  if (statusErr && String(statusErr).toLowerCase().includes('publish your client profile')) {
+                                    toast.error('You need to publish your client profile first to open this job. Go to Profile Setup > Publish.');
+                                  } else {
+                                    toast.error(statusErr || 'Failed to open job');
+                                  }
+                                }
+                              }}
+                              className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700"
+                            >
+                              Open Job
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
 
