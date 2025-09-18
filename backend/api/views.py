@@ -983,7 +983,14 @@ class GigCreateView(generics.CreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
     
     def perform_create(self, serializer):
-        serializer.save(freelancer=self.request.user)
+        # Serializer enforces publish requirement, but mirror here for clarity
+        from .models import FreelancerProfile
+        fp = FreelancerProfile.objects.filter(user=self.request.user).first()
+        gig = serializer.save(freelancer=self.request.user)
+        if not fp or fp.is_active is False:
+            if gig.is_active:
+                gig.is_active = False
+                gig.save(update_fields=['is_active'])
 
 class GigUpdateView(generics.RetrieveUpdateAPIView):
     queryset = Gig.objects.all()
@@ -2676,7 +2683,7 @@ class JobListView(generics.ListAPIView):
     serializer_class = JobListSerializer
     permission_classes = [permissions.AllowAny]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['category', 'experience_level', 'job_type']
+    filterset_fields = ['category', 'experience_level', 'job_type', 'client']
     search_fields = ['title', 'description', 'skills_required']
     ordering_fields = ['created_at', 'budget_min', 'deadline', 'proposal_count']
     ordering = ['-created_at']
@@ -2695,6 +2702,13 @@ class JobListView(generics.ListAPIView):
         if subcategory_id:
             try:
                 qs = qs.filter(subcategories__id=int(subcategory_id))
+            except (ValueError, TypeError):
+                pass
+        # Optional filter by client id
+        client_id = self.request.query_params.get('client')
+        if client_id:
+            try:
+                qs = qs.filter(client_id=int(client_id))
             except (ValueError, TypeError):
                 pass
         return qs.distinct()
@@ -2717,7 +2731,14 @@ class JobCreateView(generics.CreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
     
     def perform_create(self, serializer):
+        # Serializer will default status to 'closed' if client profile unpublished
+        from .models import ClientProfile
+        cp = ClientProfile.objects.filter(user=self.request.user).first()
         job = serializer.save(client=self.request.user)
+        if not cp or cp.is_active is False:
+            if job.status == 'open':
+                job.status = 'closed'
+                job.save(update_fields=['status'])
         
         # Notify relevant freelancers
         skills = job.skills_required.lower().split(',')
@@ -2947,6 +2968,13 @@ def update_job_status(request, job_id):
     
     if not new_status:
         return Response({'error': 'Status is required'}, status=400)
+    
+    # Enforce publish requirement: cannot open job if client profile unpublished
+    if new_status == 'open' and is_job_owner:
+        from .models import ClientProfile
+        cp = ClientProfile.objects.filter(user=request.user).first()
+        if not cp or cp.is_active is False:
+            return Response({'status': ['Publish your client profile first to open this job.']}, status=400)
     
     # Update job status
     old_status = job.status

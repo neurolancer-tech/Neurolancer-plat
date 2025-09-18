@@ -12,6 +12,7 @@ from .simple_withdrawal import simple_withdrawal
 from .paystack_withdrawal import paystack_withdraw, get_paystack_banks, create_recipient, process_withdrawal
 from .test_paystack_withdrawal import test_paystack_withdraw
 from .location_views import get_location_by_coordinates, get_location_by_ip
+from . import profile_views
 from .profile_views import freelancer_profile_view, client_profile_view, public_freelancer_profiles
 from .admin_ticket_views import AdminTicketListView, AdminTicketDetailView, admin_ticket_stats, admin_reply_ticket, assign_ticket, update_ticket_status, send_custom_notification
 
@@ -118,6 +119,8 @@ urlpatterns = [
     
     # Freelancer URLs
     path('freelancers/', views.FreelancerListView.as_view(), name='freelancer-list'),
+    path('profiles/freelancers/public/', public_freelancer_profiles, name='public-freelancer-profiles'),
+    path('profile/freelancer/toggle-publish/', profile_views.toggle_freelancer_publish, name='toggle-freelancer-publish'),
     
     # User URLs
     path('users/', views.all_users, name='all-users'),

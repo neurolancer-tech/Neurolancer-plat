@@ -71,7 +71,12 @@ export default function EditJobModal({ job, isOpen, onClose, onJobUpdated }: Edi
       onClose();
     } catch (error: any) {
       console.error('Error updating job:', error);
-      toast.error(error.response?.data?.error || 'Failed to update job');
+      const statusErr = error.response?.data?.status?.[0] || error.response?.data?.status;
+      if (statusErr && String(statusErr).toLowerCase().includes('publish your client profile')) {
+        toast.error('You need to publish your client profile first to open a job. Go to Profile Setup > Publish.');
+      } else {
+        toast.error(error.response?.data?.error || 'Failed to update job');
+      }
     } finally {
       setLoading(false);
     }

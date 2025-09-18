@@ -43,12 +43,12 @@ export const profileApi = {
   async getFreelancerProfile(): Promise<FreelancerProfile> {
     const response = await api.get('/profiles/freelancer/');
     const data = response.data;
-    if (data.success && data.profile) {
-      return data.profile;
-    } else if (data.success && !data.exists) {
-      throw new Error('No profile found');
+    const profile = data.profile || data;
+    // Normalize is_active flag if backend returns it under different keys
+    if (profile && typeof (profile as any).is_active === 'undefined' && typeof (profile as any).isPublished !== 'undefined') {
+      (profile as any).is_active = (profile as any).isPublished;
     }
-    return data;
+    return profile;
   },
 
   async createFreelancerProfile(data: Partial<FreelancerProfile>): Promise<FreelancerProfile> {

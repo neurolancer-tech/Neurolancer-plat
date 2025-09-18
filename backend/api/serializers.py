@@ -400,6 +400,15 @@ class GigSerializer(serializers.ModelSerializer):
         subcategory_ids = validated_data.pop('subcategory_ids', [])
         validated_data['freelancer'] = self.context['request'].user
         
+        # Enforce publish requirement: if freelancer profile is unpublished, force gig inactive
+        try:
+            from .models import FreelancerProfile
+            fp = FreelancerProfile.objects.filter(user=validated_data['freelancer']).first()
+            if not fp or fp.is_active is False:
+                validated_data['is_active'] = False
+        except Exception:
+            validated_data['is_active'] = False
+        
         # Set category name
         if 'category_id' in validated_data:
             try:
@@ -422,6 +431,19 @@ class GigSerializer(serializers.ModelSerializer):
     
     def update(self, instance, validated_data):
         subcategory_ids = validated_data.pop('subcategory_ids', [])
+        
+        # Enforce publish requirement: cannot activate gig if freelancer profile unpublished
+        desired_active = validated_data.get('is_active', None)
+        if desired_active is True:
+            try:
+                from .models import FreelancerProfile
+                fp = FreelancerProfile.objects.filter(user=self.context['request'].user).first()
+                if not fp or fp.is_active is False:
+                    raise serializers.ValidationError({'is_active': 'Publish your freelancer profile first to activate this gig.'})
+            except serializers.ValidationError:
+                raise
+            except Exception:
+                raise serializers.ValidationError({'is_active': 'Publish your freelancer profile first to activate this gig.'})
         
         # Handle image field updates properly
         request = self.context.get('request')
@@ -1130,6 +1152,16 @@ class JobSerializer(serializers.ModelSerializer):
         subcategory_ids = validated_data.pop('subcategory_ids', [])
         validated_data['client'] = self.context['request'].user
         
+        # If client profile is unpublished or missing, force non-active status
+        try:
+            from .models import ClientProfile
+            cp = ClientProfile.objects.filter(user=validated_data['client']).first()
+            if not cp or cp.is_active is False:
+                # Ensure newly created jobs are not active/open
+                validated_data['status'] = 'closed'
+        except Exception:
+            validated_data['status'] = 'closed'
+        
         # Handle category field - accept both 'category' and 'category_id'
         if 'category' in validated_data and 'category_id' not in validated_data:
             validated_data['category_id'] = validated_data.pop('category')
@@ -1156,6 +1188,19 @@ class JobSerializer(serializers.ModelSerializer):
     
     def update(self, instance, validated_data):
         subcategory_ids = validated_data.pop('subcategory_ids', [])
+        
+        # Enforce publish requirement: cannot set job to open if client profile unpublished
+        desired_status = validated_data.get('status')
+        if desired_status == 'open':
+            try:
+                from .models import ClientProfile
+                cp = ClientProfile.objects.filter(user=self.context['request'].user).first()
+                if not cp or cp.is_active is False:
+                    raise serializers.ValidationError({'status': 'Publish your client profile first to open this job.'})
+            except serializers.ValidationError:
+                raise
+            except Exception:
+                raise serializers.ValidationError({'status': 'Publish your client profile first to open this job.'})
         
         # Update category name if category changed
         if 'category_id' in validated_data:

@@ -121,8 +121,12 @@ export default function PostJobPage() {
       delete (jobData as any).subcategories;
       
       const response = await api.post('/jobs/create/', jobData);
-      
-      toast.success('Job posted successfully!');
+      const myProfile = getProfile();
+      const wasClosed = response.data && response.data.status && response.data.status !== 'open';
+      toast.success(`Job posted successfully${wasClosed ? ' (saved as Closed because your client profile is unpublished)' : ''}!`);
+      if (wasClosed && myProfile) {
+        toast.error('Publish your client profile to open this job. Go to Profile Setup > Publish.');
+      }
       router.push('/my-jobs');
     } catch (error: any) {
       console.error('Error posting job:', error);

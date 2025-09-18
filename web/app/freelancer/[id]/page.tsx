@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Navigation from '@/components/Navigation';
 import Avatar from '@/components/Avatar';
-import { isAuthenticated } from '@/lib/auth';
+import { isAuthenticated, getProfile } from '@/lib/auth';
 import api from '@/lib/api';
 import { profileApi, FreelancerProfile as ProfessionalFreelancerProfile } from '@/lib/profileApi';
 import toast from 'react-hot-toast';
@@ -67,6 +67,7 @@ export default function FreelancerDetailsPage() {
   const [freelancer, setFreelancer] = useState<FreelancerProfile | null>(null);
   const [professionalProfile, setProfessionalProfile] = useState<ProfessionalFreelancerProfile | null>(null);
   const [gigs, setGigs] = useState<Gig[]>([]);
+  const [reviews, setReviews] = useState<any[]>([]);
   const [skillBadges, setSkillBadges] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
@@ -103,8 +104,19 @@ export default function FreelancerDetailsPage() {
       }
       
       setFreelancer(freelancerData);
-      setGigs(gigsResponse.data.results || gigsResponse.data);
+      const gigsList = gigsResponse.data.results || gigsResponse.data || [];
+      setGigs(gigsList);
       setSkillBadges(badgesResponse.data.results || badgesResponse.data || []);
+      // Aggregate reviews from gig reviews as a fallback (if a dedicated endpoint is unavailable)
+      try {
+        const reviewResponses = await Promise.all(
+          (gigsList as any[]).slice(0, 12).map((g: any) => api.get(`/gigs/${g.id}/reviews/`).catch(() => ({ data: [] })))
+        );
+        const aggregated = reviewResponses.flatMap((r: any) => r.data.results || r.data || []);
+        setReviews(aggregated);
+      } catch (e) {
+        setReviews([]);
+      }
     } catch (error) {
       console.error('Error loading freelancer data:', error);
       toast.error('Failed to load freelancer profile');
@@ -182,6 +194,7 @@ export default function FreelancerDetailsPage() {
     { id: 'overview', label: 'Overview', icon: '👤' },
     { id: 'professional', label: 'Professional Profile', icon: '💼' },
     { id: 'gigs', label: 'Services', icon: '💼' },
+    { id: 'reviews', label: 'Reviews', icon: '⭐' },
     { id: 'badges', label: 'Skill Badges', icon: '🏆' },
     { id: 'documents', label: 'Documents', icon: '📄' },
     { id: 'contact', label: 'Contact', icon: '📞' }
@@ -191,6 +204,29 @@ export default function FreelancerDetailsPage() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
       <Navigation />
       
+      {/* Publish reminder for own unpublished profile */}
+      {(() => {
+        try {
+          const me = getProfile();
+          const isOwn = me?.user?.id === (freelancer as any)?.user?.id;
+          const isPublished = (freelancer as any)?.is_active === true;
+          if (isOwn && !isPublished) {
+            return (
+              <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 pt-4">
+                <div className="bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-700 text-yellow-800 dark:text-yellow-200 rounded-lg p-4 mb-4 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span>⚠️</span>
+                    <span>Your freelancer profile is unpublished. Toggle “Publish” in Profile Setup to appear in listings.</span>
+                  </div>
+                  <a href="/profile" className="px-3 py-1 bg-yellow-600 text-white rounded hover:bg-yellow-700">Go to Profile</a>
+                </div>
+              </div>
+            );
+          }
+        } catch {}
+        return null;
+      })()}
+
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header Section */}
         <div className="card rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-8 mb-8">
@@ -568,6 +604,33 @@ export default function FreelancerDetailsPage() {
                             Order Now
                           </button>
                         </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Reviews Tab */}
+            {activeTab === 'reviews' && (
+              <div className="space-y-6">
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Client Reviews</h3>
+                {reviews.length === 0 ? (
+                  <div className="text-center py-12 text-gray-600 dark:text-gray-400">No reviews yet.</div>
+                ) : (
+                  <div className="space-y-4">
+                    {reviews.map((rev: any) => (
+                      <div key={rev.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+                            <span>⭐ {rev.rating || rev.stars || 0}</span>
+                            <span>• {rev.created_at ? new Date(rev.created_at).toLocaleDateString() : ''}</span>
+                          </div>
+                          {rev.client?.username && (
+                            <span className="text-xs text-gray-500">by {rev.client.username}</span>
+                          )}
+                        </div>
+                        <p className="text-gray-800 dark:text-gray-200 whitespace-pre-wrap">{rev.comment || rev.text || rev.feedback || ''}</p>
                       </div>
                     ))}
                   </div>

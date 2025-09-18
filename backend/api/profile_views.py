@@ -194,6 +194,7 @@ def public_freelancer_profiles(request):
     """
     from django.db.models import Q
 
+    # Only published (is_active) profiles are public
     qs = FreelancerProfile.objects.filter(is_active=True).select_related('user', 'user_profile')
 
     category_id = request.GET.get('category')
@@ -230,4 +231,36 @@ def public_freelancer_profiles(request):
         'success': True,
         'profiles': serializer.data,
         'count': len(serializer.data)
+    })
+
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def toggle_freelancer_publish(request):
+    """Publish/unpublish the current user's freelancer profile by toggling is_active.
+    Accepts either is_active or is_published (boolean) in body.
+    """
+    user = request.user
+    try:
+        fp = FreelancerProfile.objects.get(user=user)
+    except FreelancerProfile.DoesNotExist:
+        return Response({'success': False, 'message': 'Freelancer profile not found. Create it first.'}, status=status.HTTP_404_NOT_FOUND)
+
+    # Read desired state
+    desired = request.data.get('is_active')
+    if desired is None:
+        desired = request.data.get('is_published')
+    # Coerce to bool safely
+    if isinstance(desired, str):
+        desired = desired.lower() in ['1', 'true', 'yes', 'on']
+    elif desired is None:
+        # Toggle if not provided
+        desired = not fp.is_active
+
+    fp.is_active = bool(desired)
+    fp.save(update_fields=['is_active'])
+
+    return Response({
+        'success': True,
+        'is_active': fp.is_active,
+        'message': 'Profile published' if fp.is_active else 'Profile unpublished'
     })

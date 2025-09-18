@@ -167,7 +167,12 @@ export default function CreateGigPage() {
           'Content-Type': 'multipart/form-data',
         },
       });
-      toast.success('Gig created successfully!');
+      const myProfile = getProfile();
+      const wasForcedInactive = response.data && response.data.is_active === false;
+      toast.success(`Gig created successfully${wasForcedInactive ? ' (saved as Inactive because your freelancer profile is unpublished)' : ''}!`);
+      if (wasForcedInactive && myProfile) {
+        toast.error('Publish your freelancer profile to activate this gig. Go to Profile Setup > Publish.');
+      }
       router.push('/my-gigs');
     } catch (error: any) {
       console.error('Gig creation error:', error.response?.data);

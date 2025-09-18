@@ -369,32 +369,25 @@ function FreelancerProfileToggle({ profile, loading, onSubmit }: {
   loading: boolean;
   onSubmit: (e: React.FormEvent) => void;
 }) {
-  const [isPublished, setIsPublished] = useState(false);
+  const [isPublished, setIsPublished] = useState<boolean>(false);
   const [toggling, setToggling] = useState(false);
 
   useEffect(() => {
-    // Check if profile is published based on whether it has an ID and required fields
-    setIsPublished(Boolean(profile.id && profile.title && profile.bio));
+    // Reflect actual server state if provided; fall back to false
+    setIsPublished(Boolean((profile as any)?.is_active));
   }, [profile]);
 
   const handleToggle = async () => {
-    if (!isPublished) {
-      // If not published, save the profile first
-      const form = new Event('submit', { bubbles: true, cancelable: true });
-      onSubmit(form as any);
-      return;
-    }
-
-    // If published, toggle the published status
     setToggling(true);
     try {
       const newStatus = !isPublished;
       await api.patch('/profile/freelancer/toggle-publish/', {
-        is_published: newStatus
+        is_active: newStatus
       });
       setIsPublished(newStatus);
       toast.success(newStatus ? 'Freelancer profile published!' : 'Freelancer profile unpublished!');
     } catch (error: any) {
+      console.error('Toggle publish error:', error.response?.data || error);
       toast.error('Failed to update profile status');
     } finally {
       setToggling(false);

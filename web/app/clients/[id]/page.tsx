@@ -3,9 +3,11 @@
 import { useEffect, useState } from "react";
 import Navigation from "@/components/Navigation";
 import Avatar from "@/components/Avatar";
+import Link from "next/link";
 import api from "@/lib/api";
 import { profileApi, ClientProfile as ProfessionalClientProfile } from "@/lib/profileApi";
 import { useParams } from "next/navigation";
+import { getProfile } from "@/lib/auth";
 
 interface ClientUser {
   id: number;
@@ -36,6 +38,7 @@ export default function ClientDetailsPage() {
   const userId = Number(params.id);
   const [data, setData] = useState<ClientStats | null>(null);
   const [professionalProfile, setProfessionalProfile] = useState<ProfessionalClientProfile | null>(null);
+  const [jobs, setJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
   const [activeTab, setActiveTab] = useState('overview');
@@ -43,16 +46,24 @@ export default function ClientDetailsPage() {
   useEffect(() => {
     const load = async () => {
       try {
-        // Reuse backend endpoint that returns either freelancer or client stats
+        // Basic user stats endpoint (uses existing user profile view)
         const res = await api.get(`/freelancers/${userId}/`);
         setData(res.data);
         
         // Load professional profile
         try {
           const professionalProfileData = await profileApi.getClientProfileById(userId);
-          setProfessionalProfile(professionalProfileData);
+          setProfessionalProfile((professionalProfileData as any)?.profile || professionalProfileData);
         } catch (error) {
           console.log('No professional profile found');
+        }
+        
+        // Load client's jobs (open jobs only by default)
+        try {
+          const jobsResp = await api.get(`/jobs/?client=${userId}`);
+          setJobs(jobsResp.data.results || jobsResp.data || []);
+        } catch (e) {
+          setJobs([]);
         }
       } catch (e: any) {
         setError(e?.response?.data?.error || "Failed to load client details");
@@ -66,6 +77,29 @@ export default function ClientDetailsPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navigation />
+      {/* Publish reminder for own unpublished client profile */}
+      {(() => {
+        try {
+          const me = getProfile();
+          const isOwn = me?.user?.id === (data as any)?.user?.id;
+          // Check is_active on professionalProfile if available, else assume published
+          const isPublished = (professionalProfile as any)?.is_active !== false;
+          if (isOwn && !isPublished) {
+            return (
+              <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 pt-4">
+                <div className="bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-700 text-yellow-800 dark:text-yellow-200 rounded-lg p-4 mb-4 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span>⚠️</span>
+                    <span>Your client profile is unpublished. Toggle “Publish” in Profile Setup to activate and open jobs.</span>
+                  </div>
+                  <a href="/profile" className="px-3 py-1 bg-yellow-600 text-white rounded hover:bg-yellow-700">Go to Profile</a>
+                </div>
+              </div>
+            );
+          }
+        } catch {}
+        return null;
+      })()}
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {loading ? (
           <div className="flex items-center justify-center py-16">
@@ -79,10 +113,19 @@ export default function ClientDetailsPage() {
             <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-8">
               <div className="flex items-center gap-6 mb-6">
                 <Avatar size="xl" alt={data.user.first_name || data.user.username} />
-                <div>
-                  <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-                    {data.user.first_name} {data.user.last_name}
-                  </h1>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                      {data.user.first_name} {data.user.last_name}
+                    </h1>
+                    {professionalProfile && (
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                        professionalProfile.is_active !== false ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      }`}>
+                        {professionalProfile.is_active !== false ? 'Published' : 'Unpublished'}
+                      </span>
+                    )}
+                  </div>
                   <p className="text-lg text-gray-600 dark:text-gray-400 mb-2">@{data.user.username} • Client</p>
                   {professionalProfile?.company_name && (
                     <p className="text-blue-600 dark:text-blue-400 font-medium">
@@ -270,12 +313,37 @@ export default function ClientDetailsPage() {
                 {/* Projects Tab */}
                 {activeTab === 'projects' && (
                   <div className="space-y-6">
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Project History</h3>
-                    <div className="text-center py-12">
-                      <div className="text-gray-400 text-6xl mb-4">📊</div>
-                      <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">Project History Coming Soon</h3>
-                      <p className="text-gray-600 dark:text-gray-400">Detailed project history and analytics will be available here.</p>
-                    </div>
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Client Jobs</h3>
+                    {jobs.length === 0 ? (
+                      <div className="text-center py-12 text-gray-600 dark:text-gray-400">No open jobs at the moment.</div>
+                    ) : (
+                      <div className="space-y-4">
+                        {jobs.map((job: any) => (
+                          <div key={job.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                            <div className="flex items-start justify-between">
+                              <div className="min-w-0">
+                                <Link href={`/jobs/${job.id}`} className="font-semibold text-gray-900 dark:text-gray-100 hover:text-primary block truncate">
+                                  {job.title}
+                                </Link>
+                                <div className="text-sm text-gray-600 dark:text-gray-400 flex flex-wrap gap-2 mt-1">
+                                  <span>{job.category?.name || job.category_name || 'Uncategorized'}</span>
+                                  <span>•</span>
+                                  <span>{job.experience_level}</span>
+                                  <span>•</span>
+                                  <span>{job.deadline ? new Date(job.deadline).toLocaleDateString() : 'No deadline'}</span>
+                                </div>
+                              </div>
+                              <div className="text-right flex-shrink-0">
+                                <div className="text-primary font-bold">${job.budget_min} - ${job.budget_max}</div>
+                                <span className={`inline-block mt-1 px-2 py-0.5 rounded-full text-xs ${job.status === 'open' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                                  {job.status?.replace('_', ' ').toUpperCase()}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
