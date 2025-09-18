@@ -26,10 +26,14 @@ export default function FreelancersPage() {
     minLikes: '',
     category: '',
     subcategory: '',
+    country: '',
+    city: '',
     sortBy: 'rating'
   });
   const [categories, setCategories] = useState<any[]>([]);
   const [subcategories, setSubcategories] = useState<any[]>([]);
+  const [countries, setCountries] = useState<any[]>([]);
+  const [cities, setCities] = useState<any[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const freelancersPerPage = 9;
   const [showReportModal, setShowReportModal] = useState(false);
@@ -38,6 +42,7 @@ export default function FreelancersPage() {
   useEffect(() => {
     loadFreelancers();
     loadCategories();
+    loadCountries();
   }, []);
 
   // Refetch freelancers when dependent filters change to leverage backend filtering
@@ -87,6 +92,58 @@ export default function FreelancersPage() {
     }
     setFilters(prev => ({ ...prev, subcategory: '' }));
   }, [filters.category, categories]);
+
+  const loadCountries = async () => {
+    try {
+      const { LocationService } = await import('@/lib/location');
+      const countryList = [
+        { code: 'US', name: 'United States' },
+        { code: 'CA', name: 'Canada' },
+        { code: 'GB', name: 'United Kingdom' },
+        { code: 'DE', name: 'Germany' },
+        { code: 'FR', name: 'France' },
+        { code: 'IN', name: 'India' },
+        { code: 'AU', name: 'Australia' },
+        { code: 'BR', name: 'Brazil' },
+        { code: 'NG', name: 'Nigeria' },
+        { code: 'PK', name: 'Pakistan' },
+        { code: 'BD', name: 'Bangladesh' },
+        { code: 'PH', name: 'Philippines' },
+        { code: 'EG', name: 'Egypt' },
+        { code: 'ZA', name: 'South Africa' },
+        { code: 'KE', name: 'Kenya' },
+        { code: 'GH', name: 'Ghana' },
+        { code: 'UG', name: 'Uganda' },
+        { code: 'TZ', name: 'Tanzania' },
+        { code: 'ET', name: 'Ethiopia' },
+        { code: 'MA', name: 'Morocco' }
+      ];
+      setCountries(countryList);
+    } catch (error) {
+      console.error('Error loading countries:', error);
+    }
+  };
+
+  const getFlagUrl = (countryCode: string) => {
+    if (!countryCode || countryCode.length !== 2) return null;
+    return `https://flagcdn.com/24x18/${countryCode.toLowerCase()}.png`;
+  };
+
+  const CountryFlag = ({ countryCode, className = "w-4 h-3" }: { countryCode: string; className?: string }) => {
+    const flagUrl = getFlagUrl(countryCode);
+    if (!flagUrl) return <span className="text-xs">🌍</span>;
+    
+    return (
+      <img 
+        src={flagUrl} 
+        alt={`${countryCode} flag`}
+        className={`inline-block ${className}`}
+        onError={(e) => {
+          e.currentTarget.style.display = 'none';
+        }}
+      />
+    );
+  };
 
   const loadFreelancers = async () => {
     try {
@@ -156,6 +213,8 @@ export default function FreelancersPage() {
       const matchesMaxRate = !filters.maxRate || ((freelancer.hourly_rate || 0) <= parseFloat(filters.maxRate));
       const matchesRating = !filters.rating || (freelancer.rating || 0) >= parseFloat(filters.rating);
       const matchesMinLikes = !filters.minLikes || ((freelancer.likes_count || 0) >= parseInt(filters.minLikes));
+      const matchesCountry = !filters.country || (freelancer.country && freelancer.country.toLowerCase().includes(filters.country.toLowerCase()));
+      const matchesCity = !filters.city || (freelancer.city && freelancer.city.toLowerCase().includes(filters.city.toLowerCase()));
       
       let matchesCategory = true;
       let matchesSubcategory = true;
@@ -221,7 +280,7 @@ export default function FreelancersPage() {
         }
       }
       
-      return matchesSearch && matchesSkills && matchesMinRate && matchesMaxRate && matchesRating && matchesMinLikes && matchesCategory && matchesSubcategory;
+      return matchesSearch && matchesSkills && matchesMinRate && matchesMaxRate && matchesRating && matchesMinLikes && matchesCategory && matchesSubcategory && matchesCountry && matchesCity;
     });
   }, [freelancers, filters, categories, subcategories]);
 
@@ -283,8 +342,8 @@ export default function FreelancersPage() {
       >
         <div className="absolute inset-0 bg-black bg-opacity-40"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-          <h1 className="text-4xl font-bold mb-4">Find AI Experts</h1>
-          <p className="text-xl mb-6">Connect with skilled AI professionals and freelancers</p>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">Find AI Experts</h1>
+          <p className="text-lg sm:text-xl mb-6">Connect with skilled AI professionals and freelancers</p>
         </div>
       </section>
       
@@ -395,6 +454,35 @@ export default function FreelancersPage() {
                 </div>
               )}
 
+              {/* Country Filter */}
+              <div className="mb-3">
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Country</label>
+                <select
+                  value={filters.country}
+                  onChange={(e) => setFilters({...filters, country: e.target.value})}
+                  className="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:text-white"
+                >
+                  <option value="">All Countries</option>
+                  {countries.map(country => (
+                    <option key={country.code} value={country.name}>
+                      {country.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* City Filter */}
+              <div className="mb-3">
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">City</label>
+                <input
+                  type="text"
+                  placeholder="Enter city..."
+                  value={filters.city}
+                  onChange={(e) => setFilters({...filters, city: e.target.value})}
+                  className="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:text-white"
+                />
+              </div>
+
               <button
                 onClick={() => setFilters({
                   search: '',
@@ -405,6 +493,8 @@ export default function FreelancersPage() {
                   minLikes: '',
                   category: '',
                   subcategory: '',
+                  country: '',
+                  city: '',
                   sortBy: 'rating'
                 })}
                 className="w-full text-primary py-1.5 px-3 text-sm rounded-lg border border-primary hover:bg-primary hover:text-white transition-colors"
@@ -416,7 +506,7 @@ export default function FreelancersPage() {
 
           <div className="lg:w-3/4">
             <div className="card">
-              <div className="p-6 border-b flex justify-between items-center">
+              <div className="p-4 sm:p-6 border-b flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                   <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">AI Experts</h2>
                   <p className="text-gray-600 dark:text-gray-400">
@@ -440,7 +530,7 @@ export default function FreelancersPage() {
                 <select
                   value={filters.sortBy}
                   onChange={(e) => setFilters({...filters, sortBy: e.target.value})}
-                  className="input-field w-auto"
+                  className="input-field w-full sm:w-auto"
                 >
                   <option value="-rating">Highest Rated</option>
                   <option value="-total_reviews">Most Reviews</option>
@@ -450,14 +540,14 @@ export default function FreelancersPage() {
                 </select>
               </div>
               
-              <div className="p-6">
+              <div className="p-4 sm:p-6">
                 {filteredFreelancers.length === 0 ? (
                   <div className="text-center py-12">
                     <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">No freelancers found</h3>
                     <p className="text-gray-600 dark:text-gray-400">Try adjusting your filters or search terms</p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
                     {paginatedFreelancers.map(freelancer => (
                       <div key={freelancer.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col h-full relative">
                         {/* Three Dots Menu */}
@@ -502,24 +592,28 @@ export default function FreelancersPage() {
                         </div>
                         
                         <div className="px-4 pb-3">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center">
-                              <span className="text-yellow-400 text-sm">★</span>
-                              <span className="text-sm font-medium ml-1">{freelancer.rating}</span>
-                              <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">({freelancer.total_reviews})</span>
-                            </div>
-                            {(freelancer.hourly_rate || 0) > 0 && (
-                              <div className="text-base font-bold text-primary">
-                                ${freelancer.hourly_rate}/hr
+                          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                            <div className="flex items-center justify-between w-full sm:w-auto">
+                              <div className="flex items-center">
+                                <span className="text-yellow-400 text-sm">★</span>
+                                <span className="text-sm font-medium ml-1">{freelancer.rating}</span>
+                                <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">({freelancer.total_reviews})</span>
                               </div>
-                            )}
-                            <LikeButton
-                              contentType="freelancer"
-                              objectId={freelancer.user.id}
-                              initialLikes={freelancer.likes_count || 0}
-                              initialDislikes={freelancer.dislikes_count || 0}
-                              size="sm"
-                            />
+                              {(freelancer.hourly_rate || 0) > 0 && (
+                                <div className="text-sm sm:text-base font-bold text-primary">
+                                  ${freelancer.hourly_rate}/hr
+                                </div>
+                              )}
+                            </div>
+                            <div className="w-full sm:w-auto flex justify-center sm:justify-end">
+                              <LikeButton
+                                contentType="freelancer"
+                                objectId={freelancer.user.id}
+                                initialLikes={freelancer.likes_count || 0}
+                                initialDislikes={freelancer.dislikes_count || 0}
+                                size="sm"
+                              />
+                            </div>
                           </div>
                         </div>
 
@@ -654,6 +748,25 @@ export default function FreelancersPage() {
                             </div>
                           )}
 
+                          {/* Location Information */}
+                          {(freelancer.country || freelancer.city) && (
+                            <div className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
+                              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                              </svg>
+                              {(() => {
+                                const countryData = countries.find(c => c.name.toLowerCase() === (freelancer.country || '').toLowerCase());
+                                return (
+                                  <span className="flex items-center gap-1">
+                                    {countryData && <CountryFlag countryCode={countryData.code} className="w-3 h-2" />}
+                                    {freelancer.city && `${freelancer.city}, `}
+                                    {freelancer.country}
+                                  </span>
+                                );
+                              })()}
+                            </div>
+                          )}
+
                           {(freelancer as any).professionalProfile?.experience_years > 0 && (
                             <div className="text-xs text-gray-600 dark:text-gray-400">
                               💼 {(freelancer as any).professionalProfile.experience_years} years experience
@@ -662,11 +775,11 @@ export default function FreelancersPage() {
                         </div>
 
                         <div className="px-4 py-3 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-600 mt-auto">
-                          <div className="flex space-x-2">
-                            <Link href={`/freelancer/${freelancer.user.id}`} className="flex-1 bg-primary text-white text-center text-sm py-2 px-3 rounded-lg hover:bg-primary/90 transition-colors font-medium">
+                          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+                            <Link href={`/freelancer/${freelancer.user.id}`} className="flex-1 bg-primary text-white text-center text-sm py-2 px-2 sm:px-3 rounded-lg hover:bg-primary/90 transition-colors font-medium">
                               View Profile
                             </Link>
-                            <Link href={`/messages?user=${freelancer.user.id}`} className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-center text-sm py-2 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors font-medium">
+                            <Link href={`/messages?user=${freelancer.user.id}`} className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-center text-sm py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors font-medium">
                               Message
                             </Link>
                           </div>
