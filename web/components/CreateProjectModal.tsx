@@ -87,9 +87,9 @@ export default function CreateProjectModal({ isOpen, onClose, onProjectCreated }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-2xl max-h-[90vh] overflow-hidden">
-        <div className="p-6 overflow-y-auto max-h-full">
-          <div className="flex justify-between items-center mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-2xl max-h-[90vh] flex flex-col">
+        <div className="flex-shrink-0 p-6 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex justify-between items-center">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Create New Project</h2>
             <button
               onClick={onClose}
@@ -100,7 +100,8 @@ export default function CreateProjectModal({ isOpen, onClose, onProjectCreated }
               </svg>
             </button>
           </div>
-
+        </div>
+        <div className="flex-1 overflow-y-auto p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
