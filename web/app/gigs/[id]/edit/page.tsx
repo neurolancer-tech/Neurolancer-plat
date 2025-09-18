@@ -206,23 +206,23 @@ export default function EditGigPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navigation />
       
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Edit Gig</h1>
-          <p className="text-gray-600">Update your AI service offering</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">Edit Gig</h1>
+          <p className="text-gray-600 dark:text-gray-400">Update your AI service offering</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Basic Information */}
           <div className="card p-6">
-            <h2 className="text-xl font-semibold mb-4">Basic Information</h2>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">Basic Information</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Gig Title *
                 </label>
                 <input
@@ -236,7 +236,7 @@ export default function EditGigPage() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Category *
                 </label>
                 <select
@@ -255,7 +255,7 @@ export default function EditGigPage() {
             </div>
 
             <div className="mt-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Description *
               </label>
               <textarea
@@ -269,7 +269,7 @@ export default function EditGigPage() {
             </div>
 
             <div className="mt-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Tags (comma-separated)
               </label>
               <input
@@ -283,7 +283,7 @@ export default function EditGigPage() {
 
             {/* Image Selection */}
             <div className="mt-6">
-              <label className="block text-sm font-medium text-gray-700 mb-3">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                 Gig Image
               </label>
               
@@ -397,18 +397,18 @@ export default function EditGigPage() {
                   onChange={handleInputChange}
                   className="mr-2"
                 />
-                <span className="text-sm font-medium text-gray-700">Active (visible to clients)</span>
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Active (visible to clients)</span>
               </label>
             </div>
           </div>
 
           {/* Basic Package */}
           <div className="card p-6">
-            <h2 className="text-xl font-semibold mb-4">Basic Package *</h2>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">Basic Package *</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Package Title
                 </label>
                 <input
@@ -422,14 +422,15 @@ export default function EditGigPage() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Price ($)
                 </label>
                 <input
                   type="number"
                   name="basic_price"
                   required
-                  min="5"
+                  min="1"
+                  step="0.01"
                   value={formData.basic_price}
                   onChange={handleInputChange}
                   className="input-field"
@@ -438,7 +439,7 @@ export default function EditGigPage() {
             </div>
 
             <div className="mt-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Package Description
               </label>
               <textarea
@@ -452,7 +453,7 @@ export default function EditGigPage() {
             </div>
 
             <div className="mt-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Delivery Time (days)
               </label>
               <input
@@ -467,12 +468,144 @@ export default function EditGigPage() {
             </div>
           </div>
 
+          {/* Standard Package */}
+          <div className="card p-6">
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">Standard Package (Optional)</h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Package Title
+                </label>
+                <input
+                  type="text"
+                  name="standard_title"
+                  value={formData.standard_title}
+                  onChange={handleInputChange}
+                  className="input-field"
+                  placeholder="Standard AI Solution"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Price ($)
+                </label>
+                <input
+                  type="number"
+                  name="standard_price"
+                  min="1"
+                  step="0.01"
+                  value={formData.standard_price}
+                  onChange={handleInputChange}
+                  className="input-field"
+                  placeholder="10"
+                />
+              </div>
+            </div>
+
+            <div className="mt-6">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Package Description
+              </label>
+              <textarea
+                name="standard_description"
+                rows={3}
+                value={formData.standard_description}
+                onChange={handleInputChange}
+                className="input-field"
+                placeholder="What's included in the standard package..."
+              />
+            </div>
+
+            <div className="mt-6">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Delivery Time (days)
+              </label>
+              <input
+                type="number"
+                name="standard_delivery_time"
+                min="1"
+                value={formData.standard_delivery_time}
+                onChange={handleInputChange}
+                className="input-field"
+                placeholder="5"
+              />
+            </div>
+          </div>
+
+          {/* Premium Package */}
+          <div className="card p-6">
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">Premium Package (Optional)</h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Package Title
+                </label>
+                <input
+                  type="text"
+                  name="premium_title"
+                  value={formData.premium_title}
+                  onChange={handleInputChange}
+                  className="input-field"
+                  placeholder="Premium AI Solution"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Price ($)
+                </label>
+                <input
+                  type="number"
+                  name="premium_price"
+                  min="1"
+                  step="0.01"
+                  value={formData.premium_price}
+                  onChange={handleInputChange}
+                  className="input-field"
+                  placeholder="15"
+                />
+              </div>
+            </div>
+
+            <div className="mt-6">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Package Description
+              </label>
+              <textarea
+                name="premium_description"
+                rows={3}
+                value={formData.premium_description}
+                onChange={handleInputChange}
+                className="input-field"
+                placeholder="What's included in the premium package..."
+              />
+            </div>
+
+            <div className="mt-6">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Delivery Time (days)
+              </label>
+              <input
+                type="number"
+                name="premium_delivery_time"
+                min="1"
+                value={formData.premium_delivery_time}
+                onChange={handleInputChange}
+                className="input-field"
+                placeholder="3"
+              />
+            </div>
+          </div>
+
           {/* Submit Button */}
           <div className="flex justify-end space-x-4">
             <button
               type="button"
               onClick={() => router.back()}
-              className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+              className="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >
               Cancel
             </button>

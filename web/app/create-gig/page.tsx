@@ -407,11 +407,12 @@ export default function CreateGigPage() {
                   type="number"
                   name="basic_price"
                   required
-                  min="5"
+                  min="1"
+                  step="0.01"
                   value={formData.basic_price}
                   onChange={handleInputChange}
                   className="input-field"
-                  placeholder="500"
+                  placeholder="5"
                 />
               </div>
             </div>
@@ -474,11 +475,12 @@ export default function CreateGigPage() {
                 <input
                   type="number"
                   name="standard_price"
-                  min="5"
+                  min="1"
+                  step="0.01"
                   value={formData.standard_price}
                   onChange={handleInputChange}
                   className="input-field"
-                  placeholder="750"
+                  placeholder="10"
                 />
               </div>
             </div>
@@ -539,11 +541,12 @@ export default function CreateGigPage() {
                 <input
                   type="number"
                   name="premium_price"
-                  min="5"
+                  min="1"
+                  step="0.01"
                   value={formData.premium_price}
                   onChange={handleInputChange}
                   className="input-field"
-                  placeholder="1200"
+                  placeholder="15"
                 />
               </div>
             </div>
