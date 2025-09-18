@@ -22,7 +22,7 @@ notification = Notification.objects.create(
     title=f"Progress Update: {order.title}",
     message=f"{freelancer_name} updated progress on '{order.title}': Work has started on your order\n\nMessage: {progress_message}",
     notification_type='order',
-    action_url=f'/order-details.html?id={order.id}',
+    action_url=f'/orders/{order.id}',
     related_object_id=order.id
 )
 

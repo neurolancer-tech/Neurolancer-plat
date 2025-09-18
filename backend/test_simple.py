@@ -19,7 +19,7 @@ try:
         title=f"Order Update: {order.title}",
         message="Test progress update from freelancer",
         notification_type='order',
-        action_url=f'/order-details.html?id={order.id}',
+        action_url=f'/orders/{order.id}',
         related_object_id=order.id
     )
     

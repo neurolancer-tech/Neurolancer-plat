@@ -805,7 +805,7 @@ class OrderSerializer(serializers.ModelSerializer):
                 title=f"New Order Request: {order.title}",
                 message=f"You received a new order request from {order.client.get_full_name() or order.client.username}. Please review and accept to start working.",
                 notification_type='order',
-                action_url=f'/freelancer-orders.html',
+                action_url=f'/orders',
                 related_object_id=order.id
             )
         except Exception as e:

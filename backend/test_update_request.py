@@ -22,7 +22,7 @@ notification = Notification.objects.create(
     title=f"Update Requested: {order.title}",
     message=f"{client_name} requested an update on '{order.title}': {update_message}",
     notification_type='order',
-    action_url=f'/freelancer-orders.html',
+    action_url=f'/orders',
     related_object_id=order.id
 )
 

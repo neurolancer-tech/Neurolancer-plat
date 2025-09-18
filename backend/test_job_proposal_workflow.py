@@ -211,7 +211,7 @@ def test_proposal_acceptance(client_user, proposal):
         title=f'Proposal Accepted: {job.title}',
         message=f'Congratulations! Your proposal for "{job.title}" has been accepted by {client_user.first_name} {client_user.last_name}. You can now start working on the project.',
         notification_type='proposal',
-        action_url=f'/my-proposals.html',
+        action_url=f'/my-proposals',
         related_object_id=proposal.id
     )
     
@@ -245,7 +245,7 @@ def test_job_progress_update(freelancer_user, job):
             title=f'Progress Update #{i}: {job.title}',
             message=f'Progress update from {freelancer_user.first_name} {freelancer_user.last_name}: {update["message"]}',
             notification_type='job',
-            action_url=f'/my-jobs.html',
+            action_url=f'/my-jobs',
             related_object_id=job.id
         )
         print(f"✓ Progress update #{i} sent to client")
@@ -264,7 +264,7 @@ def test_job_completion(freelancer_user, job):
         title=f'Project Completed: {job.title}',
         message=f'{freelancer_user.first_name} {freelancer_user.last_name} has marked the project "{job.title}" as completed. Please review the deliverables and process payment.',
         notification_type='job',
-        action_url=f'/my-jobs.html',
+        action_url=f'/my-jobs',
         related_object_id=job.id
     )
     
