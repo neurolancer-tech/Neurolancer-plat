@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Navigation from '@/components/Navigation';
-import { isAuthenticated } from '@/lib/auth';
+import { isAuthenticated, getUser } from '@/lib/auth';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import { convertUSDToKES } from '@/lib/currency';
@@ -132,11 +132,8 @@ function CourseCheckoutContent() {
   };
 
   const getCurrentUserEmail = () => {
-    if (typeof window !== 'undefined') {
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
-      return user.email || 'test@example.com';
-    }
-    return 'test@example.com';
+    const user = getUser();
+    return user?.email || 'user@example.com';
   };
 
   const enrollInCourse = async (paymentReference: string) => {
