@@ -56,6 +56,7 @@ function CheckoutContent() {
   });
   const [paymentMethod, setPaymentMethod] = useState('paystack');
   const [mobileMoneyProviders, setMobileMoneyProviders] = useState([]);
+  const [paystackLoaded, setPaystackLoaded] = useState(false);
   const initialized = useRef(false);
 
   useEffect(() => {
@@ -147,6 +148,9 @@ function CheckoutContent() {
     
     // Load mobile money providers
     loadMobileMoneyProviders();
+    
+    // Check if Paystack is loaded
+    checkPaystackAvailability();
   }, [router, searchParams]);
 
   const calculateFees = async (amount: string, hours_worked: string, hourly_rate: string) => {
@@ -204,6 +208,23 @@ function CheckoutContent() {
     }
   };
 
+  const checkPaystackAvailability = () => {
+    const checkInterval = setInterval(() => {
+      if ((window as any).PaystackPop) {
+        setPaystackLoaded(true);
+        clearInterval(checkInterval);
+      }
+    }, 100);
+    
+    // Stop checking after 10 seconds
+    setTimeout(() => {
+      clearInterval(checkInterval);
+      if (!(window as any).PaystackPop) {
+        console.warn('Paystack failed to load within 10 seconds');
+      }
+    }, 10000);
+  };
+
   const handlePayment = async () => {
     setLoading(true);
     
@@ -244,9 +265,18 @@ function CheckoutContent() {
   };
 
   const processPaystackPayment = async () => {
+    // Wait for Paystack to load if it's not available yet
+    let attempts = 0;
+    const maxAttempts = 10;
+    
+    while (!(window as any).PaystackPop && attempts < maxAttempts) {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      attempts++;
+    }
+    
     const PaystackPop = (window as any).PaystackPop;
     if (!PaystackPop) {
-      toast.error('Paystack not loaded. Please refresh the page.');
+      toast.error('Paystack failed to load. Please refresh the page and try again.');
       return;
     }
 
@@ -404,7 +434,10 @@ function CheckoutContent() {
                     </svg>
                     <div>
                       <span className="font-medium text-blue-700 dark:text-blue-400">Paystack</span>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Card, Bank Transfer, M-Pesa</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Card, Bank Transfer, M-Pesa
+                        {!paystackLoaded && <span className="text-orange-500 ml-2">(Loading...)</span>}
+                      </p>
                     </div>
                   </div>
                 </label>
@@ -459,7 +492,7 @@ function CheckoutContent() {
               </Link>
               <button
                 onClick={handlePayment}
-                disabled={loading}
+                disabled={loading || (paymentMethod === 'paystack' && !paystackLoaded)}
                 className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
               >
                 {loading ? (
@@ -472,7 +505,9 @@ function CheckoutContent() {
                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
-                    {paymentMethod === 'paystack' ? 'Pay with Paystack' : `Pay KES ${feeBreakdown.total_amount.toLocaleString()}`}
+                    {paymentMethod === 'paystack' 
+                      ? (paystackLoaded ? 'Pay with Paystack' : 'Loading Paystack...') 
+                      : `Pay KES ${feeBreakdown.total_amount.toLocaleString()}`}
                   </>
                 )}
               </button>

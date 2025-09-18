@@ -74,6 +74,7 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <link rel="icon" href="/assets/Neurolancer-logo/vector/neurolancer-favicon.svg" type="image/svg+xml" />
+        <script src="https://js.paystack.co/v1/inline.js" async></script>
       </head>
       <body className={inter.className}>
         <ThemeProvider>
