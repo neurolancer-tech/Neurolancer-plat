@@ -34,6 +34,69 @@ interface OnboardingData {
   rate_expectation?: string;
 }
 
+// Inline component to display publish reminders at top of profile page
+function PublishReminders() {
+  const [loading, setLoading] = useState(true);
+  const [freelancerState, setFreelancerState] = useState<{ exists: boolean; published: boolean } | null>(null);
+  const [clientState, setClientState] = useState<{ exists: boolean; published: boolean } | null>(null);
+  const profile = getProfile();
+  useEffect(() => {
+    (async () => {
+      try {
+        if (profile?.user_type === 'freelancer' || profile?.user_type === 'both') {
+          try {
+            const fp = await (await import('@/lib/profileApi')).profileApi.getFreelancerProfile();
+            setFreelancerState({ exists: Boolean((fp as any)?.id), published: Boolean((fp as any)?.is_active) });
+          } catch {
+            setFreelancerState({ exists: false, published: false });
+          }
+        }
+        if (profile?.user_type === 'client' || profile?.user_type === 'both') {
+          try {
+            const cp = await (await import('@/lib/profileApi')).profileApi.getClientProfile();
+            setClientState({ exists: Boolean((cp as any)?.id), published: Boolean((cp as any)?.is_active) });
+          } catch {
+            setClientState({ exists: false, published: false });
+          }
+        }
+      } finally {
+        setLoading(false);
+      }
+    })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  if (loading) return null;
+
+  const needsFreelancer = freelancerState && (!freelancerState.exists || !freelancerState.published);
+  const needsClient = clientState && (!clientState.exists || !clientState.published);
+
+  if (!needsFreelancer && !needsClient) return null;
+
+  return (
+    <div className="mb-6 space-y-3">
+      {needsFreelancer && (
+        <div className="flex items-center justify-between bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-700 text-yellow-800 dark:text-yellow-200 rounded-lg px-4 py-3">
+          <div className="flex items-center gap-2">
+            <span>⚠️</span>
+            <span>Your freelancer profile is {freelancerState?.exists ? 'unpublished' : 'not created'}. Create and publish it in Profile Setup to make your gigs visible.</span>
+          </div>
+          <a href="#" onClick={(e) => { e.preventDefault(); const evt = new CustomEvent('open-profile-setup'); window.dispatchEvent(evt); }} className="px-3 py-1 bg-yellow-600 text-white rounded hover:bg-yellow-700">Go to Profile Setup</a>
+        </div>
+      )}
+      {needsClient && (
+        <div className="flex items-center justify-between bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-700 text-yellow-800 dark:text-yellow-200 rounded-lg px-4 py-3">
+          <div className="flex items-center gap-2">
+            <span>⚠️</span>
+            <span>Your client profile is {clientState?.exists ? 'unpublished' : 'not created'}. Create and publish it in Profile Setup to open jobs.</span>
+          </div>
+          <a href="#" onClick={(e) => { e.preventDefault(); const evt = new CustomEvent('open-profile-setup'); window.dispatchEvent(evt); }} className="px-3 py-1 bg-yellow-600 text-white rounded hover:bg-yellow-700">Go to Profile Setup</a>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ProfilePage() {
   const router = useRouter();
   const [user, setUserState] = useState<User | null>(null);
@@ -447,6 +510,8 @@ export default function ProfilePage() {
       <Navigation />
       
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Publish reminders */}
+        <PublishReminders />
         {/* Header Section */}
         <div className="card rounded-2xl shadow-sm p-8 mb-8">
           <div className="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8">

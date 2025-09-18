@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { FreelancerProfile, profileApi } from '@/lib/profileApi';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
+import { useEventListener } from '@/lib/useEventListener';
 
 interface FreelancerProfileFormProps {
   onSave?: (profile: FreelancerProfile) => void;
@@ -138,8 +139,14 @@ export default function FreelancerProfileForm({ onSave }: FreelancerProfileFormP
     }));
   };
 
+  // Allow opening this tab when banner button is clicked
+  useEventListener('open-profile-setup', () => {
+    const el = document.querySelector('#profile-setup') as HTMLElement | null;
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  });
+
   return (
-    <form className="space-y-6">
+    <form className="space-y-6" id="profile-setup">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">

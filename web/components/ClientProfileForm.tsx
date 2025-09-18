@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { ClientProfile, profileApi } from '@/lib/profileApi';
 import toast from 'react-hot-toast';
+import { useEventListener } from '@/lib/useEventListener';
 
 interface ClientProfileFormProps {
   onSave?: (profile: ClientProfile) => void;
@@ -22,6 +23,12 @@ export default function ClientProfileForm({ onSave }: ClientProfileFormProps) {
   useEffect(() => {
     loadProfile();
   }, []);
+
+  // Scroll into view when banner requests profile setup
+  useEventListener('open-profile-setup', () => {
+    const el = document.querySelector('#profile-setup') as HTMLElement | null;
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  });
 
   const loadProfile = async () => {
     try {
@@ -72,7 +79,7 @@ export default function ClientProfileForm({ onSave }: ClientProfileFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6" id="profile-setup">
       {/* Publish Toggle */}
       <ClientPublishToggle />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

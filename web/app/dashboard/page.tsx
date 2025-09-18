@@ -12,6 +12,8 @@ import RecommendationsSection from '@/components/RecommendationsSection';
 import { getUser, getProfile, isAuthenticated } from '@/lib/auth';
 import { User, UserProfile } from '@/types';
 import api from '@/lib/api';
+import { profileApi } from '@/lib/profileApi';
+import toast from 'react-hot-toast';
 import SimpleChart from '@/components/SimpleChart';
 import './dashboard.css';
 
@@ -244,6 +246,36 @@ export default function DashboardPage() {
   const isFreelancer = profile?.user_type === 'freelancer' || profile?.user_type === 'both';
   const isClient = profile?.user_type === 'client' || profile?.user_type === 'both';
 
+  const createAndPublishFreelancer = async () => {
+    try {
+      const fp = await profileApi.getFreelancerProfile().catch(() => null as any);
+      if (fp && (fp as any).id) {
+        await profileApi.updateFreelancerProfile({ is_active: true } as any);
+      } else {
+        await profileApi.createFreelancerProfile({ title: 'Freelancer', bio: '', hourly_rate: 0, skills: '', experience_years: 0, availability: 'freelance', is_active: true } as any);
+      }
+      toast.success('Freelancer profile published!');
+      router.push('/profile');
+    } catch (e: any) {
+      toast.error(e?.response?.data?.error || 'Failed to publish freelancer profile');
+    }
+  };
+
+  const createAndPublishClient = async () => {
+    try {
+      const cp = await profileApi.getClientProfile().catch(() => null as any);
+      if (cp && (cp as any).id) {
+        await profileApi.updateClientProfile({ is_active: true } as any);
+      } else {
+        await profileApi.createClientProfile({ company_name: '', company_size: '', industry: '', website_url: '', typical_budget: '', project_types: '', is_active: true } as any);
+      }
+      toast.success('Client profile published!');
+      router.push('/profile');
+    } catch (e: any) {
+      toast.error(e?.response?.data?.error || 'Failed to publish client profile');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navigation />
@@ -414,6 +446,38 @@ export default function DashboardPage() {
         <div className="mb-8">
           <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4 sm:mb-6 break-words">Quick Actions</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            {/* Create & Publish quick action cards */}
+            {isFreelancer && (
+              <button onClick={createAndPublishFreelancer} className="group block text-left">
+                <div className={`bg-gradient-to-r from-green-600 to-emerald-600 rounded-xl p-4 sm:p-6 text-white shadow-lg card-hover animate-slide-in animate-gradient relative`}>
+                  <div className="text-2xl sm:text-4xl mb-3 sm:mb-4 animate-float">🌟</div>
+                  <h3 className="text-base sm:text-lg font-semibold mb-2 break-words">Create & Publish Freelancer Profile</h3>
+                  <p className="text-xs sm:text-sm opacity-90 break-words">Make your profile live so your gigs can be activated</p>
+                  <div className="mt-3 sm:mt-4 flex items-center text-xs sm:text-sm font-medium">
+                    <span className="break-words">Publish now</span>
+                    <svg className="w-3 h-3 sm:w-4 sm:h-4 ml-2 group-hover:translate-x-2 transition-all duration-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </div>
+              </button>
+            )}
+            {isClient && (
+              <button onClick={createAndPublishClient} className="group block text-left">
+                <div className={`bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl p-4 sm:p-6 text-white shadow-lg card-hover animate-slide-in animate-gradient relative`}>
+                  <div className="text-2xl sm:text-4xl mb-3 sm:mb-4 animate-float">🚀</div>
+                  <h3 className="text-base sm:text-lg font-semibold mb-2 break-words">Create & Publish Client Profile</h3>
+                  <p className="text-xs sm:text-sm opacity-90 break-words">Publish your client profile to open jobs</p>
+                  <div className="mt-3 sm:mt-4 flex items-center text-xs sm:text-sm font-medium">
+                    <span className="break-words">Publish now</span>
+                    <svg className="w-3 h-3 sm:w-4 sm:h-4 ml-2 group-hover:translate-x-2 transition-all duration-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </div>
+              </button>
+            )}
+
             {getQuickActions().map((action, index) => (
               <Link key={index} href={action.href} className="group block">
                 <div className={`${action.gradient} ${action.color} rounded-xl p-4 sm:p-6 text-white shadow-lg card-hover animate-slide-in animate-gradient relative`} style={{animationDelay: `${index * 0.1}s`}}>
