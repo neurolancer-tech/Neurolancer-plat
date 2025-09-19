@@ -213,10 +213,10 @@ export default function GroupChatModal({ isOpen, onClose, onGroupCreated }: Grou
                       <div key={user.id} className="flex items-center bg-gradient-to-r from-blue-500 to-purple-600 text-white px-2 py-1 rounded-full text-xs">
                         <div className="mr-1">
                           <Avatar
-                            src={user.profile_picture}
-                            avatarType={(user as any).avatar_type || 'avatar'}
+                            src={user.profile_picture || (user as any)?.profile?.avatar_url}
+                            avatarType={(user as any).avatar_type as 'upload' | 'avatar' | 'google' | undefined}
                             selectedAvatar={(user as any).selected_avatar}
-                            googlePhotoUrl={(user as any).google_photo_url}
+                            googlePhotoUrl={(user as any)?.profile?.google_photo_url || (user as any).google_photo_url}
                             size="xs"
                             alt={user.first_name}
                           />
@@ -263,10 +263,10 @@ export default function GroupChatModal({ isOpen, onClose, onGroupCreated }: Grou
                         >
                           <div className="relative">
                             <Avatar
-                              src={user.profile_picture}
-                              avatarType={(user as any).avatar_type || 'avatar'}
+                              src={user.profile_picture || (user as any)?.profile?.avatar_url}
+                              avatarType={(user as any).avatar_type as 'upload' | 'avatar' | 'google' | undefined}
                               selectedAvatar={(user as any).selected_avatar}
-                              googlePhotoUrl={(user as any).google_photo_url}
+                              googlePhotoUrl={(user as any)?.profile?.google_photo_url || (user as any).google_photo_url}
                               size="sm"
                               alt={user.first_name}
                             />

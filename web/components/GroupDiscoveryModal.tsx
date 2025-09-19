@@ -351,10 +351,10 @@ export default function GroupDiscoveryModal({ isOpen, onClose, onGroupJoined, on
                       <div className="flex-1">
                         <div className="flex items-center space-x-2 mb-1">
                           <Avatar
-                            src={user.userprofile?.profile_picture}
+                            src={user.userprofile?.profile_picture || (user as any)?.profile?.avatar_url}
                             avatarType={user.userprofile?.avatar_type}
                             selectedAvatar={user.userprofile?.selected_avatar}
-                            googlePhotoUrl={user.userprofile?.google_photo_url}
+                            googlePhotoUrl={user.userprofile?.google_photo_url || (user as any)?.profile?.google_photo_url}
                             size="w-8 h-8"
                           />
                           <div>

@@ -1001,14 +1001,14 @@ ${aiResponse}`;
                             🤖
                           </div>
                         ) : (
-                          conversation.participants.length > 0 && conversation.participants[0] ? (
+                          conversation.participants.length > 0 && (conversation.participants.find(p => p.id !== currentUser?.id) || conversation.participants[0]) ? (
                             <Avatar
-                              src={conversation.participants[0].profile_picture}
-                              avatarType={(conversation.participants[0].avatar_type as "upload" | "avatar" | "google") || 'avatar'}
-                              selectedAvatar={conversation.participants[0].selected_avatar}
-                              googlePhotoUrl={conversation.participants[0].google_photo_url}
+                              src={(conversation.participants.find(p => p.id !== currentUser?.id) || conversation.participants[0])?.profile_picture}
+                              avatarType={((conversation.participants.find(p => p.id !== currentUser?.id) || conversation.participants[0])?.avatar_type as "upload" | "avatar" | "google") || 'avatar'}
+                              selectedAvatar={(conversation.participants.find(p => p.id !== currentUser?.id) || conversation.participants[0])?.selected_avatar}
+                              googlePhotoUrl={(conversation.participants.find(p => p.id !== currentUser?.id) || conversation.participants[0])?.google_photo_url}
                               size="md"
-                              alt={conversation.participants[0].first_name}
+                              alt={(conversation.participants.find(p => p.id !== currentUser?.id) || conversation.participants[0])?.first_name}
                             />
                           ) : (
                             <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-medium">
@@ -1075,14 +1075,14 @@ ${aiResponse}`;
                             🤖
                           </div>
                         ) : (
-                          selectedConversation.participants.length > 0 && selectedConversation.participants[0] ? (
+                          selectedConversation.participants.length > 0 && (selectedConversation.participants.find(p => p.id !== currentUser?.id) || selectedConversation.participants[0]) ? (
                             <Avatar
-                              src={selectedConversation.participants[0].profile_picture}
-                              avatarType={(selectedConversation.participants[0].avatar_type as "upload" | "avatar" | "google") || 'avatar'}
-                              selectedAvatar={selectedConversation.participants[0].selected_avatar}
-                              googlePhotoUrl={selectedConversation.participants[0].google_photo_url}
+                              src={(selectedConversation.participants.find(p => p.id !== currentUser?.id) || selectedConversation.participants[0])?.profile_picture}
+                              avatarType={((selectedConversation.participants.find(p => p.id !== currentUser?.id) || selectedConversation.participants[0])?.avatar_type as "upload" | "avatar" | "google") || 'avatar'}
+                              selectedAvatar={(selectedConversation.participants.find(p => p.id !== currentUser?.id) || selectedConversation.participants[0])?.selected_avatar}
+                              googlePhotoUrl={(selectedConversation.participants.find(p => p.id !== currentUser?.id) || selectedConversation.participants[0])?.google_photo_url}
                               size="sm"
-                              alt={selectedConversation.participants[0].first_name}
+                              alt={(selectedConversation.participants.find(p => p.id !== currentUser?.id) || selectedConversation.participants[0])?.first_name}
                             />
                           ) : (
                             <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-medium">
