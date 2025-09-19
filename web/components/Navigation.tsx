@@ -266,7 +266,7 @@ export default function Navigation() {
                     Sign Up
                   </Link>
                 </div>
-              )
+              )}
 
               {/* Mobile hamburger button - moved after profile element on small screens */}
               <button
