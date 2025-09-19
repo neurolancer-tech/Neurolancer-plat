@@ -83,6 +83,11 @@ function MessagesPageContent() {
   const [replyingToMessage, setReplyingToMessage] = useState<Message | null>(null);
   const [activeForm, setActiveForm] = useState<any>(null);
   const [formData, setFormData] = useState<Record<string, any>>({});
+  const [chatFormProgressive, setChatFormProgressive] = useState(true);
+  const [chatFormStep, setChatFormStep] = useState(0);
+  const [chatCategories, setChatCategories] = useState<any[]>([]);
+  const [chatSubcategories, setChatSubcategories] = useState<any[]>([]);
+  const [chatFormLoading, setChatFormLoading] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -98,7 +103,12 @@ function MessagesPageContent() {
     fields: [
       { name: 'title', label: 'Job Title', type: 'text', required: true, placeholder: 'e.g., Build AI Chatbot for E-commerce' },
       { name: 'description', label: 'Description', type: 'textarea', required: true, placeholder: 'Describe your project requirements...' },
-      { name: 'budget', label: 'Budget ($)', type: 'number', required: true, placeholder: '1000' },
+      { name: 'category_id', label: 'Category', type: 'select', required: true },
+      { name: 'subcategory_ids', label: 'Areas of Expertise (optional)', type: 'select', required: false },
+      { name: 'budget_min', label: 'Budget Min ($)', type: 'number', required: true, placeholder: '500' },
+      { name: 'budget_max', label: 'Budget Max ($)', type: 'number', required: true, placeholder: '1500' },
+      { name: 'deadline', label: 'Deadline', type: 'date', required: true },
+      { name: 'skills_required', label: 'Skills (comma-separated)', type: 'text', required: true, placeholder: 'Python, ML, LLMs' },
       { name: 'job_type', label: 'Payment Type', type: 'select', required: true, options: [
         { value: 'fixed', label: 'Fixed Price' },
         { value: 'hourly', label: 'Hourly Rate' }
@@ -119,8 +129,12 @@ function MessagesPageContent() {
     fields: [
       { name: 'title', label: 'Gig Title', type: 'text', required: true, placeholder: 'I will build an AI chatbot for your business' },
       { name: 'description', label: 'Description', type: 'textarea', required: true, placeholder: 'Describe what you will deliver...' },
-      { name: 'price', label: 'Starting Price ($)', type: 'number', required: true, placeholder: '50' },
-      { name: 'delivery_time', label: 'Delivery Time (days)', type: 'number', required: true, placeholder: '7' }
+      { name: 'category_id', label: 'Category', type: 'select', required: true },
+      { name: 'subcategory_ids', label: 'Areas of Expertise (optional)', type: 'select', required: false },
+      { name: 'basic_title', label: 'Basic Package Title', type: 'text', required: true, placeholder: 'Basic AI Solution' },
+      { name: 'basic_description', label: 'Basic Package Description', type: 'textarea', required: true, placeholder: 'What is included in the basic package?' },
+      { name: 'basic_price', label: 'Basic Package Price ($)', type: 'number', required: true, placeholder: '50' },
+      { name: 'basic_delivery_time', label: 'Basic Delivery Time (days)', type: 'number', required: true, placeholder: '7' }
     ]
   };
 
@@ -161,13 +175,23 @@ function MessagesPageContent() {
     return cards.slice(0, 3);
   };
 
-  const handleActionClick = (action: string) => {
+  const handleActionClick = async (action: string) => {
     if (action.startsWith('form:')) {
       const formId = action.replace('form:', '');
       if (formId === 'create-job') {
         setActiveForm(jobCreationForm);
       } else if (formId === 'create-gig') {
         setActiveForm(gigCreationForm);
+      }
+      setFormData({});
+      setChatFormStep(0);
+      setChatFormProgressive(true);
+      try {
+        const resp = await api.get('/categories/');
+        const cats = resp.data.results || resp.data || [];
+        setChatCategories(cats);
+      } catch (e) {
+        setChatCategories([]);
       }
     } else {
       window.open(action, '_blank');
@@ -1433,91 +1457,347 @@ ${aiResponse}`;
                       {/* Interactive Form */}
                       {selectedConversation?.id === -1 && activeForm && (
                         <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-600 mx-4">
-                          <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center justify-between mb-3">
                             <h3 className="font-semibold text-gray-900 dark:text-gray-100">{activeForm.title}</h3>
-                            <button
-                              onClick={() => { setActiveForm(null); setFormData({}); }}
-                              className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                            >
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                              </svg>
-                            </button>
-                          </div>
-                          <div className="space-y-3">
-                            {activeForm.fields.map((field: any) => (
-                              <div key={field.name}>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                  {field.label} {field.required && <span className="text-red-500">*</span>}
-                                </label>
-                                {field.type === 'textarea' ? (
-                                  <textarea
-                                    value={formData[field.name] || ''}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, [field.name]: e.target.value }))}
-                                    placeholder={field.placeholder}
-                                    required={field.required}
-                                    rows={3}
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-                                  />
-                                ) : field.type === 'select' ? (
-                                  <select
-                                    value={formData[field.name] || ''}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, [field.name]: e.target.value }))}
-                                    required={field.required}
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-                                  >
-                                    <option value="">Select {field.label}</option>
-                                    {field.options?.map((option: any) => (
-                                      <option key={option.value} value={option.value}>{option.label}</option>
-                                    ))}
-                                  </select>
-                                ) : (
-                                  <input
-                                    type={field.type}
-                                    value={formData[field.name] || ''}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, [field.name]: e.target.value }))}
-                                    placeholder={field.placeholder}
-                                    required={field.required}
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-                                  />
-                                )}
-                              </div>
-                            ))}
-                            <div className="flex space-x-2 pt-2">
+                            <div className="flex items-center gap-2">
+                              <label className="text-xs text-gray-600 dark:text-gray-400 flex items-center gap-1">
+                                <input type="checkbox" checked={chatFormProgressive} onChange={(e) => setChatFormProgressive(e.target.checked)} />
+                                Step-by-step
+                              </label>
                               <button
-                                onClick={() => {
-                                  const successMessage = {
-                                    id: Date.now(),
-                                    content: `✅ **${activeForm.type === 'job' ? 'Job' : 'Gig'} created successfully!**\n\nYour ${activeForm.type} "${formData.title}" has been posted.`,
-                                    sender: {
-                                      id: -1,
-                                      first_name: 'Neurolancer',
-                                      last_name: 'AI',
-                                      profile_picture: null,
-                                      avatar_type: 'default',
-                                      selected_avatar: 'ai'
-                                    },
-                                    created_at: new Date().toISOString(),
-                                    is_read: true
-                                  };
-                                  setAiMessages(prev => [...prev, successMessage]);
-                                  setActiveForm(null);
-                                  setFormData({});
-                                  setTimeout(scrollToBottom, 100);
-                                }}
-                                className="flex-1 py-2 px-4 text-white rounded-lg hover:opacity-90 transition-all text-sm font-medium"
-                                style={{background: 'linear-gradient(135deg, #0D9E86, #0B8A73)'}}
+                                onClick={() => { setActiveForm(null); setFormData({}); setChatFormStep(0); setChatSubcategories([]); }}
+                                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                               >
-                                {activeForm.submitText}
-                              </button>
-                              <button
-                                onClick={() => { setActiveForm(null); setFormData({}); }}
-                                className="px-4 py-2 text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-sm"
-                              >
-                                Cancel
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
                               </button>
                             </div>
                           </div>
+                          {/* Progressive form */}
+                          {chatFormProgressive ? (
+                            <div className="space-y-3">
+                              {(() => {
+                                const field = activeForm.fields[chatFormStep];
+                                if (!field) return null;
+                                const isCategory = field.name === 'category_id';
+                                const isSubcats = field.name === 'subcategory_ids';
+                                const selectOptions = isCategory ? chatCategories.map((c: any) => ({ value: String(c.id), label: c.name })) : (field.options || []);
+                                return (
+                                  <div key={field.name}>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                      {field.label} {field.required && <span className="text-red-500">*</span>}
+                                    </label>
+                                    {isSubcats ? (
+                                      <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded-lg p-2">
+                                        {chatSubcategories.length === 0 ? (
+                                          <p className="text-xs text-gray-500">No areas available or none selected</p>
+                                        ) : (
+                                          chatSubcategories.map((s: any) => (
+                                            <label key={s.id} className="flex items-center gap-2 text-sm">
+                                              <input
+                                                type="checkbox"
+                                                checked={Array.isArray(formData.subcategory_ids) && formData.subcategory_ids.includes(s.id)}
+                                                onChange={(e) => {
+                                                  setFormData((prev) => {
+                                                    const current: number[] = Array.isArray(prev.subcategory_ids) ? [...prev.subcategory_ids] : [];
+                                                    if (e.target.checked) {
+                                                      if (!current.includes(s.id)) current.push(s.id);
+                                                    } else {
+                                                      const idx = current.indexOf(s.id);
+                                                      if (idx >= 0) current.splice(idx, 1);
+                                                    }
+                                                    return { ...prev, subcategory_ids: current };
+                                                  });
+                                                }}
+                                              />
+                                              {s.name}
+                                            </label>
+                                          ))
+                                        )}
+                                      </div>
+                                    ) : field.type === 'textarea' ? (
+                                      <textarea
+                                        value={formData[field.name] || ''}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, [field.name]: e.target.value }))}
+                                        placeholder={field.placeholder}
+                                        required={field.required}
+                                        rows={3}
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+                                      />
+                                    ) : field.type === 'select' ? (
+                                      <select
+                                        value={formData[field.name] || ''}
+                                        onChange={async (e) => {
+                                          const val = e.target.value;
+                                          setFormData(prev => ({ ...prev, [field.name]: val }));
+                                          if (isCategory) {
+                                            try {
+                                              const resp = await api.get(`/categories/${val}/subcategories/`);
+                                              const subs = resp.data.results || resp.data || [];
+                                              setChatSubcategories(subs);
+                                              setFormData(prev => ({ ...prev, subcategory_ids: [] }));
+                                            } catch (err) {
+                                              setChatSubcategories([]);
+                                            }
+                                          }
+                                        }}
+                                        required={field.required}
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+                                      >
+                                        <option value="">Select {field.label}</option>
+                                        {selectOptions.map((option: any) => (
+                                          <option key={option.value} value={option.value}>{option.label}</option>
+                                        ))}
+                                      </select>
+                                    ) : (
+                                      <input
+                                        type={field.type}
+                                        value={formData[field.name] || ''}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, [field.name]: e.target.value }))}
+                                        placeholder={field.placeholder}
+                                        required={field.required}
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+                                      />
+                                    )}
+                                  </div>
+                                );
+                              })()}
+                              <div className="flex items-center justify-between pt-2">
+                                <button onClick={() => setChatFormStep(Math.max(0, chatFormStep - 1))} disabled={chatFormStep === 0} className="px-4 py-2 text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-lg disabled:opacity-50">Back</button>
+                                {chatFormStep < activeForm.fields.length - 1 ? (
+                                  <button onClick={() => setChatFormStep(Math.min(activeForm.fields.length - 1, chatFormStep + 1))} className="px-4 py-2 text-white rounded-lg" style={{background: 'linear-gradient(135deg, #0D9E86, #0B8A73)'}}>Next</button>
+                                ) : (
+                                  <button
+                                    onClick={async () => {
+                                      try {
+                                        setChatFormLoading(true);
+                                        if (activeForm.type === 'job') {
+                                          const payload: any = {
+                                            title: formData.title,
+                                            description: formData.description,
+                                            category_id: parseInt(formData.category_id),
+                                            subcategory_ids: Array.isArray(formData.subcategory_ids) ? formData.subcategory_ids : [],
+                                            budget_min: parseFloat(formData.budget_min),
+                                            budget_max: parseFloat(formData.budget_max),
+                                            deadline: formData.deadline ? new Date(formData.deadline).toISOString() : undefined,
+                                            skills_required: formData.skills_required,
+                                            job_type: formData.job_type,
+                                            experience_level: formData.experience_level,
+                                          };
+                                          const resp = await api.post('/jobs/create/', payload);
+                                          const jobId = resp.data.id;
+                                          setAiMessages(prev => [...prev, {
+                                            id: Date.now(),
+                                            content: `✅ **Job created successfully!**\n\nYour job "${payload.title}" has been posted. [View it here](/jobs/${jobId}).`,
+                                            sender: { id: -1, first_name: 'Neurolancer', last_name: 'AI', profile_picture: null, avatar_type: 'default', selected_avatar: 'ai' },
+                                            created_at: new Date().toISOString(),
+                                            is_read: true
+                                          }]);
+                                        } else if (activeForm.type === 'gig') {
+                                          const payload: any = {
+                                            title: formData.title,
+                                            description: formData.description,
+                                            category_id: parseInt(formData.category_id),
+                                            subcategory_ids: Array.isArray(formData.subcategory_ids) ? formData.subcategory_ids : [],
+                                            basic_title: formData.basic_title,
+                                            basic_description: formData.basic_description,
+                                            basic_price: parseFloat(formData.basic_price),
+                                            basic_delivery_time: parseInt(formData.basic_delivery_time),
+                                          };
+                                          const resp = await api.post('/gigs/create/', payload);
+                                          const gigId = resp.data.id;
+                                          setAiMessages(prev => [...prev, {
+                                            id: Date.now(),
+                                            content: `✅ **Gig created successfully!**\n\nYour gig "${payload.title}" has been posted. [View it here](/gigs/${gigId}).`,
+                                            sender: { id: -1, first_name: 'Neurolancer', last_name: 'AI', profile_picture: null, avatar_type: 'default', selected_avatar: 'ai' },
+                                            created_at: new Date().toISOString(),
+                                            is_read: true
+                                          }]);
+                                        }
+                                        setActiveForm(null);
+                                        setFormData({});
+                                        setChatFormStep(0);
+                                        setTimeout(scrollToBottom, 100);
+                                      } catch (err: any) {
+                                        setAiMessages(prev => [...prev, {
+                                          id: Date.now(),
+                                          content: `❌ Failed to create ${activeForm.type}. ${err?.response?.data?.error || 'Please review your inputs and try again.'}`,
+                                          sender: { id: -1, first_name: 'Neurolancer', last_name: 'AI', profile_picture: null, avatar_type: 'default', selected_avatar: 'ai' },
+                                          created_at: new Date().toISOString(),
+                                          is_read: true
+                                        }]);
+                                      } finally {
+                                        setChatFormLoading(false);
+                                      }
+                                    }}
+                                    disabled={chatFormLoading}
+                                    className="px-4 py-2 text-white rounded-lg disabled:opacity-50" style={{background: 'linear-gradient(135deg, #0D9E86, #0B8A73)'}}
+                                  >
+                                    {chatFormLoading ? 'Submitting...' : activeForm.submitText}
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          ) : (
+                            // Full form
+                            <div className="space-y-3">
+                              {activeForm.fields.map((field: any) => {
+                                const isCategory = field.name === 'category_id';
+                                const isSubcats = field.name === 'subcategory_ids';
+                                const selectOptions = isCategory ? chatCategories.map((c: any) => ({ value: String(c.id), label: c.name })) : (field.options || []);
+                                return (
+                                  <div key={field.name}>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                      {field.label} {field.required && <span className="text-red-500">*</span>}
+                                    </label>
+                                    {isSubcats ? (
+                                      <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded-lg p-2">
+                                        {chatSubcategories.length === 0 ? (
+                                          <p className="text-xs text-gray-500">No areas available or none selected</p>
+                                        ) : (
+                                          chatSubcategories.map((s: any) => (
+                                            <label key={s.id} className="flex items-center gap-2 text-sm">
+                                              <input
+                                                type="checkbox"
+                                                checked={Array.isArray(formData.subcategory_ids) && formData.subcategory_ids.includes(s.id)}
+                                                onChange={(e) => {
+                                                  setFormData((prev) => {
+                                                    const current: number[] = Array.isArray(prev.subcategory_ids) ? [...prev.subcategory_ids] : [];
+                                                    if (e.target.checked) {
+                                                      if (!current.includes(s.id)) current.push(s.id);
+                                                    } else {
+                                                      const idx = current.indexOf(s.id);
+                                                      if (idx >= 0) current.splice(idx, 1);
+                                                    }
+                                                    return { ...prev, subcategory_ids: current };
+                                                  });
+                                                }}
+                                              />
+                                              {s.name}
+                                            </label>
+                                          ))
+                                        )}
+                                      </div>
+                                    ) : field.type === 'textarea' ? (
+                                      <textarea
+                                        value={formData[field.name] || ''}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, [field.name]: e.target.value }))}
+                                        placeholder={field.placeholder}
+                                        required={field.required}
+                                        rows={3}
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+                                      />
+                                    ) : field.type === 'select' ? (
+                                      <select
+                                        value={formData[field.name] || ''}
+                                        onChange={async (e) => {
+                                          const val = e.target.value;
+                                          setFormData(prev => ({ ...prev, [field.name]: val }));
+                                          if (isCategory) {
+                                            try {
+                                              const resp = await api.get(`/categories/${val}/subcategories/`);
+                                              const subs = resp.data.results || resp.data || [];
+                                              setChatSubcategories(subs);
+                                              setFormData(prev => ({ ...prev, subcategory_ids: [] }));
+                                            } catch (err) {
+                                              setChatSubcategories([]);
+                                            }
+                                          }
+                                        }}
+                                        required={field.required}
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+                                      >
+                                        <option value="">Select {field.label}</option>
+                                        {selectOptions.map((option: any) => (
+                                          <option key={option.value} value={option.value}>{option.label}</option>
+                                        ))}
+                                      </select>
+                                    ) : (
+                                      <input
+                                        type={field.type}
+                                        value={formData[field.name] || ''}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, [field.name]: e.target.value }))}
+                                        placeholder={field.placeholder}
+                                        required={field.required}
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+                                      />
+                                    )}
+                                  </div>
+                                );
+                              })}
+                              <div className="flex items-center justify-end pt-2">
+                                <button
+                                  onClick={async () => {
+                                    try {
+                                      setChatFormLoading(true);
+                                      if (activeForm.type === 'job') {
+                                        const payload: any = {
+                                          title: formData.title,
+                                          description: formData.description,
+                                          category_id: parseInt(formData.category_id),
+                                          subcategory_ids: Array.isArray(formData.subcategory_ids) ? formData.subcategory_ids : [],
+                                          budget_min: parseFloat(formData.budget_min),
+                                          budget_max: parseFloat(formData.budget_max),
+                                          deadline: formData.deadline ? new Date(formData.deadline).toISOString() : undefined,
+                                          skills_required: formData.skills_required,
+                                          job_type: formData.job_type,
+                                          experience_level: formData.experience_level,
+                                        };
+                                        const resp = await api.post('/jobs/create/', payload);
+                                        const jobId = resp.data.id;
+                                        setAiMessages(prev => [...prev, {
+                                          id: Date.now(),
+                                          content: `✅ **Job created successfully!**\n\nYour job "${payload.title}" has been posted. [View it here](/jobs/${jobId}).`,
+                                          sender: { id: -1, first_name: 'Neurolancer', last_name: 'AI', profile_picture: null, avatar_type: 'default', selected_avatar: 'ai' },
+                                          created_at: new Date().toISOString(),
+                                          is_read: true
+                                        }]);
+                                      } else if (activeForm.type === 'gig') {
+                                        const payload: any = {
+                                          title: formData.title,
+                                          description: formData.description,
+                                          category_id: parseInt(formData.category_id),
+                                          subcategory_ids: Array.isArray(formData.subcategory_ids) ? formData.subcategory_ids : [],
+                                          basic_title: formData.basic_title,
+                                          basic_description: formData.basic_description,
+                                          basic_price: parseFloat(formData.basic_price),
+                                          basic_delivery_time: parseInt(formData.basic_delivery_time),
+                                        };
+                                        const resp = await api.post('/gigs/create/', payload);
+                                        const gigId = resp.data.id;
+                                        setAiMessages(prev => [...prev, {
+                                          id: Date.now(),
+                                          content: `✅ **Gig created successfully!**\n\nYour gig "${payload.title}" has been posted. [View it here](/gigs/${gigId}).`,
+                                          sender: { id: -1, first_name: 'Neurolancer', last_name: 'AI', profile_picture: null, avatar_type: 'default', selected_avatar: 'ai' },
+                                          created_at: new Date().toISOString(),
+                                          is_read: true
+                                        }]);
+                                      }
+                                      setActiveForm(null);
+                                      setFormData({});
+                                      setChatFormStep(0);
+                                      setTimeout(scrollToBottom, 100);
+                                    } catch (err: any) {
+                                      setAiMessages(prev => [...prev, {
+                                        id: Date.now(),
+                                        content: `❌ Failed to create ${activeForm.type}. ${err?.response?.data?.error || 'Please review your inputs and try again.'}`,
+                                        sender: { id: -1, first_name: 'Neurolancer', last_name: 'AI', profile_picture: null, avatar_type: 'default', selected_avatar: 'ai' },
+                                        created_at: new Date().toISOString(),
+                                        is_read: true
+                                      }]);
+                                    } finally {
+                                      setChatFormLoading(false);
+                                    }
+                                  }}
+                                  disabled={chatFormLoading}
+                                  className="px-4 py-2 text-white rounded-lg disabled:opacity-50" style={{background: 'linear-gradient(135deg, #0D9E86, #0B8A73)'}}
+                                >
+                                  {chatFormLoading ? 'Submitting...' : activeForm.submitText}
+                                </button>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       )}
 

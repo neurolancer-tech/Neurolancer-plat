@@ -30,7 +30,6 @@ export class NeurolancerChatbot {
 
 🎯 **Gig Marketplace**: Finding AI services, creating gigs, managing orders
 💼 **Job Board**: Posting jobs, submitting proposals, project management  
-🎓 **Learning**: AI courses, skill assessments, certifications
 💬 **Platform Support**: Account help, payment issues, technical support
 📊 **Analytics**: Understanding your performance metrics
 
@@ -149,7 +148,6 @@ Neurolancer is a comprehensive AI freelance marketplace with these key features:
 - Gig Marketplace: AI service offerings with package-based pricing
 - Job Board: Project postings with proposal system
 - Project Management: Multi-task collaboration tools
-- Learning Platform: AI courses, assessments, and certifications
 - Real-time Messaging: Communication between users
 - Payment System: Paystack integration with escrow
 - Analytics: Performance tracking and insights${groupContext}
