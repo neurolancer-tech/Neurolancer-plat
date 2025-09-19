@@ -198,11 +198,12 @@ export default function VerifyPage() {
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Date of Birth
+                    Date of Birth *
                   </label>
                   <input
                     type="date"
                     name="date_of_birth"
+                    required
                     value={formData.date_of_birth}
                     onChange={handleInputChange}
                     className="input-field"
@@ -211,11 +212,12 @@ export default function VerifyPage() {
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Phone Number
+                    Phone Number *
                   </label>
                   <input
                     type="tel"
                     name="phone_number"
+                    required
                     value={formData.phone_number}
                     onChange={handleInputChange}
                     className="input-field"
@@ -225,11 +227,12 @@ export default function VerifyPage() {
                 
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Address
+                    Address *
                   </label>
                   <textarea
                     name="address"
                     rows={3}
+                    required
                     value={formData.address}
                     onChange={handleInputChange}
                     className="input-field"
@@ -269,10 +272,11 @@ export default function VerifyPage() {
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Secondary Document (Optional)
+                    Secondary Document *
                   </label>
                   <select
                     name="secondary_document_type"
+                    required
                     value={formData.secondary_document_type}
                     onChange={handleInputChange}
                     className="input-field mb-2"
@@ -285,6 +289,7 @@ export default function VerifyPage() {
                     type="file"
                     name="secondary_document"
                     accept="image/*,.pdf"
+                    required
                     onChange={handleFileChange}
                     className="input-field"
                   />
@@ -298,13 +303,14 @@ export default function VerifyPage() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Professional Certificates (Optional)
+                    Professional Certificates *
                   </label>
                   <input
                     type="file"
                     name="certificates"
                     accept="image/*,.pdf"
                     multiple
+                    required
                     onChange={handleFileChange}
                     className="input-field"
                   />
@@ -313,11 +319,12 @@ export default function VerifyPage() {
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Portfolio Link
+                    Portfolio Link *
                   </label>
                   <input
                     type="url"
                     name="portfolio_link"
+                    required
                     value={formData.portfolio_link}
                     onChange={handleInputChange}
                     className="input-field"
@@ -327,11 +334,12 @@ export default function VerifyPage() {
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    LinkedIn Profile
+                    LinkedIn Profile *
                   </label>
                   <input
                     type="url"
                     name="linkedin_profile"
+                    required
                     value={formData.linkedin_profile}
                     onChange={handleInputChange}
                     className="input-field"

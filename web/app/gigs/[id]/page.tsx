@@ -146,8 +146,11 @@ export default function GigDetailPage() {
             {/* Freelancer Info */}
             <div className="card rounded-lg shadow-sm p-6 mb-6">
               <div className="flex items-center space-x-4">
-                <Avatar
+<Avatar
                   src={gig.freelancer_profile?.profile_picture}
+                  avatarType={gig.freelancer_profile?.avatar_type as 'upload' | 'avatar' | 'google' | undefined}
+                  selectedAvatar={gig.freelancer_profile?.selected_avatar}
+                  googlePhotoUrl={gig.freelancer_profile?.google_photo_url}
                   size="lg"
                   alt={gig.freelancer.first_name}
                 />

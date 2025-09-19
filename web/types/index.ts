@@ -72,6 +72,9 @@ export interface Gig {
     total_reviews: number;
     completed_gigs: number;
     profile_picture?: string;
+    avatar_type?: 'upload' | 'avatar' | 'google';
+    selected_avatar?: string;
+    google_photo_url?: string;
   };
   category: Category;
   category_name?: string;
@@ -127,6 +130,12 @@ export interface Order {
 export interface Job {
   id: number;
   client: User & { profile?: UserProfile };
+  client_profile?: {
+    profile_picture?: string;
+    avatar_type?: 'upload' | 'avatar' | 'google';
+    selected_avatar?: string;
+    google_photo_url?: string;
+  };
   title: string;
   description: string;
   category: Category;

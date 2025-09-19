@@ -16,6 +16,49 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'username', 'email', 'first_name', 'last_name', 'date_joined', 'is_staff', 'is_superuser']
 
+class UserWithAvatarSerializer(serializers.ModelSerializer):
+    """User serializer that includes linked UserProfile avatar fields for frontend display"""
+    profile_picture = serializers.SerializerMethodField()
+    avatar_type = serializers.SerializerMethodField()
+    selected_avatar = serializers.SerializerMethodField()
+    google_photo_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = [
+            'id', 'username', 'email', 'first_name', 'last_name', 'date_joined',
+            'is_staff', 'is_superuser',
+            # Avatar-related extras
+            'profile_picture', 'avatar_type', 'selected_avatar', 'google_photo_url'
+        ]
+
+    def _get_profile(self, obj):
+        try:
+            return obj.userprofile
+        except Exception:
+            return None
+
+    def get_profile_picture(self, obj):
+        profile = self._get_profile(obj)
+        try:
+            if profile and profile.profile_picture:
+                return profile.profile_picture.url
+        except Exception:
+            pass
+        return None
+
+    def get_avatar_type(self, obj):
+        profile = self._get_profile(obj)
+        return getattr(profile, 'avatar_type', None) if profile else None
+
+    def get_selected_avatar(self, obj):
+        profile = self._get_profile(obj)
+        return getattr(profile, 'selected_avatar', None) if profile else None
+
+    def get_google_photo_url(self, obj):
+        profile = self._get_profile(obj)
+        return getattr(profile, 'google_photo_url', None) if profile else None
+
 class SubcategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Subcategory
@@ -354,7 +397,7 @@ class CategoryWithSubcategoriesSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'description', 'icon', 'subcategories', 'created_at']
 
 class GigSerializer(serializers.ModelSerializer):
-    freelancer = UserSerializer(read_only=True)
+    freelancer = UserWithAvatarSerializer(read_only=True)
     freelancer_profile = serializers.SerializerMethodField()
     category = CategorySerializer(read_only=True)
     category_id = serializers.IntegerField(write_only=True)
@@ -391,7 +434,10 @@ class GigSerializer(serializers.ModelSerializer):
                 'rating': float(profile.rating),
                 'total_reviews': profile.total_reviews,
                 'completed_gigs': profile.completed_gigs,
-                'profile_picture': profile.profile_picture.url if profile.profile_picture else None
+                'profile_picture': profile.profile_picture.url if profile.profile_picture else None,
+                'avatar_type': profile.avatar_type,
+                'selected_avatar': profile.selected_avatar,
+                'google_photo_url': profile.google_photo_url,
             }
         except UserProfile.DoesNotExist:
             return None
@@ -417,7 +463,21 @@ class GigSerializer(serializers.ModelSerializer):
             except Category.DoesNotExist:
                 pass
         
+        # Create the gig first (without handling image file here)
         gig = super().create(validated_data)
+        
+        # If an image file was uploaded under the 'image' key, save it to the model field
+        request = self.context.get('request')
+        try:
+            if request and hasattr(request, 'FILES') and 'image' in request.FILES:
+                uploaded = request.FILES['image']
+                # When using an uploaded image, clear any URL value
+                gig.image_url = ''
+                gig.image = uploaded
+                gig.save(update_fields=['image', 'image_url'])
+        except Exception as e:
+            # Don't fail gig creation if image processing fails; log if needed
+            pass
         
         # Set subcategories and names
         if subcategory_ids:
@@ -425,7 +485,7 @@ class GigSerializer(serializers.ModelSerializer):
             gig.subcategories.set(subcategories)
             subcategory_names = [sub.name for sub in subcategories]
             gig.subcategory_names = ', '.join(subcategory_names)
-            gig.save()
+            gig.save(update_fields=['subcategory_names'])
         
         return gig
     
@@ -455,6 +515,11 @@ class GigSerializer(serializers.ModelSerializer):
             # Delete old image file if exists
             if instance.image:
                 instance.image.delete(save=False)
+            # Assign the newly uploaded file
+            try:
+                instance.image = request.FILES['image']
+            except Exception:
+                pass
         
         # Check if image_url is being set
         elif 'image_url' in validated_data and validated_data.get('image_url'):
@@ -462,7 +527,7 @@ class GigSerializer(serializers.ModelSerializer):
             if instance.image:
                 instance.image.delete(save=False)
                 instance.image = None
-                instance.save()
+                instance.save(update_fields=['image'])
         
         # Check if clearing image (using default)
         elif request and request.data.get('clear_image') == 'true':
@@ -470,7 +535,7 @@ class GigSerializer(serializers.ModelSerializer):
                 instance.image.delete(save=False)
             instance.image = None
             instance.image_url = ''
-            instance.save()
+            instance.save(update_fields=['image', 'image_url'])
         
         # Update category name if category changed
         if 'category_id' in validated_data:
@@ -482,18 +547,23 @@ class GigSerializer(serializers.ModelSerializer):
         
         instance = super().update(instance, validated_data)
         
+        # If an image was uploaded, ensure image_url is cleared and instance saved
+        if request and 'image' in request.FILES:
+            instance.image_url = ''
+            instance.save(update_fields=['image_url'])
+        
         # Update subcategories and names
         if subcategory_ids:
             subcategories = Subcategory.objects.filter(id__in=subcategory_ids)
             instance.subcategories.set(subcategories)
             subcategory_names = [sub.name for sub in subcategories]
             instance.subcategory_names = ', '.join(subcategory_names)
-            instance.save()
+            instance.save(update_fields=['subcategory_names'])
         
         return instance
 
 class GigListSerializer(serializers.ModelSerializer):
-    freelancer = UserSerializer(read_only=True)
+    freelancer = UserWithAvatarSerializer(read_only=True)
     freelancer_profile = serializers.SerializerMethodField()
     category = CategorySerializer(read_only=True)
     image = serializers.SerializerMethodField()
@@ -532,7 +602,10 @@ class GigListSerializer(serializers.ModelSerializer):
                 'rating': float(profile.rating),
                 'total_reviews': profile.total_reviews,
                 'completed_gigs': profile.completed_gigs,
-                'profile_picture': profile.profile_picture.url if profile.profile_picture else None
+                'profile_picture': profile.profile_picture.url if profile.profile_picture else None,
+                'avatar_type': profile.avatar_type,
+                'selected_avatar': profile.selected_avatar,
+                'google_photo_url': profile.google_photo_url,
             }
         except UserProfile.DoesNotExist:
             return None
@@ -876,7 +949,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         return review
 
 class ConversationSerializer(serializers.ModelSerializer):
-    participants = UserSerializer(many=True, read_only=True)
+    participants = UserWithAvatarSerializer(many=True, read_only=True)
     other_participant = serializers.SerializerMethodField()
     last_message = serializers.SerializerMethodField()
     unread_count = serializers.SerializerMethodField()
@@ -899,7 +972,7 @@ class ConversationSerializer(serializers.ModelSerializer):
     def get_other_participant(self, obj):
         request_user = self.context['request'].user
         other = obj.get_other_participant(request_user)
-        return UserSerializer(other).data if other else None
+        return UserWithAvatarSerializer(other).data if other else None
     
     def get_last_message(self, obj):
         last_msg = obj.messages.last()
@@ -921,7 +994,7 @@ class ConversationSerializer(serializers.ModelSerializer):
         return obj.is_admin(request_user)
 
 class MessageSerializer(serializers.ModelSerializer):
-    sender = UserSerializer(read_only=True)
+    sender = UserWithAvatarSerializer(read_only=True)
     attachment_url = serializers.SerializerMethodField()
     attachment_name = serializers.SerializerMethodField()
     attachment_type = serializers.SerializerMethodField()
@@ -1115,7 +1188,7 @@ class GroupCreateSerializer(serializers.ModelSerializer):
 
 # Jobs/Projects Marketplace Serializers
 class JobSerializer(serializers.ModelSerializer):
-    client = UserSerializer(read_only=True)
+    client = UserWithAvatarSerializer(read_only=True)
     category = CategorySerializer(read_only=True)
     category_id = serializers.IntegerField(write_only=True, required=False)
     # expose nested subcategories for detail pages
@@ -1127,6 +1200,21 @@ class JobSerializer(serializers.ModelSerializer):
     class Meta:
         model = Job
         fields = '__all__'
+
+    def to_representation(self, instance):
+        """Augment representation with client_profile avatar fields for frontend display."""
+        data = super().to_representation(instance)
+        try:
+            profile = instance.client.userprofile
+            data['client_profile'] = {
+                'profile_picture': profile.profile_picture.url if profile.profile_picture else None,
+                'avatar_type': profile.avatar_type,
+                'selected_avatar': profile.selected_avatar,
+                'google_photo_url': profile.google_photo_url,
+            }
+        except Exception:
+            data['client_profile'] = None
+        return data
     
     def get_skills_list(self, obj):
         if obj.skills_required:
@@ -1223,8 +1311,9 @@ class JobSerializer(serializers.ModelSerializer):
         return instance
 
 class JobListSerializer(serializers.ModelSerializer):
-    client = UserSerializer(read_only=True)
+    client = UserWithAvatarSerializer(read_only=True)
     category = CategorySerializer(read_only=True)
+    client_profile = serializers.SerializerMethodField()
     skills_list = serializers.SerializerMethodField()
     time_until_deadline = serializers.SerializerMethodField()
     # Include quick-access name fields for frontend
@@ -1236,7 +1325,7 @@ class JobListSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'title', 'budget_min', 'budget_max', 'experience_level', 
             'job_type', 'proposal_count', 'created_at', 'deadline',
-            'client', 'category', 'category_name', 'subcategory_names', 'skills_list', 'time_until_deadline', 'location',
+            'client', 'client_profile', 'category', 'category_name', 'subcategory_names', 'skills_list', 'time_until_deadline', 'location',
             'likes_count', 'dislikes_count'
         ]
     
@@ -1244,6 +1333,18 @@ class JobListSerializer(serializers.ModelSerializer):
         if obj.skills_required:
             return [skill.strip() for skill in obj.skills_required.split(',') if skill.strip()][:3]
         return []
+
+    def get_client_profile(self, obj):
+        try:
+            profile = obj.client.userprofile
+            return {
+                'profile_picture': profile.profile_picture.url if profile.profile_picture else None,
+                'avatar_type': profile.avatar_type,
+                'selected_avatar': profile.selected_avatar,
+                'google_photo_url': profile.google_photo_url,
+            }
+        except Exception:
+            return None
     
     def get_time_until_deadline(self, obj):
         from django.utils import timezone

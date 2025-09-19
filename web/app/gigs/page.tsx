@@ -403,8 +403,11 @@ export default function GigsPage() {
                         </div>
                         <div className="p-4">
                           <div className="flex items-center space-x-2 mb-3">
-                            <Avatar
+<Avatar
                               src={gig.freelancer_profile?.profile_picture}
+                              avatarType={gig.freelancer_profile?.avatar_type as 'upload' | 'avatar' | 'google' | undefined}
+                              selectedAvatar={gig.freelancer_profile?.selected_avatar}
+                              googlePhotoUrl={gig.freelancer_profile?.google_photo_url}
                               size="sm"
                               alt={gig.freelancer.first_name}
                             />

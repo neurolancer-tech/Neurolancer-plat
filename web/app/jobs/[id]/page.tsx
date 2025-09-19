@@ -411,11 +411,11 @@ export default function JobDetailPage() {
               <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">About the Client</h3>
               <div className="flex items-center space-x-3 mb-4">
                 <Link href={`/clients/${job.client?.id || ''}`} className="flex items-center">
-                  <Avatar
-                    src={job.client?.profile_picture || (job.client as any)?.profile?.profile_picture}
-                    avatarType={((job.client as any)?.avatar_type || (job.client as any)?.profile?.avatar_type as "upload" | "avatar" | "google") || 'avatar'}
-                    selectedAvatar={(job.client as any)?.selected_avatar || (job.client as any)?.profile?.selected_avatar || 'user'}
-                    googlePhotoUrl={(job.client as any)?.google_photo_url || (job.client as any)?.profile?.google_photo_url}
+<Avatar
+                    src={job.client_profile?.profile_picture}
+                    avatarType={job.client_profile?.avatar_type as 'upload' | 'avatar' | 'google' | undefined}
+                    selectedAvatar={job.client_profile?.selected_avatar || 'user'}
+                    googlePhotoUrl={job.client_profile?.google_photo_url}
                     size="md"
                     alt={job.client?.first_name || 'Client'}
                   />
