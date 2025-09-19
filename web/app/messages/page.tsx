@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
@@ -52,8 +52,9 @@ interface Message {
   message_type?: 'text' | 'file' | 'image' | 'system';
 }
 
-export default function MessagesPage() {
+function MessagesPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -251,7 +252,6 @@ export default function MessagesPage() {
     initializeAiMessages();
   }, [router]);
 
-  const searchParams = useSearchParams();
   useEffect(() => {
     // Support deep links: /messages?conversation=ID or /messages?user=ID
     const convParam = searchParams?.get('conversation');
@@ -1863,5 +1863,19 @@ ${aiResponse}`;
         onFileSelect={sendFiles}
       />
     </div>
+  );
+}
+
+export default function MessagesPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0D9E86]"></div>
+        </div>
+      </div>
+    }>
+      <MessagesPageContent />
+    </Suspense>
   );
 }
