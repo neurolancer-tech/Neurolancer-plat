@@ -97,7 +97,7 @@ def freelancer_profile_view(request):
                 'message': 'Freelancer profile not found'
             }, status=status.HTTP_404_NOT_FOUND)
 
-@api_view(['GET'])
+@api_view(['GET', 'POST', 'PUT', 'DELETE'])
 @permission_classes([IsAuthenticated])
 def client_profile_view(request):
     """Manage client profiles"""

@@ -146,7 +146,10 @@ export default function FreelancerProfileForm({ onSave }: FreelancerProfileFormP
   });
 
   return (
-    <form className="space-y-6" id="profile-setup">
+    <form onSubmit={handleSubmit} className="space-y-6" id="profile-setup">
+      {/* Publish Toggle at top */}
+      <FreelancerProfileToggle profile={profile} loading={loading} onSubmit={handleSubmit} />
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -365,7 +368,16 @@ export default function FreelancerProfileForm({ onSave }: FreelancerProfileFormP
         </div>
       </div>
 
-      <FreelancerProfileToggle profile={profile} loading={loading} onSubmit={handleSubmit} />
+      {/* Save/Create button at bottom */}
+      <div className="flex justify-end pt-6">
+        <button
+          type="submit"
+          disabled={loading}
+          className="px-8 py-3 bg-gradient-to-r from-green-500 to-blue-600 text-white rounded-lg hover:from-green-600 hover:to-blue-700 disabled:opacity-50 transition-all font-medium shadow-lg"
+        >
+          {loading ? 'Saving...' : (profile.id ? 'Save Freelancer Profile' : 'Create Freelancer Profile')}
+        </button>
+      </div>
     </form>
   );
 }
