@@ -30,18 +30,19 @@ export default function Avatar({
 }: AvatarProps) {
   
   const getAvatarSrc = () => {
-    if (avatarType === 'google' && googlePhotoUrl) {
+    // Prefer Google photo when provided
+    if (googlePhotoUrl && (avatarType === 'google' || (!src && googlePhotoUrl))) {
       return googlePhotoUrl;
     }
-    
-    if (avatarType === 'upload' && src) {
+
+    // If any src is provided, build a usable URL (absolute or media path)
+    if (src) {
       if (src.startsWith('http')) return src;
       const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
       if (src.startsWith('/media/')) return `${baseUrl}${src}`;
       if (src.startsWith('media/')) return `${baseUrl}/${src}`;
       return `${baseUrl}${src}`;
     }
-    
     
     // Default to SVG avatar
     const avatarMap: { [key: string]: string } = {
@@ -55,7 +56,8 @@ export default function Avatar({
   };
 
   const avatarSrc = getAvatarSrc();
-  const isUploadedImage = avatarType === 'upload' && (src || avatarSrc.includes('/media/'));
+  // Render as <img> when using http(s) or media paths to avoid Next/Image remote config issues
+  const isUploadedImage = avatarSrc.startsWith('http') || avatarSrc.includes('/media/');
 
   const sizeClass = typeof size === 'string' && size.includes('w-') ? size : sizeClasses[size as keyof typeof sizeClasses] || sizeClasses.md;
 

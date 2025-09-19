@@ -197,6 +197,19 @@ export default function ProfilePage() {
     }
   }, [router]);
 
+  // Ensure "Go to Profile Setup" banner switches tab and scrolls
+  useEffect(() => {
+    const handler = () => {
+      setActiveTab('profile-setup');
+      setTimeout(() => {
+        const el = document.querySelector('#profile-setup') as HTMLElement | null;
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      }, 50);
+    };
+    window.addEventListener('open-profile-setup', handler as any);
+    return () => window.removeEventListener('open-profile-setup', handler as any);
+  }, []);
+
   const fetchOnboardingData = async () => {
     try {
       const response = await api.get('/onboarding/');

@@ -491,6 +491,7 @@ class VerificationRequestAdmin(admin.ModelAdmin):
     list_filter = ['status', 'id_document_type', 'created_at']
     search_fields = ['user__username', 'user__email', 'full_name']
     readonly_fields = ['created_at', 'reviewed_at']
+    actions = ['mark_as_pending', 'mark_as_verifying', 'mark_as_verified', 'mark_as_rejected', 'mark_as_cancelled', 'mark_as_invalid']
     
     fieldsets = (
         ('User Information', {
@@ -510,6 +511,80 @@ class VerificationRequestAdmin(admin.ModelAdmin):
             'classes': ['collapse']
         })
     )
+    
+    def mark_as_pending(self, request, queryset):
+        from .notification_service import NotificationService
+        updated = 0
+        for req in queryset:
+            req.status = 'pending'
+            req.reviewed_by = request.user
+            req.save()
+            NotificationService.send_verification_notification(req.user, 'pending_review')
+            updated += 1
+        self.message_user(request, f"{updated} verification requests marked as pending.")
+    mark_as_pending.short_description = "Mark selected requests as Pending"
+    
+    def mark_as_verifying(self, request, queryset):
+        from .notification_service import NotificationService
+        updated = 0
+        for req in queryset:
+            req.status = 'verifying'
+            req.reviewed_by = request.user
+            req.save()
+            NotificationService.send_verification_notification(req.user, 'pending_review')
+            updated += 1
+        self.message_user(request, f"{updated} verification requests marked as verifying.")
+    mark_as_verifying.short_description = "Mark selected requests as Verifying"
+    
+    def mark_as_verified(self, request, queryset):
+        from .notification_service import NotificationService
+        updated = 0
+        for req in queryset:
+            req.status = 'verified'
+            req.reviewed_by = request.user
+            req.reviewed_at = timezone.now()
+            req.save()
+            NotificationService.send_verification_notification(req.user, 'verified')
+            updated += 1
+        self.message_user(request, f"{updated} verification requests marked as verified.")
+    mark_as_verified.short_description = "Mark selected requests as Verified"
+    
+    def mark_as_rejected(self, request, queryset):
+        from .notification_service import NotificationService
+        updated = 0
+        for req in queryset:
+            req.status = 'rejected'
+            req.reviewed_by = request.user
+            req.reviewed_at = timezone.now()
+            req.save()
+            NotificationService.send_verification_notification(req.user, 'rejected', req.admin_notes or '')
+            updated += 1
+        self.message_user(request, f"{updated} verification requests marked as rejected.")
+    mark_as_rejected.short_description = "Mark selected requests as Rejected"
+    
+    def mark_as_cancelled(self, request, queryset):
+        from .notification_service import NotificationService
+        updated = 0
+        for req in queryset:
+            req.status = 'cancelled'
+            req.reviewed_by = request.user
+            req.save()
+            NotificationService.send_verification_notification(req.user, 'cancelled')
+            updated += 1
+        self.message_user(request, f"{updated} verification requests marked as cancelled.")
+    mark_as_cancelled.short_description = "Mark selected requests as Cancelled"
+    
+    def mark_as_invalid(self, request, queryset):
+        from .notification_service import NotificationService
+        updated = 0
+        for req in queryset:
+            req.status = 'invalid'
+            req.reviewed_by = request.user
+            req.save()
+            NotificationService.send_verification_notification(req.user, 'invalid', req.admin_notes or '')
+            updated += 1
+        self.message_user(request, f"{updated} verification requests marked as invalid.")
+    mark_as_invalid.short_description = "Mark selected requests as Invalid"
 
 @admin.register(VerificationBadge)
 class VerificationBadgeAdmin(admin.ModelAdmin):

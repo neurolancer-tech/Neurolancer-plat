@@ -8,6 +8,7 @@ import { UserProfile } from '@/types';
 import api from '@/lib/api';
 import { profileApi } from '@/lib/profileApi';
 import Pagination from '@/components/Pagination';
+import toast from 'react-hot-toast';
 
 export default function ClientsPage() {
   const [clients, setClients] = useState<UserProfile[]>([]);
@@ -53,6 +54,22 @@ export default function ClientsPage() {
       console.error('Error loading clients:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const startDirectConversation = async (userId: number) => {
+    try {
+      const response = await api.post('/conversations/direct/start/', { user_id: userId });
+      const conversationId = response.data.id || response.data.conversation?.id;
+      if (conversationId) {
+        window.location.href = `/messages?conversation=${conversationId}`;
+      } else {
+        window.location.href = `/messages`;
+      }
+    } catch (error: any) {
+      console.error('Error starting conversation:', error);
+      const msg = error?.response?.data?.error || 'Failed to start conversation';
+      toast.error(msg);
     }
   };
 
@@ -268,9 +285,9 @@ export default function ClientsPage() {
                           <Link href={`/clients/${(client as any).id}`} className="flex-1 btn-primary text-center text-sm py-2">
                             View Profile
                           </Link>
-                          <Link href={`/messages?user=${(client as any).id}`} className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-center transition-colors text-sm">
+                          <button onClick={() => startDirectConversation((client as any).id)} className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-center transition-colors text-sm">
                             Message
-                          </Link>
+                          </button>
                         </div>
                       </div>
                     ))}

@@ -271,6 +271,21 @@ export default function FreelancersPage() {
     }
   };
 
+  const startDirectConversation = async (userId: number) => {
+    try {
+      const response = await api.post('/conversations/direct/start/', { user_id: userId });
+      const conversationId = response.data.id || response.data.conversation?.id;
+      if (conversationId) {
+        window.location.href = `/messages?conversation=${conversationId}`;
+      } else {
+        window.location.href = `/messages`;
+      }
+    } catch (error) {
+      console.error('Error starting conversation:', error);
+      alert('Failed to start conversation');
+    }
+  };
+
   const filteredFreelancers = useMemo(() => {
     return freelancers.filter(freelancer => {
       const matchesSearch = (freelancer.user.first_name || '').toLowerCase().includes(filters.search.toLowerCase()) ||
@@ -649,7 +664,7 @@ export default function FreelancersPage() {
                               setShowReportModal(true);
                             }}
                             onView={() => window.location.href = `/freelancer/${freelancer.user.id}`}
-                            onContact={() => window.location.href = `/messages?user=${freelancer.user.id}`}
+                            onContact={() => startDirectConversation(freelancer.user.id)}
                             size="sm"
                           />
                         </div>
@@ -865,9 +880,9 @@ export default function FreelancersPage() {
                             <Link href={`/freelancer/${freelancer.user.id}`} className="flex-1 bg-primary text-white text-center text-sm py-2 px-2 sm:px-3 rounded-lg hover:bg-primary/90 transition-colors font-medium">
                               View Profile
                             </Link>
-                            <Link href={`/messages?user=${freelancer.user.id}`} className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-center text-sm py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors font-medium">
+                            <button onClick={() => startDirectConversation(freelancer.user.id)} className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-center text-sm py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors font-medium">
                               Message
-                            </Link>
+                            </button>
                           </div>
                         </div>
                       </div>

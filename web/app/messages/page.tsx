@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -250,6 +250,48 @@ export default function MessagesPage() {
     
     initializeAiMessages();
   }, [router]);
+
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    // Support deep links: /messages?conversation=ID or /messages?user=ID
+    const convParam = searchParams?.get('conversation');
+    const userParam = searchParams?.get('user');
+
+    const selectByConversationId = async (id: number) => {
+      try {
+        const res = await api.get(`/conversations/${id}/`);
+        const conversation = res.data;
+        setSelectedConversation(conversation);
+        loadMessages(id, true);
+      } catch (e) {
+        console.error('Failed to load conversation by id:', e);
+      }
+    };
+
+    const startDirectWithUser = async (userId: number) => {
+      try {
+        const resp = await api.post('/conversations/direct/start/', { user_id: userId });
+        const cid = resp.data.id || resp.data.conversation?.id;
+        if (cid) {
+          await selectByConversationId(cid);
+        }
+      } catch (e) {
+        console.error('Failed to start direct conversation from query param:', e);
+      }
+    };
+
+    if (convParam) {
+      const id = parseInt(convParam);
+      if (!isNaN(id)) {
+        selectByConversationId(id);
+      }
+    } else if (userParam) {
+      const uid = parseInt(userParam);
+      if (!isNaN(uid)) {
+        startDirectWithUser(uid);
+      }
+    }
+  }, [searchParams]);
 
   // WebSocket pause/resume disabled for free tier
   // useEffect(() => {

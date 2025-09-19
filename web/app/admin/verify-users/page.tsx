@@ -99,12 +99,12 @@ export default function AdminVerifyUsersPage() {
       });
 
       if (response.data.status === 'success') {
-        toast.success('Verification request updated successfully');
+        toast.success(`Verification request updated to ${newStatus}. User has been notified.`);
         setSelectedRequest(null);
         loadVerificationRequests();
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Failed to update verification request');
+      toast.error(error.response?.data?.message || error.response?.data?.error || 'Failed to update verification request');
     } finally {
       setUpdating(false);
     }
