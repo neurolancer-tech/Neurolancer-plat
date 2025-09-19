@@ -44,6 +44,9 @@ interface Gig {
     total_reviews: number;
     completed_gigs: number;
     profile_picture?: string;
+    avatar_type?: 'upload' | 'avatar' | 'google';
+    selected_avatar?: string;
+    google_photo_url?: string;
   };
 }
 
