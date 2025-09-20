@@ -212,6 +212,12 @@ export default function TaskCard({ task, onTaskUpdate }: TaskCardProps) {
                 )}
               </div>
             )}
+            {/* Always show escrow badge when paid but not released */}
+            {task.order && task.order.is_paid && !task.order.escrow_released && task.order.status !== 'completed' && (
+              <span className="mt-2 px-3 py-2 bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 text-xs sm:text-sm rounded-lg text-center w-full sm:w-auto">
+                Payment in Escrow
+              </span>
+            )}
           </div>
         </div>
       ) : (

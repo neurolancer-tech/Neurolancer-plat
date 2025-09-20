@@ -1206,47 +1206,10 @@ def update_order_status(request, order_id):
     elif new_status == 'delivered':
         order.delivered_at = timezone.now()
     elif new_status == 'completed':
+        # Do not allow completing an order unless escrow has been released
+        if not order.escrow_released:
+            return Response({'error': 'Use the Release Payment action to complete the order'}, status=400)
         order.completed_at = timezone.now()
-        # Release escrow payment
-        if order.is_paid and not order.escrow_released:
-            order.escrow_released = True
-            freelancer_profile = order.freelancer.userprofile
-            
-            # Import currency conversion function
-            from .payments import convert_kes_to_usd
-            
-            # Convert KES payment to USD for balance storage
-            payment_amount_kes = order.price  # Order price is in KES
-            payment_amount_usd = convert_kes_to_usd(payment_amount_kes)
-            
-            # Move from escrow to available balance if in escrow, otherwise add directly
-            if freelancer_profile.escrow_balance >= payment_amount_usd:
-                freelancer_profile.escrow_balance -= payment_amount_usd
-                freelancer_profile.available_balance += payment_amount_usd
-            else:
-                # If not in escrow, add directly to available balance
-                freelancer_profile.available_balance += payment_amount_usd
-            
-            freelancer_profile.total_earnings += payment_amount_usd
-            
-            # Update completed gigs count
-            freelancer_profile.completed_gigs = Order.objects.filter(
-                freelancer=order.freelancer, 
-                status='completed'
-            ).count()
-            freelancer_profile.save()
-            
-            print(f"Order {order.id} completed: Added {payment_amount_kes} KES (${payment_amount_usd:.2f} USD) to freelancer {order.freelancer.username} balance")
-            
-            # Send payment notification to freelancer (display in USD)
-            Notification.objects.create(
-                user=order.freelancer,
-                title=f'Payment Received: ${payment_amount_usd:.2f}',
-                message=f'You have received payment of ${payment_amount_usd:.2f} for "{order.title}". The amount has been added to your available balance.',
-                notification_type='payment',
-                action_url='/dashboard',
-                related_object_id=order.id
-            )
     
     order.save()
     
@@ -3142,12 +3105,11 @@ def process_job_payment(request, job_id):
     # Process payment (simulate success for now)
     order.is_paid = True
     order.payment_reference = payment_reference
-    order.status = 'completed'
-    order.completed_at = timezone.now()
-    order.escrow_released = True
+    if order.status in ['pending', 'accepted']:
+        order.status = 'in_progress'
     order.save()
     
-    # Update freelancer earnings
+    # Hold funds in escrow (convert KES to USD)
     freelancer_profile = order.freelancer.userprofile
     
     # Import currency conversion function
@@ -3157,15 +3119,13 @@ def process_job_payment(request, job_id):
     payment_amount_kes = order.price  # Order price is in KES
     payment_amount_usd = convert_kes_to_usd(payment_amount_kes)
     
-    freelancer_profile.available_balance += payment_amount_usd
-    freelancer_profile.total_earnings += payment_amount_usd
-    freelancer_profile.completed_gigs += 1
+    freelancer_profile.escrow_balance += payment_amount_usd
     freelancer_profile.save()
     
-    print(f"Job payment processed: Added {payment_amount_kes} KES (${payment_amount_usd:.2f} USD) to freelancer {order.freelancer.username} balance")
+    print(f"Job payment processed: Held {payment_amount_kes} KES (${payment_amount_usd:.2f} USD) in escrow for freelancer {order.freelancer.username}")
     
-    # Update job status
-    job.status = 'completed'
+    # Update job status to active
+    job.status = 'active'
     job.save()
     
     # Send notifications (display in USD)
@@ -3254,9 +3214,10 @@ def complete_job_work(request, job_id):
         order.progress_notes = (order.progress_notes or '') + f"\n[{timezone.now().strftime('%Y-%m-%d %H:%M')}] Work completed: {deliverable_notes}"
         order.save()
     
-    # Update job status
-    job.status = 'delivered'
-    job.save()
+    # Keep job in progress; delivery status is tracked on the order
+    if job.status != 'completed':
+        job.status = 'in_progress'
+        job.save()
     
     # Notify client
     Notification.objects.create(
@@ -3284,9 +3245,7 @@ def process_order_payment(request, order_id):
     except Order.DoesNotExist:
         return Response({'error': 'Order not found'}, status=404)
     
-    if order.status != 'completed':
-        return Response({'error': 'Order must be completed to process payment'}, status=400)
-    
+    # Allow processing payment without requiring completion; prevent double-processing
     if order.is_paid:
         return Response({'error': 'Payment already processed'}, status=400)
     
@@ -3296,10 +3255,11 @@ def process_order_payment(request, order_id):
     # Process payment (simulate success for now)
     order.is_paid = True
     order.payment_reference = payment_reference
-    order.escrow_released = True
+    if order.status in ['pending', 'accepted']:
+        order.status = 'in_progress'
     order.save()
     
-    # Update freelancer earnings
+    # Hold funds in escrow
     freelancer_profile = order.freelancer.userprofile
     
     # Import currency conversion function
@@ -3309,34 +3269,32 @@ def process_order_payment(request, order_id):
     payment_amount_kes = order.price  # Order price is in KES
     payment_amount_usd = convert_kes_to_usd(payment_amount_kes)
     
-    freelancer_profile.available_balance += payment_amount_usd
-    freelancer_profile.total_earnings += payment_amount_usd
-    freelancer_profile.completed_gigs += 1
+    freelancer_profile.escrow_balance += payment_amount_usd
     freelancer_profile.save()
     
-    print(f"Order payment processed: Added {payment_amount_kes} KES (${payment_amount_usd:.2f} USD) to freelancer {order.freelancer.username} balance")
+    print(f"Order payment processed: Held {payment_amount_kes} KES (${payment_amount_usd:.2f} USD) in escrow for freelancer {order.freelancer.username}")
     
     # Send notifications (display in USD)
     Notification.objects.create(
         user=order.freelancer,
-        title=f'Payment Received: ${payment_amount_usd:.2f}',
-        message=f'Payment for "{order.title}" has been processed. Amount added to your balance.',
+        title=f'Payment Authorized: ${payment_amount_usd:.2f}',
+        message=f'Payment for "{order.title}" has been authorized and held in escrow. Funds will be released after client approval.',
         notification_type='payment',
-        action_url='/dashboard',
+        action_url='/my-orders',
         related_object_id=order.id
     )
     
     Notification.objects.create(
         user=order.client,
-        title=f'Payment Processed: {order.title}',
-        message=f'Payment of ${order.price} has been successfully processed.',
+        title=f'Payment Authorized: {order.title}',
+        message=f'Your payment has been authorized and is held in escrow. Release after delivery.',
         notification_type='payment',
         action_url=f'/orders/{order.id}',
         related_object_id=order.id
     )
     
     return Response({
-        'message': 'Payment processed successfully',
+        'message': 'Payment processed and held in escrow',
         'order_id': order.id,
         'amount': float(order.price),
         'reference': payment_reference

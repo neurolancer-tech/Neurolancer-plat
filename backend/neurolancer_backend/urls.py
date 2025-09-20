@@ -36,8 +36,9 @@ def api_root(request):
 urlpatterns = [
     path('', api_root, name='api_root'),
     path('admin/', admin.site.urls),
-    path('api/', include('api.urls')),
+    # Prioritize payments routes to avoid overlap with general api include
     path('api/payments/', include('api.payment_urls')),
+    path('api/', include('api.urls')),
     path('api/', include('api.newsletter_urls')),
 ]
 

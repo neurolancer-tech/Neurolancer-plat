@@ -127,6 +127,20 @@ export interface Order {
   completed_at?: string;
 }
 
+export interface JobOrderSummary {
+  id: number;
+  status: string;
+  is_paid?: boolean;
+  escrow_released?: boolean;
+}
+
+export interface JobAcceptedProposalSummary {
+  id: number;
+  proposed_price?: number;
+  delivery_time?: number;
+  freelancer: { id: number; username: string; first_name: string; last_name: string };
+}
+
 export interface Job {
   id: number;
   client: User & { profile?: UserProfile };
@@ -153,6 +167,8 @@ export interface Job {
   proposal_count: number;
   attachments?: string;
   is_paid?: boolean;
+  order_summary?: JobOrderSummary;
+  accepted_proposal?: JobAcceptedProposalSummary;
   likes_count: number;
   dislikes_count: number;
   created_at: string;

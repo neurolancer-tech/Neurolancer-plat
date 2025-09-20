@@ -92,8 +92,17 @@ export default function MyJobsPage() {
   };
 
   const handlePayForJob = (job: Job) => {
-    // Navigate to checkout page with job details
-    router.push(`/checkout?type=job&id=${job.id}&amount=${job.budget_max}&title=${encodeURIComponent(job.title)}`);
+    // Navigate to checkout page with job details; prefer accepted proposal price and freelancer id
+    const freelancerId = job.accepted_proposal?.freelancer?.id;
+    const amount = job.accepted_proposal?.proposed_price || job.budget_max;
+    const params = new URLSearchParams({
+      type: 'job',
+      job_id: String(job.id),
+      amount: String(amount),
+      title: job.title,
+      ...(freelancerId ? { freelancer_id: String(freelancerId) } : {}),
+    });
+    router.push(`/checkout?${params.toString()}`);
   };
 
   const handleRequestPayment = async (job: Job) => {
@@ -337,6 +346,12 @@ export default function MyJobsPage() {
                         <span>Proposals: {job.proposal_count}</span>
                         <span>• Skills: {job.skills_required}</span>
                         <span>• Deadline: {new Date(job.deadline).toLocaleDateString()}</span>
+                        {job.order_summary?.is_paid && !job.order_summary?.escrow_released && (
+                          <span className="px-2 py-1 rounded bg-yellow-100 text-yellow-800">Payment in Escrow</span>
+                        )}
+                        {job.order_summary?.escrow_released && (
+                          <span className="px-2 py-1 rounded bg-green-100 text-green-800">Paid & Released</span>
+                        )}
                       </div>
                       <LikeButton
                         contentType="job"
@@ -356,31 +371,57 @@ export default function MyJobsPage() {
                             View Proposals ({job.proposal_count})
                           </button>
                         )}
-                        {job.status === 'completed' && isJobOwner(job) && (
+                        {/* Client actions */}
+                        {isJobOwner(job) && (
                           <>
-                            <button
-                              onClick={() => handlePayForJob(job)}
-                              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center"
-                            >
-                              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                              </svg>
-                              Process Payment
-                            </button>
-                            {job.is_paid && (
+                            {/* If accepted proposal exists and not yet paid, allow paying */}
+                            {job.accepted_proposal && !(job.order_summary?.is_paid) && (
+                              <button
+                                onClick={() => handlePayForJob(job)}
+                                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center"
+                              >
+                                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                                </svg>
+                                Pay Freelancer
+                              </button>
+                            )}
+                            {/* If paid and delivered, allow release */}
+                            {job.order_summary?.is_paid && !job.order_summary?.escrow_released && job.order_summary?.status === 'delivered' && (
+                              <button
+                                onClick={async () => {
+                                  try {
+                                    await api.post('/payments/release-escrow/', { order_id: job.order_summary?.id });
+                                    toast.success('Payment released to freelancer.');
+                                    loadJobs();
+                                  } catch (e: any) {
+                                    toast.error(e?.response?.data?.error || 'Failed to release payment');
+                                  }
+                                }}
+                                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center"
+                              >
+                                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v8m-4-4h8" />
+                                </svg>
+                                Release Payment
+                              </button>
+                            )}
+                            {/* If already released, allow rating */}
+                            {job.order_summary?.escrow_released && (
                               <button
                                 onClick={() => handleRateFreelancer(job)}
                                 className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 flex items-center"
                               >
                                 <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674z" />
                                 </svg>
                                 Rate Freelancer
                               </button>
                             )}
                           </>
                         )}
-                        {job.status === 'completed' && !isJobOwner(job) && (
+                        {/* Freelancer action: request payment when delivered and not released */}
+                        {!isJobOwner(job) && job.order_summary?.status === 'delivered' && !job.order_summary?.escrow_released && (
                           <button
                             onClick={() => handleRequestPayment(job)}
                             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center"

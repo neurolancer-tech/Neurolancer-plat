@@ -1,16 +1,7 @@
 from django.urls import path, include
 from . import views
-from . import views_payments
 from . import assessment_views
 from .debug_views import debug_gigs
-from .payments import (
-    initialize_payment, verify_payment, paystack_webhook,
-    get_banks, release_escrow,
-    get_mobile_money_providers, calculate_payment_fees
-)
-from .simple_withdrawal import simple_withdrawal
-from .paystack_withdrawal import paystack_withdraw, get_paystack_banks, create_recipient, process_withdrawal
-from .test_paystack_withdrawal import test_paystack_withdraw
 from .location_views import get_location_by_coordinates, get_location_by_ip
 from . import profile_views
 from .profile_views import freelancer_profile_view, client_profile_view, public_freelancer_profiles
@@ -159,25 +150,7 @@ urlpatterns = [
     path('help-requests/my/', views.MyHelpRequestsView.as_view(), name='my-help-requests'),
     path('help-requests/<int:pk>/', views.HelpRequestDetailView.as_view(), name='help-request-detail'),
     
-    # Payment URLs
-    path('payments/initialize/', initialize_payment, name='initialize-payment'),
-    path('payments/verify/', verify_payment, name='verify-payment'),
-    path('payments/webhook/', paystack_webhook, name='paystack-webhook'),
-    path('payments/withdraw/', test_paystack_withdraw, name='test-paystack-withdrawal'),
-    path('payments/withdraw-paystack/', paystack_withdraw, name='paystack-withdrawal'),
-    path('payments/withdraw-simple/', simple_withdrawal, name='simple-withdrawal'),
-    path('payments/banks/', get_paystack_banks, name='paystack-banks'),
-    path('payments/create-recipient/', create_recipient, name='create-recipient'),
-    path('payments/process-withdrawal/', process_withdrawal, name='process-withdrawal'),
-    path('payments/mobile-money/', get_mobile_money_providers, name='get-mobile-money-providers'),
-    path('payments/calculate-fees/', calculate_payment_fees, name='calculate-payment-fees'),
-    path('payments/release-escrow/', release_escrow, name='release-escrow'),
-    
-    # Paystack Subaccount URLs
-    path('payments/subaccount/create/', views_payments.create_subaccount, name='create-subaccount'),
-    path('payments/banks/', views_payments.get_banks, name='paystack-banks'),
-    path('payments/initialize/', views_payments.initialize_payment, name='paystack-initialize'),
-    path('payments/verify/', views_payments.verify_payment, name='paystack-verify'),
+    # Payment URLs are defined in api/payment_urls.py to avoid duplication
     
     # Jobs/Projects Marketplace URLs
     path('jobs/', views.JobListView.as_view(), name='job-list'),

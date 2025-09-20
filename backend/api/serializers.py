@@ -1232,8 +1232,10 @@ class JobSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def to_representation(self, instance):
-        """Augment representation with client_profile avatar fields for frontend display."""
+        """Augment representation with client_profile, accepted proposal, and order summary."""
+        from .models import Order
         data = super().to_representation(instance)
+        # Client profile avatar
         try:
             profile = instance.client.userprofile
             data['client_profile'] = {
@@ -1244,6 +1246,34 @@ class JobSerializer(serializers.ModelSerializer):
             }
         except Exception:
             data['client_profile'] = None
+        # Accepted proposal summary
+        try:
+            accepted = instance.proposals.filter(status='accepted').order_by('-created_at').first()
+            if accepted:
+                data['accepted_proposal'] = {
+                    'id': accepted.id,
+                    'proposed_price': float(getattr(accepted, 'proposed_price', 0) or 0),
+                    'delivery_time': getattr(accepted, 'delivery_time', None),
+                    'freelancer': {
+                        'id': accepted.freelancer.id,
+                        'username': accepted.freelancer.username,
+                        'first_name': accepted.freelancer.first_name,
+                        'last_name': accepted.freelancer.last_name,
+                    }
+                }
+                # Find a related order between client and this freelancer
+                order_qs = Order.objects.filter(client=instance.client, freelancer=accepted.freelancer).order_by('-created_at')
+                # Prefer orders whose title contains job title
+                related_order = order_qs.filter(title__icontains=instance.title).first() or order_qs.first()
+                if related_order:
+                    data['order_summary'] = {
+                        'id': related_order.id,
+                        'status': related_order.status,
+                        'is_paid': bool(getattr(related_order, 'is_paid', False)),
+                        'escrow_released': bool(getattr(related_order, 'escrow_released', False)),
+                    }
+        except Exception:
+            pass
         return data
     
     def get_skills_list(self, obj):
