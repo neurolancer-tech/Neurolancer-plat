@@ -23,7 +23,7 @@ interface Transaction {
   type: 'payment' | 'withdrawal' | 'refund' | 'fee';
   amount: number;
   description: string;
-  status: 'completed' | 'pending' | 'failed';
+  status: 'completed' | 'pending' | 'failed' | 'cancelled';
   created_at: string;
   reference?: string;
 }
@@ -47,33 +47,36 @@ export default function TransactionsPage() {
 
   const loadData = async () => {
     try {
-      // Load transactions
-      const transactionsResponse = await api.get('/orders/');
-      const orders = transactionsResponse.data.results || transactionsResponse.data;
-      
-      // Convert orders to transactions
-      const transactionData = orders.map((order: any) => ({
-        id: order.id,
-        type: 'payment',
-        amount: order.price,
-        description: `Payment for: ${order.title}`,
-        status: order.status === 'completed' ? 'completed' : 'pending',
-        created_at: order.created_at,
-        reference: `ORD-${order.id}`
+      // Load real transactions from backend
+      const trxRes = await api.get('/payments/transactions/');
+      const trxList = trxRes.data.transactions || [];
+      const normalized: Transaction[] = trxList.map((t: any) => ({
+        id: t.id,
+        type: t.type,
+        amount: t.amount,
+        description: t.description,
+        status: t.status,
+        created_at: t.created_at,
+        reference: t.reference,
       }));
-      
-      setTransactions(transactionData);
-      
+      setTransactions(normalized);
+
       // Load payment requests from notifications
       const notificationsResponse = await api.get('/notifications/');
       const notifications = notificationsResponse.data.results || notificationsResponse.data;
       
       // Filter payment request notifications
       const paymentRequestData = notifications
-        .filter((notif: any) => notif.notification_type === 'payment' && notif.message.includes('Payment request'))
+        .filter((notif: any) => notif.notification_type === 'payment' && notif.message.toLowerCase().includes('payment request'))
         .map((notif: any) => {
-          const amountMatch = notif.message.match(/\$(\d+(?:\.\d{2})?)/); 
-          const amount = amountMatch ? parseFloat(amountMatch[1]) : 0;
+          // Extract amount (KES or $) loosely
+          const amountMatchKES = notif.message.match(/KES\s([\d,]+(?:\.\d{2})?)/);
+          const amountMatchUSD = notif.message.match(/\$([\d,]+(?:\.\d{2})?)/);
+          const amount = amountMatchKES
+            ? parseFloat(amountMatchKES[1].replace(/,/g, ''))
+            : amountMatchUSD
+              ? parseFloat(amountMatchUSD[1].replace(/,/g, ''))
+              : 0;
           
           return {
             id: notif.id,
@@ -303,10 +306,13 @@ export default function TransactionsPage() {
                     </div>
                     <div className="text-right">
                       <div className={`text-lg font-semibold ${
-                        transaction.type === 'payment' || transaction.type === 'refund' ? 'text-green-600' : 'text-red-600'
+                        transaction.amount >= 0 ? 'text-green-600' : 'text-red-600'
                       }`}>
-                        {transaction.type === 'payment' || transaction.type === 'refund' ? '+' : '-'}KES {transaction.amount.toLocaleString()}
+                        {transaction.amount >= 0 ? '+' : '-'}KES {Math.abs(transaction.amount).toLocaleString()}
                       </div>
+                      {transaction.reference && (
+                        <div className="text-xs text-gray-500">Ref: {transaction.reference}</div>
+                      )}
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                         transaction.status === 'completed' ? 'bg-green-100 text-green-800' :
                         transaction.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
