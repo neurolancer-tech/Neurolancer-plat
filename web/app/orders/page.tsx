@@ -140,14 +140,38 @@ export default function OrdersPage() {
     }
   };
 
-  const handleStatusChange = (orderId: number, newStatus: string) => {
+  const createNotification = async (userId: number, title: string, message: string, actionUrl: string) => {
+    try {
+      await api.post('/notifications/create/', {
+        user: userId,
+        title,
+        message,
+        notification_type: 'payment',
+        action_url: actionUrl
+      });
+    } catch (e) {
+      console.warn('Failed to create notification', e);
+    }
+  };
+
+  const handleStatusChange = async (order: Order, newStatus: string) => {
     let message = '';
     if (newStatus === 'delivered') {
       message = prompt('Enter delivery message (optional):') || 'Work completed and delivered';
     } else if (newStatus === 'in_progress') {
       message = 'Work has started on your order';
     }
-    updateOrderStatus(orderId, newStatus, message);
+    await updateOrderStatus(order.id, newStatus, message);
+    // If delivered, remind client to release payment
+    if (newStatus === 'delivered') {
+      await createNotification(
+        order.client.id,
+        'Action Needed: Release Payment',
+        `Work for order #${order.id} has been delivered. Please review and release payment to the freelancer.`,
+        `/orders/${order.id}`
+      );
+      toast.success('Client has been reminded to release payment.');
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -313,7 +337,7 @@ export default function OrdersPage() {
                       <select
                         onChange={(e) => {
                           if (e.target.value) {
-                            handleStatusChange(order.id, e.target.value);
+                            handleStatusChange(order, e.target.value);
                             e.target.value = '';
                           }
                         }}
@@ -348,15 +372,39 @@ export default function OrdersPage() {
                     )}
                     
                     {order.status === 'delivered' && order.client.id === getUser()?.id && (
-                      <button
-                        onClick={() => window.location.href = `/checkout?orderId=${order.id}&amount=${order.price}&type=order_payment`}
-                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm flex items-center"
-                      >
-                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                        </svg>
-                        Pay Freelancer
-                      </button>
+                      <>
+                        <button
+                          onClick={async () => {
+                            try {
+                              await api.post('/payments/release-escrow/', { order_id: order.id });
+                              toast.success('Payment released to freelancer.');
+                              // Notify freelancer payment released
+                              try {
+                                // fetch order detail to know freelancer id
+                                const od = await api.get(`/orders/${order.id}/`);
+                                const freelancerId = od.data.freelancer?.id;
+                                if (freelancerId) {
+                                  await createNotification(
+                                    freelancerId,
+                                    'Payment Released',
+                                    `Payment for order #${order.id} has been released to your available balance (after escrow).`,
+                                    `/orders/${order.id}`
+                                  );
+                                }
+                              } catch {}
+                              loadOrders(true);
+                            } catch (e: any) {
+                              toast.error(e?.response?.data?.error || 'Failed to release payment');
+                            }
+                          }}
+                          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm flex items-center"
+                        >
+                          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v8m-4-4h8" />
+                          </svg>
+                          Release Payment
+                        </button>
+                      </>
                     )}
                     
                     {order.status === 'completed' && (

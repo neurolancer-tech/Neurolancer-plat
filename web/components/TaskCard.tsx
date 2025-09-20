@@ -156,12 +156,29 @@ export default function TaskCard({ task, onTaskUpdate }: TaskCardProps) {
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
             {task.order?.status === 'delivered' && (
-              <button
-                onClick={payFreelancer}
-                className="px-3 py-2 bg-green-600 text-white text-sm rounded-lg hover:opacity-90 w-full sm:w-auto"
-              >
-                Pay Freelancer
-              </button>
+              <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                <button
+                  onClick={payFreelancer}
+                  className="px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:opacity-90 w-full sm:w-auto"
+                >
+                  Pay Freelancer
+                </button>
+                <button
+                  onClick={async () => {
+                    try {
+                      await api.post('/payments/release-escrow/', { order_id: task.order?.id });
+                      // Optional: notify handled in page-level; minimal here
+                      alert('Payment released to freelancer.');
+                      onTaskUpdate();
+                    } catch (e) {
+                      alert('Failed to release payment');
+                    }
+                  }}
+                  className="px-3 py-2 bg-green-600 text-white text-sm rounded-lg hover:opacity-90 w-full sm:w-auto"
+                >
+                  Release Payment
+                </button>
+              </div>
             )}
             {task.order?.status === 'completed' && (
               <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">

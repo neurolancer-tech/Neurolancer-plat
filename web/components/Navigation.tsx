@@ -343,6 +343,14 @@ export default function Navigation() {
                 </div>
               )}
 
+              {/* Preferences: Currency - visible in mobile sidenav */}
+              <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-700 dark:text-gray-300">Currency</span>
+                  <CurrencySwitcher />
+                </div>
+              </div>
+
               {/* Navigation Links */}
               <div className="flex-1 overflow-y-auto py-4">
                 <div className="space-y-1 px-4">

@@ -81,6 +81,17 @@ export default function OrderDetailsPage() {
     setActionLoading(true);
     try {
       await api.post(`/orders/${order?.id}/update-status/`, { status, message });
+      // If delivered, remind client to release payment
+      if (status === 'delivered' && order) {
+        try {
+          await createNotification(
+            order.client.id,
+            'Action Needed: Release Payment',
+            `Work for order #${order.id} has been delivered. Please review and release payment to the freelancer.`,
+            `/orders/${order.id}`
+          );
+        } catch {}
+      }
       await loadOrder();
     } catch (error) {
       console.error('Error updating status:', error);
@@ -99,6 +110,43 @@ export default function OrderDetailsPage() {
       cancelled: 'bg-red-100 text-red-800',
     };
     return colors[status as keyof typeof colors] || 'bg-gray-100 text-gray-800';
+  };
+
+  const createNotification = async (userId: number, title: string, message: string, actionUrl: string) => {
+    try {
+      await api.post('/notifications/create/', {
+        user: userId,
+        title,
+        message,
+        notification_type: 'payment',
+        action_url: actionUrl
+      });
+    } catch (e) {
+      console.warn('Failed to create notification', e);
+    }
+  };
+
+  const releaseEscrow = async () => {
+    if (!order) return;
+    setActionLoading(true);
+    try {
+      await api.post('/payments/release-escrow/', { order_id: order.id });
+      // Notify freelancer
+      const freelancerId = order.freelancer?.id;
+      if (freelancerId) {
+        await createNotification(
+          freelancerId,
+          'Payment Released',
+          `Payment for order #${order.id} has been released to your available balance (after escrow).`,
+          `/orders/${order.id}`
+        );
+      }
+      await loadOrder();
+    } catch (e: any) {
+      console.error('Release escrow failed', e);
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   const canTakeAction = user && order && user.id === order.freelancer.id;
@@ -271,6 +319,19 @@ export default function OrderDetailsPage() {
                   Mark as Delivered
                 </button>
               )}
+            </div>
+          )}
+
+          {/* Release Payment for client when delivered */}
+          {user && order.client.id === user.id && order.status === 'delivered' && (
+            <div className="flex pt-6 border-t mt-6">
+              <button
+                onClick={releaseEscrow}
+                disabled={actionLoading}
+                className="bg-green-600 text-white px-6 py-2 rounded-lg hover:opacity-90 disabled:opacity-50"
+              >
+                {actionLoading ? 'Releasing...' : 'Release Payment'}
+              </button>
             </div>
           )}
         </div>
