@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import Navigation from '../../components/Navigation';
 import WithdrawalModal from '../../components/WithdrawalModal';
 import api from '../../lib/api';
+import { useCurrency } from '@/contexts/CurrencyContext';
+import { formatKES } from '@/lib/currency';
 
 interface Withdrawal {
   id: number;
@@ -27,6 +29,8 @@ export default function WithdrawalsPage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const { currency, convert, format, ratesReady } = useCurrency();
+  const [localBalances, setLocalBalances] = useState({ availLocal: 0, totalLocal: 0 });
 
   useEffect(() => {
     loadData();
@@ -36,6 +40,15 @@ export default function WithdrawalsPage() {
     try {
       const profileRes = await api.get('/auth/profile/');
       setProfile(profileRes.data.profile);
+
+      // Compute local currency balances
+      if (profileRes.data.profile && ratesReady) {
+        const availUsd = Number(profileRes.data.profile.available_balance || 0);
+        const totalUsd = Number(profileRes.data.profile.total_earnings || 0);
+        const availLocal = await convert(availUsd, 'USD', currency);
+        const totalLocal = await convert(totalUsd, 'USD', currency);
+        setLocalBalances({ availLocal, totalLocal });
+      }
       
       try {
         const withdrawalsRes = await api.get('/withdrawals/');
@@ -52,6 +65,18 @@ export default function WithdrawalsPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    (async () => {
+      if (!profile || !ratesReady) return;
+      const availUsd = Number(profile.available_balance || 0);
+      const totalUsd = Number(profile.total_earnings || 0);
+      const availLocal = await convert(availUsd, 'USD', currency);
+      const totalLocal = await convert(totalUsd, 'USD', currency);
+      setLocalBalances({ availLocal, totalLocal });
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile, currency, ratesReady]);
 
 
 
@@ -125,8 +150,8 @@ export default function WithdrawalsPage() {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm text-gray-600 dark:text-gray-400">Available Balance</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">${profile?.available_balance || 0}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">≈ {profile?.available_balance_kes || 0} KES</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{format(localBalances.availLocal, currency)}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">≈ {formatKES(Math.round(profile?.available_balance_kes || 0))}</p>
                 </div>
               </div>
             </div>
@@ -140,8 +165,8 @@ export default function WithdrawalsPage() {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm text-gray-600 dark:text-gray-400">Total Earnings</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">${profile?.total_earnings || 0}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">≈ {profile?.total_earnings_kes || 0} KES</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{format(localBalances.totalLocal, currency)}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">≈ {formatKES(Math.round(profile?.total_earnings_kes || 0))}</p>
                 </div>
               </div>
             </div>

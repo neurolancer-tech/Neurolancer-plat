@@ -7,7 +7,8 @@ import Navigation from '@/components/Navigation';
 import { isAuthenticated, getUser } from '@/lib/auth';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
-import { convertUSDToKES } from '@/lib/currency';
+import { convertUSDToKES, formatKES } from '@/lib/currency';
+import { useCurrency } from '@/contexts/CurrencyContext';
 
 interface Course {
   id: number;
@@ -30,8 +31,12 @@ function CourseCheckoutContent() {
   const [kesPrice, setKesPrice] = useState(0);
   const [processingFee, setProcessingFee] = useState(0);
   const [totalAmount, setTotalAmount] = useState(0);
+  const [localPrice, setLocalPrice] = useState(0);
+  const [localProcessing, setLocalProcessing] = useState(0);
+  const [localTotal, setLocalTotal] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState('paystack');
   const initialized = useRef(false);
+  const { currency, convert, format } = useCurrency();
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -58,14 +63,21 @@ function CourseCheckoutContent() {
       const courseData = response.data;
       setCourse(courseData);
       
-      // Convert USD to KES
+      // Convert USD to KES and local
       const converted = await convertUSDToKES(courseData.price);
       const clientFee = Math.round(converted * 0.025); // 2.5% client fee
       const total = converted + clientFee;
+
+      const localAmount = await convert(courseData.price, 'USD', currency);
+      const localFee = localAmount * 0.025;
+      const localSum = localAmount + localFee;
       
       setKesPrice(converted);
       setProcessingFee(clientFee);
       setTotalAmount(total);
+      setLocalPrice(localAmount);
+      setLocalProcessing(localFee);
+      setLocalTotal(localSum);
     } catch (error) {
       console.error('Error loading course:', error);
       toast.error('Failed to load course details');
@@ -216,17 +228,21 @@ function CourseCheckoutContent() {
               <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-4">Payment Summary</h3>
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Course Price:</span>
-                  <span className="font-medium text-gray-900 dark:text-gray-100">KES {kesPrice.toLocaleString()}</span>
+                  <span className="text-gray-600 dark:text-gray-400">Course Price (Local):</span>
+                  <span className="font-medium text-gray-900 dark:text-gray-100">{format(localPrice, currency)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Platform Fee (2.5%):</span>
-                  <span className="font-medium text-gray-900 dark:text-gray-100">KES {processingFee.toLocaleString()}</span>
+                  <span className="text-gray-600 dark:text-gray-400">Platform Fee (2.5%) (Local):</span>
+                  <span className="font-medium text-gray-900 dark:text-gray-100">{format(localProcessing, currency)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600 dark:text-gray-400">Total (Local):</span>
+                  <span className="font-medium text-gray-900 dark:text-gray-100">{format(localTotal, currency)}</span>
                 </div>
                 <div className="border-t pt-3">
                   <div className="flex justify-between text-lg font-bold">
-                    <span className="text-gray-900 dark:text-gray-100">Total Amount:</span>
-                    <span className="text-[#0D9E86]">KES {totalAmount.toLocaleString()}</span>
+                    <span className="text-gray-900 dark:text-gray-100">Total (KES for Paystack):</span>
+                    <span className="text-[#0D9E86]">{formatKES(totalAmount)}</span>
                   </div>
                 </div>
               </div>

@@ -10,6 +10,7 @@ import { User, UserProfile } from '../types';
 import { getUser, getProfile, logout, isAuthenticated } from '../lib/auth';
 import NotificationCenter from './NotificationCenter';
 import { useTheme } from '../contexts/ThemeContext';
+import CurrencySwitcher from './CurrencySwitcher';
 
 // Load Marko One font
 if (typeof window !== 'undefined') {
@@ -121,6 +122,8 @@ export default function Navigation() {
             </div>
 
             <div className="flex items-center space-x-2 sm:space-x-4">
+              {/* Currency Switcher */}
+              <CurrencySwitcher />
               {/* Theme Toggle */}
               <button
                 onClick={toggleTheme}

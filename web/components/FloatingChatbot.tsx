@@ -55,6 +55,7 @@ export default function FloatingChatbot() {
   const [currentStep, setCurrentStep] = useState(0);
   const [categories, setCategories] = useState<any[]>([]);
   const [subcategories, setSubcategories] = useState<any[]>([]);
+  const [projects, setProjects] = useState<any[]>([]);
   const [formLoading, setFormLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const currentUser = getProfile();
@@ -229,6 +230,27 @@ export default function FloatingChatbot() {
     ]
   };
 
+  const taskCreationForm: ChatForm = {
+    id: 'create-task',
+    title: 'Create Project Task',
+    type: 'project',
+    submitText: 'Create Task',
+    fields: [
+      { name: 'project_id', label: 'Project', type: 'select', required: true },
+      { name: 'title', label: 'Task Title', type: 'text', required: true, placeholder: 'Enter task title...' },
+      { name: 'description', label: 'Description', type: 'textarea', required: true, placeholder: 'Describe what needs to be done...' },
+      { name: 'budget', label: 'Budget (USD)', type: 'number', required: true, placeholder: '500' },
+      { name: 'deadline', label: 'Deadline', type: 'date', required: true },
+      { name: 'priority', label: 'Priority', type: 'select', required: true, options: [
+        { value: 'low', label: 'Low' },
+        { value: 'medium', label: 'Medium' },
+        { value: 'high', label: 'High' }
+      ]},
+      { name: 'requirements', label: 'Requirements', type: 'textarea', required: false, placeholder: 'List specific requirements and deliverables...' },
+      { name: 'skills_required', label: 'Skills (comma-separated)', type: 'text', required: false, placeholder: 'Python, ML, LLMs' }
+    ]
+  };
+
   const generateActionCards = (content: string): ActionCard[] => {
     const cards: ActionCard[] = [];
     const lowerContent = content.toLowerCase();
@@ -263,6 +285,17 @@ export default function FloatingChatbot() {
         action: "form:create-project",
         icon: "📁",
         color: "from-indigo-500 to-indigo-600"
+      });
+    }
+
+    // Task creation (clients only)
+    if ((lowerContent.includes('task') || lowerContent.includes('milestone')) && currentUser?.user_type === 'client') {
+      cards.push({
+        title: "Create Task in Chat",
+        description: "Add a task to one of your projects",
+        action: "form:create-task",
+        icon: "📝",
+        color: "from-amber-500 to-orange-600"
       });
     }
 
@@ -382,6 +415,8 @@ export default function FloatingChatbot() {
         setActiveForm(gigCreationForm);
       } else if (formId === 'create-project') {
         setActiveForm(projectCreationForm);
+      } else if (formId === 'create-task') {
+        setActiveForm(taskCreationForm);
       }
       setFormData({});
       setCurrentStep(0);
@@ -392,6 +427,15 @@ export default function FloatingChatbot() {
         setCategories(cats);
       } catch (e) {
         setCategories([]);
+      }
+      try {
+        const p = await api.get('/projects/');
+        const plist = p.data.results || p.data || [];
+        // Only allow creating tasks for projects you own
+        const ownerId = currentUser?.user?.id;
+        setProjects(ownerId ? plist.filter((proj: any) => proj.client?.id === ownerId) : plist);
+      } catch (e) {
+        setProjects([]);
       }
     } else {
       router.push(action);
@@ -606,8 +650,11 @@ export default function FloatingChatbot() {
                       if (!field) return null;
                       const isCategory = field.name === 'category_id';
                       const isSubcats = field.name === 'subcategory_ids';
+                      const isProject = field.name === 'project_id';
                       const selectOptions = isCategory
                         ? categories.map((c: any) => ({ value: String(c.id), label: c.name }))
+                        : isProject
+                        ? projects.map((p: any) => ({ value: String(p.id), label: p.title }))
                         : (field.options || []);
                       return (
                         <div key={field.name}>
@@ -752,18 +799,36 @@ export default function FloatingChatbot() {
                                   sender: 'ai',
                                   timestamp: new Date()
                                 }]);
-                              } else if (activeForm.type === 'project') {
+                              } else if (activeForm.id === 'create-project') {
                                 const payload: any = {
                                   title: formData.title,
                                   description: formData.description,
                                   total_budget: parseFloat(formData.total_budget || formData.budget || '0'),
                                   deadline: formData.deadline ? new Date(formData.deadline).toISOString() : undefined,
                                 };
-                                const resp = await api.post('/projects/create/', payload).catch(() => ({ data: { id: 0 } } as any));
+                                const resp = await api.post('/projects/create/', payload);
                                 const projId = resp?.data?.id;
                                 setMessages(prev => [...prev, {
                                   id: Date.now(),
                                   content: `✅ **Project created!**\n\nYour project "${payload.title}" has been created.${projId ? ` [Open project](/projects/${projId}).` : ''}`,
+                                  sender: 'ai',
+                                  timestamp: new Date()
+                                }]);
+                              } else if (activeForm.id === 'create-task') {
+                                const payload: any = {
+                                  project_id: parseInt(formData.project_id),
+                                  title: formData.title,
+                                  description: formData.description,
+                                  budget: parseFloat(formData.budget),
+                                  deadline: formData.deadline ? new Date(formData.deadline).toISOString() : undefined,
+                                  priority: formData.priority || 'medium',
+                                  requirements: formData.requirements || '',
+                                  skills_required: formData.skills_required || ''
+                                };
+                                await api.post('/tasks/create/', payload);
+                                setMessages(prev => [...prev, {
+                                  id: Date.now(),
+                                  content: `✅ **Task created successfully!**\n\nYour task "${payload.title}" has been added to the project.`,
                                   sender: 'ai',
                                   timestamp: new Date()
                                 }]);
@@ -797,8 +862,11 @@ export default function FloatingChatbot() {
                     {activeForm.fields.map((field) => {
                       const isCategory = field.name === 'category_id';
                       const isSubcats = field.name === 'subcategory_ids';
+                      const isProject = field.name === 'project_id';
                       const selectOptions = isCategory
                         ? categories.map((c: any) => ({ value: String(c.id), label: c.name }))
+                        : isProject
+                        ? projects.map((p: any) => ({ value: String(p.id), label: p.title }))
                         : (field.options || []);
                       return (
                         <div key={field.name}>
@@ -926,18 +994,36 @@ export default function FloatingChatbot() {
                                 sender: 'ai',
                                 timestamp: new Date()
                               }]);
-                            } else if (activeForm.type === 'project') {
+                            } else if (activeForm.id === 'create-project') {
                               const payload: any = {
                                 title: formData.title,
                                 description: formData.description,
                                 total_budget: parseFloat(formData.total_budget || formData.budget || '0'),
                                 deadline: formData.deadline ? new Date(formData.deadline).toISOString() : undefined,
                               };
-                              const resp = await api.post('/projects/create/', payload).catch(() => ({ data: { id: 0 } } as any));
+                              const resp = await api.post('/projects/create/', payload);
                               const projId = resp?.data?.id;
                               setMessages(prev => [...prev, {
                                 id: Date.now(),
                                 content: `✅ **Project created!**\n\nYour project "${payload.title}" has been created.${projId ? ` [Open project](/projects/${projId}).` : ''}`,
+                                sender: 'ai',
+                                timestamp: new Date()
+                              }]);
+                            } else if (activeForm.id === 'create-task') {
+                              const payload: any = {
+                                project_id: parseInt(formData.project_id),
+                                title: formData.title,
+                                description: formData.description,
+                                budget: parseFloat(formData.budget),
+                                deadline: formData.deadline ? new Date(formData.deadline).toISOString() : undefined,
+                                priority: formData.priority || 'medium',
+                                requirements: formData.requirements || '',
+                                skills_required: formData.skills_required || ''
+                              };
+                              await api.post('/tasks/create/', payload);
+                              setMessages(prev => [...prev, {
+                                id: Date.now(),
+                                content: `✅ **Task created successfully!**\n\nYour task "${payload.title}" has been added to the project.`,
                                 sender: 'ai',
                                 timestamp: new Date()
                               }]);

@@ -6,6 +6,8 @@ import Navigation from '@/components/Navigation';
 import { isAuthenticated } from '@/lib/auth';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
+import { useCurrency } from '@/contexts/CurrencyContext';
+import { formatKES } from '@/lib/currency';
 
 interface Assessment {
   id: number;
@@ -38,6 +40,10 @@ export default function AssessmentDetailPage() {
   const [userBalance, setUserBalance] = useState(0);
   const [loadingBalance, setLoadingBalance] = useState(true);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const { currency, convert, format } = useCurrency();
+  const [localPrice, setLocalPrice] = useState(0);
+  const [localProcessing, setLocalProcessing] = useState(0);
+  const [localTotal, setLocalTotal] = useState(0);
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -58,10 +64,19 @@ export default function AssessmentDetailPage() {
       const converted = await convertUSDToKES(parseFloat(assessmentData.price));
       const fee = Math.round(converted * 0.10);
       const total = converted + fee;
+
+      // Local currency equivalents
+      const priceUsd = parseFloat(assessmentData.price);
+      const localAmt = await convert(priceUsd, 'USD', currency);
+      const localFee = localAmt * 0.10;
+      const localSum = localAmt + localFee;
       
       setKesPrice(converted);
       setProcessingFee(fee);
       setTotalAmount(total);
+      setLocalPrice(localAmt);
+      setLocalProcessing(localFee);
+      setLocalTotal(localSum);
       
       // Load user balance
       loadUserBalance();
@@ -275,6 +290,7 @@ export default function AssessmentDetailPage() {
               </div>
             </div>
             <div className="text-4xl font-bold">KES {totalAmount.toLocaleString()}</div>
+            <div className="text-sm text-white/80 mt-1">≈ {format(localTotal, currency)} (local)</div>
           </div>
 
           <div className="p-8">

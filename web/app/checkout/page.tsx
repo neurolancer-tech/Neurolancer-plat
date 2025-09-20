@@ -7,7 +7,8 @@ import Navigation from '@/components/Navigation';
 import { isAuthenticated, getUser } from '@/lib/auth';
 import { api } from '@/lib/api';
 import toast from 'react-hot-toast';
-import { convertUSDToKES } from '@/utils/currency';
+import { convertUSDToKES, formatKES } from '@/lib/currency';
+import { useCurrency } from '@/contexts/CurrencyContext';
 
 interface PaymentDetails {
   amount?: string;
@@ -54,6 +55,14 @@ function CheckoutContent() {
     total_amount: 0,
     currency: 'KES'
   });
+  const [localBreakdown, setLocalBreakdown] = useState({
+    base_amount: 0,
+    platform_fee: 0,
+    processing_fee: 0,
+    total_amount: 0,
+  });
+  const { currency, convert, format } = useCurrency();
+  const [currencyReady, setCurrencyReady] = useState(true);
   const [paymentMethod, setPaymentMethod] = useState('paystack');
   const [mobileMoneyProviders, setMobileMoneyProviders] = useState([]);
   const [paystackLoaded, setPaystackLoaded] = useState(false);
@@ -163,7 +172,7 @@ function CheckoutContent() {
       });
       
       if (response.data.status === 'success') {
-        // Convert USD amounts to KES
+        // Convert USD amounts to KES and local currency
         const breakdown = response.data.breakdown;
         const convertedBreakdown = {
           base_amount: await convertUSDToKES(breakdown.base_amount),
@@ -174,6 +183,12 @@ function CheckoutContent() {
           currency: 'KES'
         };
         setFeeBreakdown(convertedBreakdown);
+
+        const baseLocal = await convert(breakdown.base_amount, 'USD', currency);
+        const platformLocal = await convert(breakdown.platform_fee, 'USD', currency);
+        const procLocal = await convert(breakdown.processing_fee, 'USD', currency);
+        const totalLocal = await convert(breakdown.total_amount, 'USD', currency);
+        setLocalBreakdown({ base_amount: baseLocal, platform_fee: platformLocal, processing_fee: procLocal, total_amount: totalLocal });
       }
     } catch (error) {
       console.error('Fee calculation error:', error);
@@ -192,6 +207,11 @@ function CheckoutContent() {
         total_amount: await convertUSDToKES(baseAmountUSD + platformFeeUSD + processingFeeUSD),
         currency: 'KES'
       });
+      const baseLocal = await convert(baseAmountUSD, 'USD', currency);
+      const platformLocal = await convert(platformFeeUSD, 'USD', currency);
+      const procLocal = await convert(processingFeeUSD, 'USD', currency);
+      const totalLocal = await convert(baseAmountUSD + platformFeeUSD + processingFeeUSD, 'USD', currency);
+      setLocalBreakdown({ base_amount: baseLocal, platform_fee: platformLocal, processing_fee: procLocal, total_amount: totalLocal });
     } finally {
       setCalculatingFees(false);
     }
@@ -385,22 +405,26 @@ function CheckoutContent() {
                   )}
                   
                   <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">Base Amount:</span>
-                    <span className="font-medium text-gray-900 dark:text-gray-100">KES {feeBreakdown.base_amount.toLocaleString()}</span>
+                    <span className="text-gray-600 dark:text-gray-400">Base Amount (Local):</span>
+                    <span className="font-medium text-gray-900 dark:text-gray-100">{format(localBreakdown.base_amount, currency)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">Platform Fee ({feeBreakdown.platform_fee_percentage}%):</span>
-                    <span className="font-medium text-gray-900 dark:text-gray-100">KES {feeBreakdown.platform_fee.toLocaleString()}</span>
+                    <span className="text-gray-600 dark:text-gray-400">Platform Fee ({feeBreakdown.platform_fee_percentage}%) (Local):</span>
+                    <span className="font-medium text-gray-900 dark:text-gray-100">{format(localBreakdown.platform_fee, currency)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">Processing Fee:</span>
-                    <span className="font-medium text-gray-900 dark:text-gray-100">KES {feeBreakdown.processing_fee.toLocaleString()}</span>
+                    <span className="text-gray-600 dark:text-gray-400">Processing Fee (Local):</span>
+                    <span className="font-medium text-gray-900 dark:text-gray-100">{format(localBreakdown.processing_fee, currency)}</span>
                   </div>
                   <div className="border-t pt-3">
                     <div className="flex justify-between text-lg font-bold">
-                      <span className="text-gray-900 dark:text-gray-100">Total Amount:</span>
-                      <span className="text-primary">KES {feeBreakdown.total_amount.toLocaleString()}</span>
+                      <span className="text-gray-900 dark:text-gray-100">Total (Local):</span>
+                      <span className="text-primary">{format(localBreakdown.total_amount, currency)}</span>
                     </div>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 dark:text-gray-400">Total (KES for Paystack):</span>
+                    <span className="font-medium text-gray-900 dark:text-gray-100">{formatKES(feeBreakdown.total_amount)}</span>
                   </div>
                 </div>
               )}

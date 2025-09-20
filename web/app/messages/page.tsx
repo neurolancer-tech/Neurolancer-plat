@@ -83,6 +83,7 @@ function MessagesPageContent() {
   const [replyingToMessage, setReplyingToMessage] = useState<Message | null>(null);
   const [activeForm, setActiveForm] = useState<any>(null);
   const [formData, setFormData] = useState<Record<string, any>>({});
+  const [chatProjects, setChatProjects] = useState<any[]>([]);
   const [chatFormProgressive, setChatFormProgressive] = useState(true);
   const [chatFormStep, setChatFormStep] = useState(0);
   const [chatCategories, setChatCategories] = useState<any[]>([]);
@@ -138,17 +139,71 @@ function MessagesPageContent() {
     ]
   };
 
+  const projectCreationForm = {
+    id: 'create-project',
+    title: 'Create Project',
+    type: 'project',
+    submitText: 'Create Project',
+    fields: [
+      { name: 'title', label: 'Project Title', type: 'text', required: true, placeholder: 'Enter project title...' },
+      { name: 'description', label: 'Description', type: 'textarea', required: true, placeholder: 'Describe your project goals and objectives...' },
+      { name: 'total_budget', label: 'Budget (USD)', type: 'number', required: true, placeholder: '5000' },
+      { name: 'deadline', label: 'Deadline', type: 'date', required: false }
+    ]
+  };
+
+  const taskCreationForm = {
+    id: 'create-task',
+    title: 'Create Project Task',
+    type: 'project',
+    submitText: 'Create Task',
+    fields: [
+      { name: 'project_id', label: 'Project', type: 'select', required: true },
+      { name: 'title', label: 'Task Title', type: 'text', required: true, placeholder: 'Enter task title...' },
+      { name: 'description', label: 'Description', type: 'textarea', required: true, placeholder: 'Describe what needs to be done...' },
+      { name: 'budget', label: 'Budget (USD)', type: 'number', required: true, placeholder: '500' },
+      { name: 'deadline', label: 'Deadline', type: 'date', required: true },
+      { name: 'priority', label: 'Priority', type: 'select', required: true, options: [
+        { value: 'low', label: 'Low' },
+        { value: 'medium', label: 'Medium' },
+        { value: 'high', label: 'High' }
+      ]},
+      { name: 'requirements', label: 'Requirements', type: 'textarea', required: false, placeholder: 'List specific requirements and deliverables...' },
+      { name: 'skills_required', label: 'Skills (comma-separated)', type: 'text', required: false, placeholder: 'Python, ML, LLMs' }
+    ]
+  };
+
   const generateActionCards = (content: string) => {
     const cards: any[] = [];
     const lowerContent = content.toLowerCase();
 
-    if (lowerContent.includes('job') || lowerContent.includes('hire') || lowerContent.includes('project')) {
+    if (lowerContent.includes('job') || lowerContent.includes('hire')) {
       cards.push({
         title: "Create Job in Chat",
         description: "Post a job directly here",
         action: "form:create-job",
         icon: "💼",
         color: "from-blue-500 to-blue-600"
+      });
+    }
+
+    if (lowerContent.includes('project') || lowerContent.includes('manage project')) {
+      cards.push({
+        title: "Create Project in Chat",
+        description: "Start a new project here",
+        action: "form:create-project",
+        icon: "📁",
+        color: "from-indigo-500 to-indigo-600"
+      });
+    }
+
+    if (lowerContent.includes('task') || lowerContent.includes('milestone')) {
+      cards.push({
+        title: "Create Task in Chat",
+        description: "Add a task to one of your projects",
+        action: "form:create-task",
+        icon: "📝",
+        color: "from-amber-500 to-orange-600"
       });
     }
 
@@ -182,6 +237,10 @@ function MessagesPageContent() {
         setActiveForm(jobCreationForm);
       } else if (formId === 'create-gig') {
         setActiveForm(gigCreationForm);
+      } else if (formId === 'create-project') {
+        setActiveForm(projectCreationForm);
+      } else if (formId === 'create-task') {
+        setActiveForm(taskCreationForm);
       }
       setFormData({});
       setChatFormStep(0);
@@ -192,6 +251,14 @@ function MessagesPageContent() {
         setChatCategories(cats);
       } catch (e) {
         setChatCategories([]);
+      }
+      try {
+        const p = await api.get('/projects/');
+        const plist = p.data.results || p.data || [];
+        // Only allow creating tasks for projects you own
+        setChatProjects(currentUser ? plist.filter((proj: any) => proj.client?.id === currentUser.id) : plist);
+      } catch (e) {
+        setChatProjects([]);
       }
     } else {
       window.open(action, '_blank');
@@ -1482,7 +1549,8 @@ ${aiResponse}`;
                                 if (!field) return null;
                                 const isCategory = field.name === 'category_id';
                                 const isSubcats = field.name === 'subcategory_ids';
-                                const selectOptions = isCategory ? chatCategories.map((c: any) => ({ value: String(c.id), label: c.name })) : (field.options || []);
+                                const isProject = field.name === 'project_id';
+                                const selectOptions = isCategory ? chatCategories.map((c: any) => ({ value: String(c.id), label: c.name })) : isProject ? chatProjects.map((p: any) => ({ value: String(p.id), label: p.title })) : (field.options || []);
                                 return (
                                   <div key={field.name}>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -1572,7 +1640,42 @@ ${aiResponse}`;
                                     onClick={async () => {
                                       try {
                                         setChatFormLoading(true);
-                                        if (activeForm.type === 'job') {
+                                        if (activeForm.id === 'create-project') {
+                                          const payload: any = {
+                                            title: formData.title,
+                                            description: formData.description,
+                                            total_budget: parseFloat(formData.total_budget || formData.budget || '0'),
+                                            deadline: formData.deadline ? new Date(formData.deadline).toISOString() : undefined,
+                                          };
+                                          const resp = await api.post('/projects/create/', payload);
+                                          const projId = resp?.data?.id;
+                                          setAiMessages(prev => [...prev, {
+                                            id: Date.now(),
+                                            content: `✅ **Project created!**\n\nYour project "${payload.title}" has been created.${projId ? ` [Open project](/projects/${projId}).` : ''}`,
+                                            sender: { id: -1, first_name: 'Neurolancer', last_name: 'AI', profile_picture: null, avatar_type: 'default', selected_avatar: 'ai' },
+                                            created_at: new Date().toISOString(),
+                                            is_read: true
+                                          }]);
+                                        } else if (activeForm.id === 'create-task') {
+                                          const payload: any = {
+                                            project_id: parseInt(formData.project_id),
+                                            title: formData.title,
+                                            description: formData.description,
+                                            budget: parseFloat(formData.budget),
+                                            deadline: formData.deadline ? new Date(formData.deadline).toISOString() : undefined,
+                                            priority: formData.priority || 'medium',
+                                            requirements: formData.requirements || '',
+                                            skills_required: formData.skills_required || ''
+                                          };
+                                          await api.post('/tasks/create/', payload);
+                                          setAiMessages(prev => [...prev, {
+                                            id: Date.now(),
+                                            content: `✅ **Task created successfully!**\n\nYour task "${payload.title}" has been added to the project.`,
+                                            sender: { id: -1, first_name: 'Neurolancer', last_name: 'AI', profile_picture: null, avatar_type: 'default', selected_avatar: 'ai' },
+                                            created_at: new Date().toISOString(),
+                                            is_read: true
+                                          }]);
+                                        } else if (activeForm.type === 'job') {
                                           const payload: any = {
                                             title: formData.title,
                                             description: formData.description,
@@ -1645,7 +1748,8 @@ ${aiResponse}`;
                               {activeForm.fields.map((field: any) => {
                                 const isCategory = field.name === 'category_id';
                                 const isSubcats = field.name === 'subcategory_ids';
-                                const selectOptions = isCategory ? chatCategories.map((c: any) => ({ value: String(c.id), label: c.name })) : (field.options || []);
+                                const isProject = field.name === 'project_id';
+                                const selectOptions = isCategory ? chatCategories.map((c: any) => ({ value: String(c.id), label: c.name })) : isProject ? chatProjects.map((p: any) => ({ value: String(p.id), label: p.title })) : (field.options || []);
                                 return (
                                   <div key={field.name}>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -1729,9 +1833,44 @@ ${aiResponse}`;
                               <div className="flex items-center justify-end pt-2">
                                 <button
                                   onClick={async () => {
-                                    try {
-                                      setChatFormLoading(true);
-                                      if (activeForm.type === 'job') {
+                                  try {
+                                    setChatFormLoading(true);
+                                    if (activeForm.id === 'create-project') {
+                                      const payload: any = {
+                                        title: formData.title,
+                                        description: formData.description,
+                                        total_budget: parseFloat(formData.total_budget || formData.budget || '0'),
+                                        deadline: formData.deadline ? new Date(formData.deadline).toISOString() : undefined,
+                                      };
+                                      const resp = await api.post('/projects/create/', payload);
+                                      const projId = resp?.data?.id;
+                                      setAiMessages(prev => [...prev, {
+                                        id: Date.now(),
+                                        content: `✅ **Project created!**\n\nYour project "${payload.title}" has been created.${projId ? ` [Open project](/projects/${projId}).` : ''}`,
+                                        sender: { id: -1, first_name: 'Neurolancer', last_name: 'AI', profile_picture: null, avatar_type: 'default', selected_avatar: 'ai' },
+                                        created_at: new Date().toISOString(),
+                                        is_read: true
+                                      }]);
+                                    } else if (activeForm.id === 'create-task') {
+                                      const payload: any = {
+                                        project_id: parseInt(formData.project_id),
+                                        title: formData.title,
+                                        description: formData.description,
+                                        budget: parseFloat(formData.budget),
+                                        deadline: formData.deadline ? new Date(formData.deadline).toISOString() : undefined,
+                                        priority: formData.priority || 'medium',
+                                        requirements: formData.requirements || '',
+                                        skills_required: formData.skills_required || ''
+                                      };
+                                      await api.post('/tasks/create/', payload);
+                                      setAiMessages(prev => [...prev, {
+                                        id: Date.now(),
+                                        content: `✅ **Task created successfully!**\n\nYour task "${payload.title}" has been added to the project.`,
+                                        sender: { id: -1, first_name: 'Neurolancer', last_name: 'AI', profile_picture: null, avatar_type: 'default', selected_avatar: 'ai' },
+                                        created_at: new Date().toISOString(),
+                                        is_read: true
+                                      }]);
+                                    } else if (activeForm.type === 'job') {
                                         const payload: any = {
                                           title: formData.title,
                                           description: formData.description,

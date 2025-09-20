@@ -16,6 +16,8 @@ import { profileApi } from '@/lib/profileApi';
 import toast from 'react-hot-toast';
 import SimpleChart from '@/components/SimpleChart';
 import './dashboard.css';
+import { useCurrency } from '@/contexts/CurrencyContext';
+import { formatKES } from '@/lib/currency';
 
 interface DashboardStats {
   user_type: string;
@@ -49,6 +51,15 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [notifications, setNotifications] = useState([]);
+
+  // Currency display state
+  const { currency, format, convert, usdToKes, ratesReady } = useCurrency();
+  const [localTotals, setLocalTotals] = useState({
+    earningsLocal: 0,
+    balanceLocal: 0,
+    earningsKES: 0,
+    balanceKES: 0,
+  });
 
   const [showOnboardingReminder, setShowOnboardingReminder] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -85,12 +96,38 @@ export default function DashboardPage() {
     try {
       const response = await api.get('/dashboard/stats/');
       setStats(response.data);
+
+      // Compute currency displays once stats available
+      if (response.data && ratesReady) {
+        const totalE = Number(response.data.total_earnings || 0);
+        const availB = Number(response.data.available_balance || 0);
+        const earningsLocal = await convert(totalE, 'USD', currency);
+        const balanceLocal = await convert(availB, 'USD', currency);
+        const earningsKES = await convert(totalE, 'USD', 'KES');
+        const balanceKES = await convert(availB, 'USD', 'KES');
+        setLocalTotals({ earningsLocal, balanceLocal, earningsKES, balanceKES });
+      }
     } catch (error) {
       console.error('Error loading dashboard stats:', error);
     } finally {
       setLoading(false);
     }
   };
+
+  // Recompute currency when rates ready or stats change
+  useEffect(() => {
+    (async () => {
+      if (!stats || !ratesReady) return;
+      const totalE = Number(stats.total_earnings || 0);
+      const availB = Number(stats.available_balance || 0);
+      const earningsLocal = await convert(totalE, 'USD', currency);
+      const balanceLocal = await convert(availB, 'USD', currency);
+      const earningsKES = await convert(totalE, 'USD', 'KES');
+      const balanceKES = await convert(availB, 'USD', 'KES');
+      setLocalTotals({ earningsLocal, balanceLocal, earningsKES, balanceKES });
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stats, ratesReady, currency]);
 
   const loadNotifications = async () => {
     try {
@@ -343,7 +380,8 @@ export default function DashboardPage() {
                 <div className="relative">
                   <div className="text-lg sm:text-2xl mb-1 animate-float">💰</div>
                   <p className="text-teal-100 text-xs break-words">AI Earnings</p>
-                  <p className="text-lg sm:text-2xl font-bold break-words">${stats?.total_earnings || 0}</p>
+                  <p className="text-lg sm:text-2xl font-bold break-words">{format(localTotals.earningsLocal, currency)}</p>
+                  <p className="text-xs text-white/80">≈ {formatKES(Math.round(localTotals.earningsKES))}</p>
                 </div>
               </div>
 
@@ -353,7 +391,8 @@ export default function DashboardPage() {
                 <div className="relative">
                   <div className="text-lg sm:text-2xl mb-1 animate-float">💳</div>
                   <p className="text-purple-100 text-xs break-words">Balance</p>
-                  <p className="text-lg sm:text-2xl font-bold break-words">${stats?.available_balance || 0}</p>
+                  <p className="text-lg sm:text-2xl font-bold break-words">{format(localTotals.balanceLocal, currency)}</p>
+                  <p className="text-xs text-white/80">≈ {formatKES(Math.round(localTotals.balanceKES))}</p>
                 </div>
               </div>
 

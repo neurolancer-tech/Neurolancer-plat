@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/contexts/ThemeContext'
+import { CurrencyProvider } from '@/contexts/CurrencyContext'
 import { Toaster } from 'react-hot-toast'
 import Footer from '@/components/Footer'
 import { Analytics } from '@vercel/analytics/next'
@@ -77,21 +78,23 @@ export default function RootLayout({
         <script src="https://js.paystack.co/v1/inline.js" async></script>
       </head>
       <body className={inter.className}>
-        <ThemeProvider>
-          {children}
-          <Footer />
-          <Toaster 
-            position="top-right"
-            toastOptions={{
-              duration: 4000,
-              style: {
-                background: '#363636',
-                color: '#fff',
-              },
-            }}
-          />
-          <Analytics />
-        </ThemeProvider>
+        <CurrencyProvider>
+          <ThemeProvider>
+            {children}
+            <Footer />
+            <Toaster 
+              position="top-right"
+              toastOptions={{
+                duration: 4000,
+                style: {
+                  background: '#363636',
+                  color: '#fff',
+                },
+              }}
+            />
+            <Analytics />
+          </ThemeProvider>
+        </CurrencyProvider>
       </body>
     </html>
   )

@@ -22,6 +22,7 @@ class UserWithAvatarSerializer(serializers.ModelSerializer):
     avatar_type = serializers.SerializerMethodField()
     selected_avatar = serializers.SerializerMethodField()
     google_photo_url = serializers.SerializerMethodField()
+    is_verified = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -29,7 +30,7 @@ class UserWithAvatarSerializer(serializers.ModelSerializer):
             'id', 'username', 'email', 'first_name', 'last_name', 'date_joined',
             'is_staff', 'is_superuser',
             # Avatar-related extras
-            'profile_picture', 'avatar_type', 'selected_avatar', 'google_photo_url'
+            'profile_picture', 'avatar_type', 'selected_avatar', 'google_photo_url', 'is_verified'
         ]
 
     def _get_profile(self, obj):
@@ -58,6 +59,15 @@ class UserWithAvatarSerializer(serializers.ModelSerializer):
     def get_google_photo_url(self, obj):
         profile = self._get_profile(obj)
         return getattr(profile, 'google_photo_url', None) if profile else None
+    
+    def get_is_verified(self, obj):
+        """Check if user has a verified badge"""
+        try:
+            from .verification_models import VerificationBadge
+            badge = VerificationBadge.objects.filter(user=obj).first()
+            return badge.is_verified if badge else False
+        except Exception:
+            return False
 
 class SubcategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -399,6 +409,7 @@ class CategoryWithSubcategoriesSerializer(serializers.ModelSerializer):
 class GigSerializer(serializers.ModelSerializer):
     freelancer = UserWithAvatarSerializer(read_only=True)
     freelancer_profile = serializers.SerializerMethodField()
+    freelancer_verified = serializers.SerializerMethodField()
     category = CategorySerializer(read_only=True)
     category_id = serializers.IntegerField(write_only=True)
     # expose nested subcategories for detail pages, while still accepting ids for create/update
@@ -561,10 +572,20 @@ class GigSerializer(serializers.ModelSerializer):
             instance.save(update_fields=['subcategory_names'])
         
         return instance
+    
+    def get_freelancer_verified(self, obj):
+        """Check if freelancer is verified"""
+        try:
+            from .verification_models import VerificationBadge
+            badge = VerificationBadge.objects.filter(user=obj.freelancer).first()
+            return badge.is_verified if badge else False
+        except Exception:
+            return False
 
 class GigListSerializer(serializers.ModelSerializer):
     freelancer = UserWithAvatarSerializer(read_only=True)
     freelancer_profile = serializers.SerializerMethodField()
+    freelancer_verified = serializers.SerializerMethodField()
     category = CategorySerializer(read_only=True)
     image = serializers.SerializerMethodField()
     # Include quick-access name fields expected by frontend
@@ -609,6 +630,15 @@ class GigListSerializer(serializers.ModelSerializer):
             }
         except UserProfile.DoesNotExist:
             return None
+    
+    def get_freelancer_verified(self, obj):
+        """Check if freelancer is verified"""
+        try:
+            from .verification_models import VerificationBadge
+            badge = VerificationBadge.objects.filter(user=obj.freelancer).first()
+            return badge.is_verified if badge else False
+        except Exception:
+            return False
 
 class ProjectSerializer(serializers.ModelSerializer):
     client = UserSerializer(read_only=True)

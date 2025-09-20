@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import api from '../lib/api';
 import toast from 'react-hot-toast';
+import { useCurrency } from '@/contexts/CurrencyContext';
+import { formatKES } from '@/lib/currency';
 
 interface Bank {
   code: string;
@@ -26,6 +28,8 @@ export default function WithdrawalModal({
 }: WithdrawalModalProps) {
   const [banks, setBanks] = useState<Bank[]>([]);
   const [loading, setLoading] = useState(false);
+  const { currency, convert, format } = useCurrency();
+  const [equivalentLocal, setEquivalentLocal] = useState<string>('');
   const [formData, setFormData] = useState({
     amount: '',
     method: 'bank',
@@ -160,7 +164,17 @@ export default function WithdrawalModal({
             <input
               type="number"
               value={formData.amount}
-              onChange={(e) => setFormData({...formData, amount: e.target.value})}
+              onChange={async (e) => {
+                const val = e.target.value;
+                setFormData({...formData, amount: val});
+                const num = parseFloat(val || '0');
+                if (!isNaN(num) && num > 0) {
+                  const loc = await convert(num, 'KES', currency);
+                  setEquivalentLocal(`${format(loc, currency)} (${formatKES(num)})`);
+                } else {
+                  setEquivalentLocal('');
+                }
+              }}
               max={Math.floor(availableBalanceKes)}
               min="100"
               step="1"
@@ -170,8 +184,11 @@ export default function WithdrawalModal({
               placeholder="Enter amount in KES"
             />
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              Available: {availableBalanceKes.toLocaleString()} KES (${availableBalance})
+              Available: {formatKES(Math.floor(availableBalanceKes))} ({format(availableBalance, currency)})
             </p>
+            {equivalentLocal && (
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Equivalent: {equivalentLocal}</p>
+            )}
           </div>
 
           {formData.method === 'bank' ? (
