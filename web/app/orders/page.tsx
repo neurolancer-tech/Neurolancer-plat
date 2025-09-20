@@ -15,6 +15,8 @@ interface Order {
   package_type: string;
   delivery_time: number;
   created_at: string;
+  is_paid?: boolean;
+  escrow_released?: boolean;
   client: {
     id: number;
     first_name: string;
@@ -50,13 +52,40 @@ export default function OrdersPage() {
       // Add timestamp to prevent caching
       const timestamp = new Date().getTime();
       const url = forceRefresh ? `/orders/?t=${timestamp}` : '/orders/';
-      const response = await api.get(url);
-      const ordersData = response.data.results || response.data;
-      console.log('Loaded orders:', ordersData.map((o: any) => ({ id: o.id, title: o.title, status: o.status })));
-      setOrders(ordersData);
+      let ordersData: any[] = [];
+      try {
+        const response = await api.get(url);
+        ordersData = Array.isArray(response.data.results) ? response.data.results : (Array.isArray(response.data) ? response.data : []);
+      } catch (e) {
+        console.warn('Primary orders fetch failed, trying client orders...');
+      }
+
+      // Fallback to client orders
+      if (!ordersData || ordersData.length === 0) {
+        try {
+          const clientRes = await api.get('/orders/client/');
+          ordersData = Array.isArray(clientRes.data.results) ? clientRes.data.results : (Array.isArray(clientRes.data) ? clientRes.data : []);
+        } catch (e) {
+          console.warn('Client orders fetch failed, trying freelancer orders...');
+        }
+      }
+
+      // Fallback to freelancer orders
+      if (!ordersData || ordersData.length === 0) {
+        try {
+          const frRes = await api.get('/orders/freelancer/');
+          ordersData = Array.isArray(frRes.data.results) ? frRes.data.results : (Array.isArray(frRes.data) ? frRes.data : []);
+        } catch (e) {
+          console.warn('Freelancer orders fetch failed');
+        }
+      }
+
+      console.log('Loaded orders:', (ordersData || []).map((o: any) => ({ id: o.id, title: o.title, status: o.status })));
+      setOrders(ordersData || []);
       setLastRefresh(new Date());
     } catch (error) {
       console.error('Error loading orders:', error);
+      setOrders([]);
     } finally {
       setLoading(false);
     }
@@ -407,9 +436,14 @@ export default function OrdersPage() {
                       </>
                     )}
                     
-                    {order.status === 'completed' && (
+                    {order.escrow_released && (
                       <span className="px-4 py-2 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-sm rounded-lg">
-                        ✓ Paid
+                        ✓ Paid & Released
+                      </span>
+                    )}
+                    {!order.escrow_released && order.is_paid && (
+                      <span className="px-4 py-2 bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 text-sm rounded-lg">
+                        Payment in Escrow
                       </span>
                     )}
                     

@@ -10,7 +10,6 @@ import { User, UserProfile } from '../types';
 import { getUser, getProfile, logout, isAuthenticated } from '../lib/auth';
 import NotificationCenter from './NotificationCenter';
 import { useTheme } from '../contexts/ThemeContext';
-import CurrencySwitcher from './CurrencySwitcher';
 
 // Load Marko One font
 if (typeof window !== 'undefined') {
@@ -122,8 +121,7 @@ export default function Navigation() {
             </div>
 
             <div className="flex items-center space-x-2 sm:space-x-4">
-              {/* Currency Switcher */}
-              <CurrencySwitcher />
+              {/* Currency Switcher temporarily disabled */}
               {/* Theme Toggle */}
               <button
                 onClick={toggleTheme}
@@ -240,11 +238,7 @@ export default function Navigation() {
                       <Link href="/verify" className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                         Get Verified
                       </Link>
-                      {profile?.user_type === 'freelancer' && (
-                        <Link href="/skill-assessments" className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                          Skill Tests
-                        </Link>
-                      )}
+                      {/* Skill Tests link temporarily disabled */}
                       {user?.email === 'kbrian1237@gmail.com' && (
                         <Link href="/admin" className="block px-4 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors font-medium">
                           Admin Dashboard
@@ -343,13 +337,7 @@ export default function Navigation() {
                 </div>
               )}
 
-              {/* Preferences: Currency - visible in mobile sidenav */}
-              <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-700 dark:text-gray-300">Currency</span>
-                  <CurrencySwitcher />
-                </div>
-              </div>
+              {/* Currency selector temporarily removed from mobile sidenav */}
 
               {/* Navigation Links */}
               <div className="flex-1 overflow-y-auto py-4">
@@ -480,7 +468,8 @@ export default function Navigation() {
                         My Proposals
                       </Link>
 
-                    </div>
+                      {/* Skill Tests link temporarily removed */}
+                      </div>
                   )}
 
                   {/* Shared sections */}

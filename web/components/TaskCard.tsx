@@ -25,6 +25,8 @@ interface Task {
     id: number;
     status: string;
     has_review?: boolean;
+    escrow_released?: boolean;
+    is_paid?: boolean;
     gig?: {
       id: number;
       title: string;
@@ -99,8 +101,12 @@ export default function TaskCard({ task, onTaskUpdate }: TaskCardProps) {
       if (orderStatus === 'pending') return 'Assignment Pending';
       if (orderStatus === 'accepted') return `${task.assigned_freelancer.first_name} ${task.assigned_freelancer.last_name} Assigned`;
       if (orderStatus === 'in_progress') return `${task.assigned_freelancer.first_name} Working`;
-      if (orderStatus === 'delivered') return 'Work Delivered - Review Required';
-      if (orderStatus === 'completed') return 'Completed & Paid';
+      if (orderStatus === 'delivered') return 'Work Delivered - Awaiting Release';
+      if (orderStatus === 'completed') {
+        if (task.order.escrow_released) return 'Completed & Paid (Released)';
+        if (task.order.is_paid) return 'Completed - Payment in Escrow';
+        return 'Completed';
+      }
     }
     
     if (task.assigned_freelancer) {
@@ -182,9 +188,15 @@ export default function TaskCard({ task, onTaskUpdate }: TaskCardProps) {
             )}
             {task.order?.status === 'completed' && (
               <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
-                <span className="px-3 py-2 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-sm rounded-lg text-center">
-                  ✓ Paid
-                </span>
+                {task.order?.escrow_released ? (
+                  <span className="px-3 py-2 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-sm rounded-lg text-center">
+                    ✓ Paid & Released
+                  </span>
+                ) : task.order?.is_paid ? (
+                  <span className="px-3 py-2 bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 text-sm rounded-lg text-center">
+                    Payment in Escrow
+                  </span>
+                ) : null}
                 {!hasReview && task.order.gig && (
                   <button
                     onClick={() => setShowReviewModal(true)}
