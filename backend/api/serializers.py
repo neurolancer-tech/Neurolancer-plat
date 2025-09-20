@@ -596,7 +596,7 @@ class GigListSerializer(serializers.ModelSerializer):
         model = Gig
         fields = [
             'id', 'title', 'image', 'basic_price', 'rating', 'total_reviews',
-            'freelancer', 'freelancer_profile', 'category', 'category_name', 'subcategory_names',
+            'freelancer', 'freelancer_profile', 'freelancer_verified', 'category', 'category_name', 'subcategory_names',
             'likes_count', 'dislikes_count', 'created_at'
         ]
     
