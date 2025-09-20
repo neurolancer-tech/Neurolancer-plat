@@ -1054,34 +1054,39 @@ def release_escrow(request):
         if order.status != 'delivered':
             return Response({'error': 'Order must be delivered before releasing escrow'}, status=status.HTTP_400_BAD_REQUEST)
         
-        if order.payment_status != 'paid':
+        # Accept either explicit payment_status or legacy is_paid flag
+        if not (order.payment_status == 'paid' or getattr(order, 'is_paid', False)):
             return Response({'error': 'Order payment not confirmed'}, status=status.HTTP_400_BAD_REQUEST)
         
         if order.escrow_released:
             return Response({'error': 'Escrow already released'}, status=status.HTTP_400_BAD_REQUEST)
         
-        # Calculate the actual amount to release (base amount, not including fees)
-        base_amount = order.price  # Original gig price without platform fees
+        # Calculate freelancer earnings (after 5% platform fee) in KES
+        freelancer_fee = Decimal(str(order.price)) * FREELANCER_FEE_PERCENTAGE
+        earnings_kes = Decimal(str(order.price)) - freelancer_fee
         
-        # Release escrow funds
+        # Mark order completed
         order.status = 'completed'
         order.escrow_released = True
         order.completed_at = datetime.now()
         order.save()
         
-        # Update freelancer's balances (convert KES to USD for dashboard)
-        freelancer_profile, created = UserProfile.objects.get_or_create(user=order.freelancer)
-        usd_amount = convert_kes_to_usd(base_amount)
-        freelancer_profile.escrow_balance -= usd_amount
-        freelancer_profile.available_balance += usd_amount
-        freelancer_profile.total_earnings += usd_amount
+        # Update freelancer's balances (convert KES earnings to USD for dashboard)
+        freelancer_profile, _ = UserProfile.objects.get_or_create(user=order.freelancer)
+        earnings_usd = convert_kes_to_usd(earnings_kes)
+        
+        # Prevent negative escrow due to legacy inconsistencies
+        new_escrow = freelancer_profile.escrow_balance - earnings_usd
+        freelancer_profile.escrow_balance = new_escrow if new_escrow > 0 else Decimal('0')
+        freelancer_profile.available_balance += earnings_usd
+        freelancer_profile.total_earnings += earnings_usd
         freelancer_profile.save()
         
-        # Create transaction record for escrow release
+        # Create transaction record for escrow release (recorded in KES)
         Transaction.objects.create(
             user=order.freelancer,
             transaction_type='payment',
-            amount=base_amount,
+            amount=earnings_kes,
             description=f'Escrow released for completed order: {order.title}',
             reference=f'escrow_release_{order.id}_{datetime.now().strftime("%Y%m%d%H%M%S")}',
             status='completed',
@@ -1091,7 +1096,7 @@ def release_escrow(request):
         return Response({
             'status': 'success',
             'message': 'Escrow funds released successfully',
-            'amount_released': float(base_amount)
+            'amount_released': float(earnings_kes)
         })
         
     except Exception as e:
