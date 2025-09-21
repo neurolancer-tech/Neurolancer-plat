@@ -18,6 +18,7 @@ export interface AIIntentResult {
   message?: string;
   actionCards?: ActionCard[];
   navigateTo?: string;
+  openForm?: { id: string; prefill?: Record<string, any> };
 }
 
 const statusMap: Record<string, string> = {
@@ -203,6 +204,18 @@ export async function handleAIIntent(input: string, ctx: AIIntentContext): Promi
     }
   }
 
+  // 3b) If asked to update profile but missing field/value, open a simple profile-update form
+  if (/\b(update|edit|change) (my )?(profile|client profile|freelancer profile)\b/i.test(lower) && !(userField || freelancerField || clientField)) {
+    return {
+      handled: true,
+      message: 'Let\'s update your profile. Choose what to change:',
+      actionCards: [
+        { title: 'Profile Update', description: 'Open mini form', action: 'form:profile-update', icon: '⚙️', color: 'from-teal-500 to-teal-600' }
+      ],
+      openForm: { id: 'profile-update' }
+    };
+  }
+
   // 4) Orders: list
   if (/\b(my orders|list orders|show orders)\b/i.test(lower)) {
     try {
@@ -237,6 +250,22 @@ export async function handleAIIntent(input: string, ctx: AIIntentContext): Promi
       return { handled: true, message: `✅ Payment released for order #${orderId}.` };
     } catch (e: any) {
       return { handled: true, message: `❌ Failed to release payment: ${e?.response?.data?.error || e.message}` };
+    }
+  }
+
+  // 6b) Rate freelancer
+  if (/\brate (freelancer|order)\b/.test(lower)) {
+    const orderId = parseOrderId(lower);
+    const ratingMatch = lower.match(/(\b[1-5]\b)\s*star/);
+    const rating = ratingMatch ? parseInt(ratingMatch[1], 10) : null;
+    if (!orderId || !rating) {
+      return { handled: true, message: 'Please specify the order ID and rating (1-5), e.g., "Rate freelancer for order #123, 5 stars".' };
+    }
+    try {
+      await api.post('/reviews/create/', { order: orderId, rating, comment: 'Rated via chat' });
+      return { handled: true, message: `✅ Submitted a ${rating}-star review for order #${orderId}.` };
+    } catch (e: any) {
+      return { handled: true, message: `❌ Failed to submit review: ${e?.response?.data?.error || e.message}` };
     }
   }
 
@@ -278,6 +307,30 @@ export async function handleAIIntent(input: string, ctx: AIIntentContext): Promi
     }
   }
 
+  // 8b) Toggle notification preferences
+  if (/\b(mute notifications|disable notifications)\b/.test(lower)) {
+    try {
+      const categories = ['order_updates','messages','proposals','payments','system_notifications'];
+      const methods = ['in_app','email'];
+      const preferences = categories.flatMap(category => methods.map(delivery_method => ({ category, delivery_method, is_enabled: false, frequency: 'disabled' })));
+      await api.post('/notifications/preferences/update/', { preferences });
+      return { handled: true, message: '🔕 Notifications muted (in-app and email). You can re-enable them anytime.' };
+    } catch (e: any) {
+      return { handled: true, message: `❌ Failed to update preferences: ${e?.response?.data?.error || e.message}` };
+    }
+  }
+  if (/\b(unmute notifications|enable notifications)\b/.test(lower)) {
+    try {
+      const categories = ['order_updates','messages','proposals','payments','system_notifications'];
+      const methods = ['in_app','email'];
+      const preferences = categories.flatMap(category => methods.map(delivery_method => ({ category, delivery_method, is_enabled: true, frequency: 'instant' })));
+      await api.post('/notifications/preferences/update/', { preferences });
+      return { handled: true, message: '🔔 Notifications enabled (in-app and email set to instant).' };
+    } catch (e: any) {
+      return { handled: true, message: `❌ Failed to update preferences: ${e?.response?.data?.error || e.message}` };
+    }
+  }
+
   // 9) Support ticket / feedback
   if (/\b(ticket|support|help)\b/.test(lower) || /\bfeedback\b/.test(lower)) {
     try {
@@ -295,6 +348,16 @@ export async function handleAIIntent(input: string, ctx: AIIntentContext): Promi
     } catch (e: any) {
       return { handled: true, message: `❌ Failed to create ticket: ${e?.response?.data?.error || e.message}` };
     }
+  }
+
+  // 9b) Add/upload document (open upload form)
+  if (/(add|upload).*document/.test(lower)) {
+    return {
+      handled: true,
+      message: 'Let\'s upload a document to your profile.',
+      actionCards: [ { title: 'Upload Document', description: 'Add a CV, certificate, or portfolio', action: 'form:document-upload', icon: '📄', color: 'from-indigo-500 to-indigo-600' } ],
+      openForm: { id: 'document-upload' }
+    };
   }
 
   // 10) Recommend gigs/jobs (search)

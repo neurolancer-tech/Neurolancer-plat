@@ -174,6 +174,50 @@ function MessagesPageContent() {
     ]
   };
 
+  const documentUploadForm = {
+    id: 'document-upload',
+    title: 'Upload Document',
+    type: 'project',
+    submitText: 'Upload',
+    fields: [
+      { name: 'file', label: 'File', type: 'file', required: true },
+      { name: 'name', label: 'Document Name', type: 'text', required: true, placeholder: 'e.g., Resume.pdf' },
+      { name: 'document_type', label: 'Type', type: 'select', required: true, options: [
+        { value: 'cv', label: 'CV/Resume' },
+        { value: 'portfolio', label: 'Portfolio' },
+        { value: 'certificate', label: 'Certificate' },
+        { value: 'degree', label: 'Degree' },
+        { value: 'license', label: 'License' },
+        { value: 'other', label: 'Other' },
+      ]},
+      { name: 'description', label: 'Description', type: 'textarea', required: false, placeholder: 'Short description (optional)' }
+    ]
+  };
+
+  const profileUpdateForm = {
+    id: 'profile-update',
+    title: 'Quick Profile Update',
+    type: 'project',
+    submitText: 'Save',
+    fields: [
+      { name: 'target', label: 'Section', type: 'select', required: true, options: [
+        { value: 'user', label: 'User Profile' },
+        { value: 'freelancer', label: 'Freelancer Profile' },
+        { value: 'client', label: 'Client Profile' },
+      ]},
+      { name: 'field', label: 'Field', type: 'select', required: true, options: [
+        { value: 'title', label: 'Title' },
+        { value: 'skills', label: 'Skills' },
+        { value: 'hourly_rate', label: 'Hourly Rate' },
+        { value: 'company_name', label: 'Company Name' },
+        { value: 'company_size', label: 'Company Size' },
+        { value: 'industry', label: 'Industry' },
+        { value: 'website', label: 'Website' },
+      ]},
+      { name: 'value', label: 'Value', type: 'text', required: true, placeholder: 'Enter new value' }
+    ]
+  };
+
   const generateActionCards = (content: string) => {
     const cards: any[] = [];
     const lowerContent = content.toLowerCase();
@@ -233,6 +277,39 @@ function MessagesPageContent() {
 
   const handleActionClick = async (action: string) => {
     if (action.startsWith('form:')) {
+      const formId = action.replace('form:', '');
+      if (formId === 'create-job') {
+        setActiveForm(jobCreationForm);
+      } else if (formId === 'create-gig') {
+        setActiveForm(gigCreationForm);
+      } else if (formId === 'create-project') {
+        setActiveForm(projectCreationForm);
+      } else if (formId === 'create-task') {
+        setActiveForm(taskCreationForm);
+      } else if (formId === 'document-upload') {
+        setActiveForm(documentUploadForm as any);
+      } else if (formId === 'profile-update') {
+        setActiveForm(profileUpdateForm as any);
+      }
+      setFormData({});
+      setChatFormStep(0);
+      setChatFormProgressive(true);
+      try {
+        const resp = await api.get('/categories/');
+        const cats = resp.data.results || resp.data || [];
+        setChatCategories(cats);
+      } catch (e) {
+        setChatCategories([]);
+      }
+      try {
+        const p = await api.get('/projects/');
+        const plist = p.data.results || p.data || [];
+        // Only allow creating tasks for projects you own
+        setChatProjects(currentUser ? plist.filter((proj: any) => proj.client?.id === currentUser.id) : plist);
+      } catch (e) {
+        setChatProjects([]);
+      }
+    } else {
       const formId = action.replace('form:', '');
       if (formId === 'create-job') {
         setActiveForm(jobCreationForm);
@@ -1668,7 +1745,85 @@ ${aiResponse}`;
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                       {field.label} {field.required && <span className="text-red-500">*</span>}
                                     </label>
-                                    {isSubcats ? (
+                          {isSubcats ? (
+                            <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded-lg p-2">
+                              {chatSubcategories.length === 0 ? (
+                                <p className="text-xs text-gray-500">No areas available or none selected</p>
+                              ) : (
+                                chatSubcategories.map((s: any) => (
+                                  <label key={s.id} className="flex items-center gap-2 text-sm">
+                                    <input
+                                      type="checkbox"
+                                      checked={Array.isArray(formData.subcategory_ids) && formData.subcategory_ids.includes(s.id)}
+                                      onChange={(e) => {
+                                        setFormData((prev) => {
+                                          const current: number[] = Array.isArray(prev.subcategory_ids) ? [...prev.subcategory_ids] : [];
+                                          if (e.target.checked) {
+                                            if (!current.includes(s.id)) current.push(s.id);
+                                          } else {
+                                            const idx = current.indexOf(s.id);
+                                            if (idx >= 0) current.splice(idx, 1);
+                                          }
+                                          return { ...prev, subcategory_ids: current };
+                                        });
+                                      }}
+                                    />
+                                    {s.name}
+                                  </label>
+                                ))
+                              )}
+                            </div>
+                          ) : field.type === 'textarea' ? (
+                            <textarea
+                              value={formData[field.name] || ''}
+                              onChange={(e) => setFormData(prev => ({ ...prev, [field.name]: e.target.value }))}
+                              placeholder={field.placeholder}
+                              required={field.required}
+                              rows={3}
+                              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+                            />
+                          ) : field.type === 'select' ? (
+                            <select
+                              value={formData[field.name] || ''}
+                              onChange={async (e) => {
+                                const val = e.target.value;
+                                setFormData(prev => ({ ...prev, [field.name]: val }));
+                                if (isCategory) {
+                                  try {
+                                    const resp = await api.get(`/categories/${val}/subcategories/`);
+                                    const subs = resp.data.results || resp.data || [];
+                                    setChatSubcategories(subs);
+                                    setFormData(prev => ({ ...prev, subcategory_ids: [] }));
+                                  } catch (err) {
+                                    setChatSubcategories([]);
+                                  }
+                                }
+                              }}
+                              required={field.required}
+                              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+                            >
+                              <option value="">Select {field.label}</option>
+                              {selectOptions.map((option: any) => (
+                                <option key={option.value} value={option.value}>{option.label}</option>
+                              ))}
+                            </select>
+                          ) : field.type === 'file' ? (
+                            <input
+                              type="file"
+                              onChange={(e) => setFormData(prev => ({ ...prev, [field.name]: (e.target as any).files?.[0] }))}
+                              required={field.required}
+                              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+                            />
+                          ) : (
+                            <input
+                              type={field.type}
+                              value={formData[field.name] || ''}
+                              onChange={(e) => setFormData(prev => ({ ...prev, [field.name]: e.target.value }))}
+                              placeholder={field.placeholder}
+                              required={field.required}
+                              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+                            />
+                          )}
                                       <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded-lg p-2">
                                         {chatSubcategories.length === 0 ? (
                                           <p className="text-xs text-gray-500">No areas available or none selected</p>
@@ -1752,7 +1907,41 @@ ${aiResponse}`;
                                     onClick={async () => {
                                       try {
                                         setChatFormLoading(true);
-                                        if (activeForm.id === 'create-project') {
+                            if (activeForm.id === 'document-upload') {
+                              const fd = new FormData();
+                              if (formData.file) fd.append('file', formData.file);
+                              fd.append('name', formData.name || 'Document');
+                              fd.append('document_type', formData.document_type || 'other');
+                              if (formData.description) fd.append('description', formData.description);
+                              fd.append('is_public', 'true');
+                              await api.post('/profile/documents/create/', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+                              setMessages(prev => [...prev, {
+                                id: Date.now(),
+                                content: `✅ **Document uploaded successfully!**`,
+                                sender: 'ai',
+                                timestamp: new Date()
+                              }]);
+                            } else if (activeForm.id === 'profile-update') {
+                              const target = String(formData.target || 'user');
+                              const field = String(formData.field || '');
+                              const value = String(formData.value || '');
+                              if (!field || !value) throw new Error('Field and value are required');
+                              const payload: any = { [field]: value };
+                              if (field === 'hourly_rate') payload[field] = parseFloat(value);
+                              if (target === 'user') {
+                                await api.patch('/profile/update/', payload);
+                              } else if (target === 'freelancer') {
+                                try { await api.put('/profiles/freelancer/', payload); } catch { await api.post('/profiles/freelancer/', payload); }
+                              } else if (target === 'client') {
+                                try { await api.put('/profiles/client/', payload); } catch { await api.post('/profiles/client/', payload); }
+                              }
+                              setMessages(prev => [...prev, {
+                                id: Date.now(),
+                                content: `✅ **Profile updated!**`,
+                                sender: 'ai',
+                                timestamp: new Date()
+                              }]);
+                            } else if (activeForm.type === 'job') {
                                           const payload: any = {
                                             title: formData.title,
                                             description: formData.description,
