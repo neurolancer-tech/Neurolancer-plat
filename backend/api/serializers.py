@@ -794,7 +794,9 @@ class TaskSerializer(serializers.ModelSerializer):
                 order_data = {
                     'id': order.id,
                     'status': order.status,
-                    'has_review': hasattr(order, 'review') and order.review is not None
+                    'has_review': hasattr(order, 'review') and order.review is not None,
+                    'is_paid': bool(getattr(order, 'is_paid', False) or getattr(order, 'payment_status', '') == 'paid'),
+                    'escrow_released': bool(getattr(order, 'escrow_released', False)),
                 }
                 # Include gig information if available
                 if order.gig:
@@ -1269,7 +1271,7 @@ class JobSerializer(serializers.ModelSerializer):
                     data['order_summary'] = {
                         'id': related_order.id,
                         'status': related_order.status,
-                        'is_paid': bool(getattr(related_order, 'is_paid', False)),
+                        'is_paid': bool(getattr(related_order, 'is_paid', False) or getattr(related_order, 'payment_status', '') == 'paid'),
                         'escrow_released': bool(getattr(related_order, 'escrow_released', False)),
                     }
         except Exception:

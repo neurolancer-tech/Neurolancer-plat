@@ -16,6 +16,7 @@ interface Order {
   delivery_time: number;
   created_at: string;
   is_paid?: boolean;
+  payment_status?: string;
   escrow_released?: boolean;
   client: {
     id: number;
@@ -441,7 +442,7 @@ export default function OrdersPage() {
                         ✓ Paid & Released
                       </span>
                     )}
-                    {!order.escrow_released && order.is_paid && (
+                    {!order.escrow_released && (order.is_paid || (order as any).payment_status === 'paid') && (
                       <span className="px-4 py-2 bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 text-sm rounded-lg">
                         Payment in Escrow
                       </span>

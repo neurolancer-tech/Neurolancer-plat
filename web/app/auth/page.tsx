@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -72,7 +72,7 @@ function AuthContent() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState<PasswordStrength>({ score: 0, label: '', color: '', suggestions: [] });
-  const [recaptchaVerifier, setRecaptchaVerifier] = useState<any>(null);
+  const recaptchaRef = useRef<any>(null);
   const [recaptchaResolved, setRecaptchaResolved] = useState(false);
 
   useEffect(() => {
@@ -83,29 +83,42 @@ function AuthContent() {
   }, [searchParams]);
 
   useEffect(() => {
-    if (activeTab === 'signup' && !recaptchaVerifier) {
+    if (activeTab === 'signup' && typeof window !== 'undefined') {
       try {
-        const verifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-          size: 'normal',
-          callback: () => {
-            setRecaptchaResolved(true);
-          },
-          'expired-callback': () => {
-            setRecaptchaResolved(false);
-          }
-        });
-        setRecaptchaVerifier(verifier);
-        verifier.render();
+        // Initialize once per page life; do not re-init on tab switch
+        if (!recaptchaRef.current) {
+          const verifier = new RecaptchaVerifier(auth, 'auth-recaptcha-container', {
+            size: 'invisible',
+            callback: () => {
+              setRecaptchaResolved(true);
+            },
+            'expired-callback': () => {
+              setRecaptchaResolved(false);
+            }
+          });
+          recaptchaRef.current = verifier;
+          verifier.render();
+        }
       } catch (error) {
         console.error('reCAPTCHA setup error:', error);
       }
     }
+  }, [activeTab]);
+
+  // Cleanup only on unmount, guarded
+  useEffect(() => {
     return () => {
-      if (recaptchaVerifier) {
-        recaptchaVerifier.clear();
+      try {
+        if (recaptchaRef.current && typeof recaptchaRef.current.clear === 'function') {
+          recaptchaRef.current.clear();
+          recaptchaRef.current = null;
+        }
+      } catch (e) {
+        // Swallow any Firebase internal clear() errors on teardown
+        console.warn('reCAPTCHA clear on unmount failed', e);
       }
     };
-  }, [activeTab, recaptchaVerifier]);
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -283,6 +296,11 @@ function AuthContent() {
     setLoading(true);
 
     try {
+      // Verify invisible reCAPTCHA before login
+      if (recaptchaRef.current && typeof recaptchaRef.current.verify === 'function') {
+        await recaptchaRef.current.verify();
+      }
+
       const response = await api.post('/auth/login/', {
         username: formData.username,
         password: formData.password
@@ -356,14 +374,13 @@ function AuthContent() {
       return;
     }
 
-    if (!recaptchaResolved) {
-      toast.error('Please complete the reCAPTCHA verification');
-      return;
-    }
-
     setLoading(true);
 
     try {
+      // Verify invisible reCAPTCHA before signup
+      if (recaptchaRef.current && typeof recaptchaRef.current.verify === 'function') {
+        await recaptchaRef.current.verify();
+      }
       // Pre-check if email already exists (prevents dupes incl. Google-registered emails)
       const exists = await checkEmailExists(formData.email);
       if (exists) {
@@ -511,14 +528,48 @@ function AuthContent() {
                 Continue with Google
               </button>
 
-              <div className="relative mb-4 sm:mb-6">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300 dark:border-gray-600" />
-                </div>
-                <div className="relative flex justify-center text-xs sm:text-sm">
-                  <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">Or continue with email</span>
-                </div>
-              </div>
+          <div className="relative mb-4 sm:mb-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300 dark:border-gray-600" />
+            </div>
+            <div className="relative flex justify-center text-xs sm:text-sm">
+              <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">Or continue with email</span>
+            </div>
+          </div>
+
+          {/* Global (invisible) reCAPTCHA container for both tabs */}
+          <div className="flex items-center justify-between mb-4">
+            <div id="auth-recaptcha-container" />
+            <button
+              type="button"
+              onClick={() => {
+                try {
+                  if (recaptchaRef.current && typeof recaptchaRef.current.clear === 'function') {
+                    recaptchaRef.current.clear();
+                  }
+                } catch (e) {
+                  console.warn('reCAPTCHA clear failed (ignored)', e);
+                } finally {
+                  // Re-initialize invisble reCAPTCHA
+                  try {
+                    const verifier = new RecaptchaVerifier(auth, 'auth-recaptcha-container', {
+                      size: 'invisible',
+                      callback: () => setRecaptchaResolved(true),
+                      'expired-callback': () => setRecaptchaResolved(false),
+                    });
+                    recaptchaRef.current = verifier;
+                    verifier.render();
+                  } catch (e) {
+                    console.error('reCAPTCHA re-init failed', e);
+                  }
+                }
+              }}
+              className="text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 underline"
+              title="If you run into an issue with reCAPTCHA, click to reset"
+            >
+              Reset reCAPTCHA
+            </button>
+          </div>
 
               {/* Login Form */}
               {activeTab === 'login' && (
@@ -859,14 +910,14 @@ function AuthContent() {
                     )}
                   </div>
 
-                  {/* reCAPTCHA */}
-                  <div className="flex justify-center">
-                    <div id="recaptcha-container"></div>
+                  {/* reCAPTCHA note (invisible handled globally) */}
+                  <div className="flex justify-center text-xs text-gray-500 dark:text-gray-400 mb-1">
+                    reCAPTCHA is enabled to protect this site
                   </div>
 
                   <button
                     type="submit"
-                    disabled={loading || !recaptchaResolved || Boolean(formData.password && formData.confirmPassword && formData.password !== formData.confirmPassword)}
+                    disabled={loading || Boolean(formData.password && formData.confirmPassword && formData.password !== formData.confirmPassword)}
                     className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 sm:py-3 rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:transform-none font-medium text-sm sm:text-base"
                   >
                     {loading ? (

@@ -49,9 +49,14 @@ export default function FirebasePhoneAuth({ onVerificationSuccess, onError }: Fi
       console.error('SMS sending failed:', error);
       onError(error.message || 'Failed to send SMS');
       
-      // Reset reCAPTCHA on error
-      if ((window as any).recaptchaVerifier) {
-        (window as any).recaptchaVerifier.clear();
+      // Reset reCAPTCHA on error (guarded)
+      try {
+        if ((window as any).recaptchaVerifier && typeof (window as any).recaptchaVerifier.clear === 'function') {
+          (window as any).recaptchaVerifier.clear();
+        }
+      } catch (e) {
+        console.warn('recaptcha clear failed (ignored)', e);
+      } finally {
         (window as any).recaptchaVerifier = null;
       }
     } finally {
