@@ -483,7 +483,6 @@ export default function FloatingChatbot() {
       } else if (formId === 'profile-update') {
         setActiveForm(profileUpdateForm);
       }
-      }
       setFormData({});
       setCurrentStep(0);
       setProgressiveMode(true);

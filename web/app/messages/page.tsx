@@ -310,35 +310,6 @@ function MessagesPageContent() {
         setChatProjects([]);
       }
     } else {
-      const formId = action.replace('form:', '');
-      if (formId === 'create-job') {
-        setActiveForm(jobCreationForm);
-      } else if (formId === 'create-gig') {
-        setActiveForm(gigCreationForm);
-      } else if (formId === 'create-project') {
-        setActiveForm(projectCreationForm);
-      } else if (formId === 'create-task') {
-        setActiveForm(taskCreationForm);
-      }
-      setFormData({});
-      setChatFormStep(0);
-      setChatFormProgressive(true);
-      try {
-        const resp = await api.get('/categories/');
-        const cats = resp.data.results || resp.data || [];
-        setChatCategories(cats);
-      } catch (e) {
-        setChatCategories([]);
-      }
-      try {
-        const p = await api.get('/projects/');
-        const plist = p.data.results || p.data || [];
-        // Only allow creating tasks for projects you own
-        setChatProjects(currentUser ? plist.filter((proj: any) => proj.client?.id === currentUser.id) : plist);
-      } catch (e) {
-        setChatProjects([]);
-      }
-    } else {
       window.open(action, '_blank');
     }
   };
