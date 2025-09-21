@@ -13,6 +13,7 @@ import FileUploadModal from '../../components/FileUploadModal';
 import GroupDiscoveryModal from '../../components/GroupDiscoveryModal';
 import GroupInviteModal from '../../components/GroupInviteModal';
 import MessageContent from '../../components/MessageContent';
+import { handleAIIntent } from '../../lib/ai_intents';
 
 import { isAuthenticated, getUser } from '../../lib/auth';
 // import { useWebSocket } from '../../lib/websocket'; // Disabled for free tier
@@ -615,30 +616,52 @@ function MessagesPageContent() {
       setTimeout(scrollToBottom, 100);
       
       try {
-        // Send message to chatbot (this will save to database)
-        const aiResponse = await chatbot.sendMessage(messageContent);
-        
-        // Generate action cards based on user message and AI response
-        const actionCards = generateActionCards(messageContent + ' ' + aiResponse);
-        
-        const aiMsg = {
-          id: Date.now() + 1,
-          content: aiResponse,
-          sender: {
-            id: -1,
-            first_name: 'Neurolancer',
-            last_name: 'AI',
-            profile_picture: null,
-            avatar_type: 'default',
-            selected_avatar: 'ai'
-          },
-          created_at: new Date().toISOString(),
-          is_read: true,
-          actionCards: actionCards.length > 0 ? actionCards : undefined
-        };
-        
-        setAiMessages(prev => [...prev, aiMsg]);
-        setTimeout(scrollToBottom, 100);
+        // First, attempt to execute as an in-platform intent
+        const intent = await handleAIIntent(messageContent, { origin: 'messages' });
+        if (intent.handled) {
+          const aiMsg = {
+            id: Date.now() + 1,
+            content: intent.message || 'Done.',
+            sender: {
+              id: -1,
+              first_name: 'Neurolancer',
+              last_name: 'AI',
+              profile_picture: null,
+              avatar_type: 'default',
+              selected_avatar: 'ai'
+            },
+            created_at: new Date().toISOString(),
+            is_read: true,
+            actionCards: intent.actionCards && intent.actionCards.length ? intent.actionCards : undefined
+          } as any;
+          setAiMessages(prev => [...prev, aiMsg]);
+          setTimeout(scrollToBottom, 100);
+          if (intent.navigateTo) {
+            // Navigate if needed
+            try { window.location.href = intent.navigateTo; } catch {}
+          }
+        } else {
+          // Send message to external chatbot
+          const aiResponse = await chatbot.sendMessage(messageContent);
+          const actionCards = generateActionCards(messageContent + ' ' + aiResponse);
+          const aiMsg = {
+            id: Date.now() + 1,
+            content: aiResponse,
+            sender: {
+              id: -1,
+              first_name: 'Neurolancer',
+              last_name: 'AI',
+              profile_picture: null,
+              avatar_type: 'default',
+              selected_avatar: 'ai'
+            },
+            created_at: new Date().toISOString(),
+            is_read: true,
+            actionCards: actionCards.length > 0 ? actionCards : undefined
+          } as any;
+          setAiMessages(prev => [...prev, aiMsg]);
+          setTimeout(scrollToBottom, 100);
+        }
       } catch (error) {
         console.error('AI chatbot error:', error);
         // Add error message
@@ -655,7 +678,7 @@ function MessagesPageContent() {
           },
           created_at: new Date().toISOString(),
           is_read: true
-        };
+        } as any;
         setAiMessages(prev => [...prev, errorMsg]);
       } finally {
         setIsAiTyping(false);
@@ -1347,15 +1370,48 @@ ${aiResponse}`;
                                                   width={300}
                                                   height={200}
                                                   className="rounded-lg max-w-xs object-cover cursor-pointer"
-                                                  onClick={() => window.open(fileUrl, '_blank')}
+                                                  onClick={async () => {
+                                                    try {
+                                                      const resp = await api.get(fileUrl, { responseType: 'blob' });
+                                                      const blobUrl = window.URL.createObjectURL(resp.data);
+                                                      window.open(blobUrl, '_blank');
+                                                      setTimeout(() => window.URL.revokeObjectURL(blobUrl), 10000);
+                                                    } catch (e) {
+                                                      console.error('Open image failed:', e);
+                                                    }
+                                                  }}
                                                   onError={(e) => {
                                                     console.error('Image load error:', fileUrl);
                                                     (e.target as HTMLImageElement).style.display = 'none';
                                                   }}
                                                 />
-                                                <a
-                                                  href={fileUrl}
-                                                  download={message.attachment_name}
+                                                <button
+                                                  onClick={async (ev) => {
+                                                    ev.preventDefault();
+                                                    try {
+                                                      const resp = await api.get(fileUrl, { responseType: 'blob' });
+                                                      const cd = resp.headers['content-disposition'] || resp.headers['Content-Disposition'];
+                                                      let filename = message.attachment_name || 'download';
+                                                      if (cd) {
+                                                        const match = /filename\*=UTF-8''([^;]+)|filename="?([^";]+)"?/i.exec(cd);
+                                                        const enc = match?.[1];
+                                                        const simp = match?.[2];
+                                                        if (enc) filename = decodeURIComponent(enc);
+                                                        else if (simp) filename = simp;
+                                                      }
+                                                      const blob = new Blob([resp.data]);
+                                                      const url = window.URL.createObjectURL(blob);
+                                                      const a = document.createElement('a');
+                                                      a.href = url;
+                                                      a.download = filename;
+                                                      document.body.appendChild(a);
+                                                      a.click();
+                                                      window.URL.revokeObjectURL(url);
+                                                      document.body.removeChild(a);
+                                                    } catch (e) {
+                                                      console.error('Download failed:', e);
+                                                    }
+                                                  }}
                                                   className={`absolute top-2 right-2 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity ${
                                                     isCurrentUser ? 'bg-white bg-opacity-80 text-gray-700' : 'bg-gray-800 bg-opacity-80 text-white'
                                                   }`}
@@ -1364,7 +1420,7 @@ ${aiResponse}`;
                                                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                                   </svg>
-                                                </a>
+                                                </button>
                                                 {message.attachment_name && (
                                                   <p className="text-xs opacity-70 mt-1">{message.attachment_name}</p>
                                                 )}
@@ -1377,9 +1433,33 @@ ${aiResponse}`;
                                                   <source src={fileUrl} type="video/mp4" />
                                                   Your browser does not support the video element.
                                                 </video>
-                                                <a
-                                                  href={fileUrl}
-                                                  download={message.attachment_name}
+                                                <button
+                                                  onClick={async (ev) => {
+                                                    ev.preventDefault();
+                                                    try {
+                                                      const resp = await api.get(fileUrl, { responseType: 'blob' });
+                                                      const cd = resp.headers['content-disposition'] || resp.headers['Content-Disposition'];
+                                                      let filename = message.attachment_name || 'download';
+                                                      if (cd) {
+                                                        const match = /filename\*=UTF-8''([^;]+)|filename="?([^";]+)"?/i.exec(cd);
+                                                        const enc = match?.[1];
+                                                        const simp = match?.[2];
+                                                        if (enc) filename = decodeURIComponent(enc);
+                                                        else if (simp) filename = simp;
+                                                      }
+                                                      const blob = new Blob([resp.data]);
+                                                      const url = window.URL.createObjectURL(blob);
+                                                      const a = document.createElement('a');
+                                                      a.href = url;
+                                                      a.download = filename;
+                                                      document.body.appendChild(a);
+                                                      a.click();
+                                                      window.URL.revokeObjectURL(url);
+                                                      document.body.removeChild(a);
+                                                    } catch (e) {
+                                                      console.error('Download failed:', e);
+                                                    }
+                                                  }}
                                                   className={`absolute top-2 right-2 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity ${
                                                     isCurrentUser ? 'bg-white bg-opacity-80 text-gray-700' : 'bg-gray-800 bg-opacity-80 text-white'
                                                   }`}
@@ -1388,7 +1468,7 @@ ${aiResponse}`;
                                                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                                   </svg>
-                                                </a>
+                                                </button>
                                                 {message.attachment_name && (
                                                   <p className="text-xs opacity-70 mt-1">{message.attachment_name}</p>
                                                 )}
@@ -1432,19 +1512,51 @@ ${aiResponse}`;
                                                   <p className="text-sm font-medium truncate">{message.attachment_name}</p>
                                                   <div className="flex items-center space-x-2 mt-1">
                                                     <button
-                                                      onClick={() => window.open(fileUrl, '_blank')}
+                                                      onClick={async () => {
+                                                        try {
+                                                          const resp = await api.get(fileUrl, { responseType: 'blob' });
+                                                          const blobUrl = window.URL.createObjectURL(resp.data);
+                                                          window.open(blobUrl, '_blank');
+                                                          setTimeout(() => window.URL.revokeObjectURL(blobUrl), 10000);
+                                                        } catch (e) {
+                                                          console.error('Open file failed:', e);
+                                                        }
+                                                      }}
                                                       className="text-xs opacity-70 hover:opacity-100"
                                                     >
                                                       Open
                                                     </button>
                                                     <span className="text-xs opacity-50">•</span>
-                                                    <a
-                                                      href={fileUrl}
-                                                      download={message.attachment_name}
+                                                    <button
+                                                      onClick={async () => {
+                                                        try {
+                                                          const resp = await api.get(fileUrl, { responseType: 'blob' });
+                                                          const cd = resp.headers['content-disposition'] || resp.headers['Content-Disposition'];
+                                                          let filename = message.attachment_name || 'download';
+                                                          if (cd) {
+                                                            const match = /filename\*=UTF-8''([^;]+)|filename="?([^";]+)"?/i.exec(cd);
+                                                            const enc = match?.[1];
+                                                            const simp = match?.[2];
+                                                            if (enc) filename = decodeURIComponent(enc);
+                                                            else if (simp) filename = simp;
+                                                          }
+                                                          const blob = new Blob([resp.data]);
+                                                          const url = window.URL.createObjectURL(blob);
+                                                          const a = document.createElement('a');
+                                                          a.href = url;
+                                                          a.download = filename;
+                                                          document.body.appendChild(a);
+                                                          a.click();
+                                                          window.URL.revokeObjectURL(url);
+                                                          document.body.removeChild(a);
+                                                        } catch (e) {
+                                                          console.error('Download failed:', e);
+                                                        }
+                                                      }}
                                                       className="text-xs opacity-70 hover:opacity-100"
                                                     >
                                                       Download
-                                                    </a>
+                                                    </button>
                                                   </div>
                                                 </div>
                                               </div>

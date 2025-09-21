@@ -208,7 +208,8 @@ export default function ClientProfileForm({ onSave }: ClientProfileFormProps) {
 }
 
 function ClientPublishToggle() {
-  const [isPublished, setIsPublished] = useState<boolean>(true);
+  const [isPublished, setIsPublished] = useState<boolean>(false);
+  const [exists, setExists] = useState<boolean>(false);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -216,15 +217,26 @@ function ClientPublishToggle() {
     (async () => {
       try {
         const res = await profileApi.getClientProfile();
-        setIsPublished(Boolean((res as any)?.is_active !== false));
+        if (res && (res as any).id) {
+          setExists(true);
+          setIsPublished((res as any).is_active === true);
+        } else {
+          setExists(false);
+          setIsPublished(false);
+        }
       } catch (e) {
-        // default true
-        setIsPublished(true);
+        // No existing profile: default to unpublished and disabled
+        setExists(false);
+        setIsPublished(false);
       }
     })();
   }, []);
 
   const togglePublish = async () => {
+    if (!exists) {
+      toast.error('Create your client profile first, then you can publish it.');
+      return;
+    }
     setLoading(true);
     try {
       const newState = !isPublished;
@@ -242,15 +254,18 @@ function ClientPublishToggle() {
     <div className="flex justify-end">
       <div className="flex items-center gap-3">
         <span className="text-sm text-gray-600 dark:text-gray-400">
-          {isPublished ? 'Profile is live and can open jobs' : 'Profile is not published (jobs will remain closed)'}
+          {exists
+            ? (isPublished ? 'Profile is live and can open jobs' : 'Profile is not published (jobs will remain closed)')
+            : 'No client profile yet (create and publish to open jobs)'}
         </span>
         <button
           type="button"
           onClick={togglePublish}
-          disabled={loading}
+          disabled={loading || !exists}
           className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 ${
             isPublished ? 'bg-green-600' : 'bg-gray-200 dark:bg-gray-700'
           }`}
+          title={!exists ? 'Create your client profile to enable publishing' : undefined}
         >
           <span
             className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${

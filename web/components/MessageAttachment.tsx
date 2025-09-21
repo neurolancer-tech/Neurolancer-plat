@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import api from '@/lib/api';
 
 interface Attachment {
   id: number;
@@ -56,18 +57,35 @@ export default function MessageAttachment({ attachment, isCurrentUser }: Message
     }
   };
 
+const getFileUrl = (url: string) => {
+    if (!url) return url;
+    if (url.startsWith('http')) return url;
+    const base = (process.env.NEXT_PUBLIC_API_URL || '').replace('/api', '') || 'http://localhost:8000';
+    return `${base}${url.startsWith('/') ? url : '/' + url}`;
+  };
+
   const handleDownload = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(attachment.file_url);
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
+      const url = getFileUrl(attachment.file_url);
+      const response = await api.get(url, { responseType: 'blob' });
+      const contentDisposition = response.headers['content-disposition'] || response.headers['Content-Disposition'];
+      let filename = attachment.file_name || 'download';
+      if (contentDisposition) {
+        const match = /filename\*=UTF-8''([^;]+)|filename="?([^";]+)"?/i.exec(contentDisposition);
+        const encoded = match?.[1];
+        const simple = match?.[2];
+        if (encoded) filename = decodeURIComponent(encoded);
+        else if (simple) filename = simple;
+      }
+      const blob = new Blob([response.data]);
+      const blobUrl = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url;
-      a.download = attachment.file_name;
+      a.href = blobUrl;
+      a.download = filename;
       document.body.appendChild(a);
       a.click();
-      window.URL.revokeObjectURL(url);
+      window.URL.revokeObjectURL(blobUrl);
       document.body.removeChild(a);
     } catch (error) {
       console.error('Download failed:', error);
@@ -83,8 +101,8 @@ export default function MessageAttachment({ attachment, isCurrentUser }: Message
           className="relative cursor-pointer group"
           onClick={() => setShowPreview(true)}
         >
-          <Image
-            src={attachment.file_url}
+<Image
+            src={getFileUrl(attachment.file_url)}
             alt={attachment.file_name}
             width={300}
             height={200}

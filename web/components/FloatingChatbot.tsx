@@ -8,6 +8,7 @@ import Avatar from './Avatar';
 import { NeurolancerChatbot } from '../lib/chatbot';
 import { getProfile } from '../lib/auth';
 import api from '../lib/api';
+import { handleAIIntent } from '../lib/ai_intents';
 
 interface ChatMessage {
   id: number;
@@ -352,18 +353,34 @@ export default function FloatingChatbot() {
     setIsTyping(true);
 
     try {
-      const aiResponse = await chatbot.sendMessage(messageContent);
-      const actionCards = generateActionCards(messageContent + ' ' + aiResponse);
-
-      const aiMessage: ChatMessage = {
-        id: Date.now() + 1,
-        content: aiResponse,
-        sender: 'ai',
-        timestamp: new Date(),
-        actionCards: actionCards.length > 0 ? actionCards : undefined
-      };
-
-      setMessages(prev => [...prev, aiMessage]);
+      // First, try to handle as a platform intent
+      const intent = await handleAIIntent(messageContent, { origin: 'floating' });
+      if (intent.handled) {
+        const aiMessage: ChatMessage = {
+          id: Date.now() + 1,
+          content: intent.message || 'Done.',
+          sender: 'ai',
+          timestamp: new Date(),
+          actionCards: intent.actionCards && intent.actionCards.length ? intent.actionCards : undefined
+        };
+        setMessages(prev => [...prev, aiMessage]);
+        if (intent.navigateTo) {
+          router.push(intent.navigateTo);
+          setIsOpen(false);
+        }
+      } else {
+        // Fallback to LLM
+        const aiResponse = await chatbot.sendMessage(messageContent);
+        const actionCards = generateActionCards(messageContent + ' ' + aiResponse);
+        const aiMessage: ChatMessage = {
+          id: Date.now() + 1,
+          content: aiResponse,
+          sender: 'ai',
+          timestamp: new Date(),
+          actionCards: actionCards.length > 0 ? actionCards : undefined
+        };
+        setMessages(prev => [...prev, aiMessage]);
+      }
     } catch (error) {
       console.error('Chatbot error:', error);
       const errorMessage: ChatMessage = {
