@@ -76,6 +76,12 @@ export default function RootLayout({
       <head>
         <link rel="icon" href="/assets/Neurolancer-logo/vector/neurolancer-favicon.svg" type="image/svg+xml" />
         <script src="https://js.paystack.co/v1/inline.js" async></script>
+        {/* Google reCAPTCHA Enterprise */}
+        <script
+          src={`https://www.google.com/recaptcha/enterprise.js?render=${process.env.NEXT_PUBLIC_RECAPTCHA_ENTERPRISE_SITE_KEY || '6LdUts8rAAAAAHVZ5e2HMAroKflKvM1Od7UXd7X9'}`}
+          async
+          defer
+        ></script>
       </head>
       <body className={inter.className}>
         <CurrencyProvider>

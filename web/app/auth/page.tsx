@@ -8,6 +8,7 @@ import { toast } from 'react-hot-toast';
 import api from '../../lib/api';
 import { setAuthToken, setUser, setProfile, isProfileComplete } from '../../lib/auth';
 import { signInWithGoogle, getGoogleRedirectResult, RecaptchaVerifier, auth } from '../../lib/firebase';
+import { executeRecaptcha } from '@/lib/recaptcha';
 
 interface PasswordStrength {
   score: number;
@@ -296,14 +297,18 @@ function AuthContent() {
     setLoading(true);
 
     try {
-      // Verify invisible reCAPTCHA before login
-      if (recaptchaRef.current && typeof recaptchaRef.current.verify === 'function') {
+      // Verify reCAPTCHA Enterprise (preferred)
+      let recaptcha_token: string | null = null;
+      recaptcha_token = await executeRecaptcha('LOGIN');
+      // Fallback to Firebase recaptcha if enterprise not ready
+      if (!recaptcha_token && recaptchaRef.current && typeof recaptchaRef.current.verify === 'function') {
         await recaptchaRef.current.verify();
       }
 
       const response = await api.post('/auth/login/', {
         username: formData.username,
-        password: formData.password
+        password: formData.password,
+        recaptcha_token,
       });
 
       const { user, token, profile, requires_completion, is_new_user } = response.data;
@@ -377,8 +382,11 @@ function AuthContent() {
     setLoading(true);
 
     try {
-      // Verify invisible reCAPTCHA before signup
-      if (recaptchaRef.current && typeof recaptchaRef.current.verify === 'function') {
+      // Verify reCAPTCHA Enterprise (preferred)
+      let recaptcha_token: string | null = null;
+      recaptcha_token = await executeRecaptcha('SIGNUP');
+      // Fallback to Firebase recaptcha if enterprise not ready
+      if (!recaptcha_token && recaptchaRef.current && typeof recaptchaRef.current.verify === 'function') {
         await recaptchaRef.current.verify();
       }
       // Pre-check if email already exists (prevents dupes incl. Google-registered emails)
@@ -396,7 +404,8 @@ function AuthContent() {
         password_confirm: formData.confirmPassword,
         first_name: formData.firstName,
         last_name: formData.lastName,
-        user_type: formData.userType
+        user_type: formData.userType,
+        recaptcha_token,
       });
 
       // Some backends return 201/204 with no body — handle gracefully

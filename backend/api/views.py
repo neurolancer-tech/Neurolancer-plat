@@ -123,6 +123,18 @@ The Neurolancer Team
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 def register(request):
+    # reCAPTCHA Enterprise verification (SIGNUP)
+    try:
+        from .recaptcha import verify_recaptcha, get_env_bool
+        enforce = get_env_bool("RECAPTCHA_ENFORCE", False)
+        if enforce:
+            token = request.data.get('recaptcha_token')
+            ok, score, reasons, err = verify_recaptcha(token, 'SIGNUP')
+            if not ok or score < 0.3:
+                return Response({'error': 'reCAPTCHA verification failed', 'reasons': reasons, 'score': score}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception:
+        pass
+
     serializer = UserRegistrationSerializer(data=request.data, context={'request': request})
     if serializer.is_valid():
         user = serializer.save()
@@ -307,6 +319,18 @@ def get_user_profile(request):
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 def login_view(request):
+    # reCAPTCHA Enterprise verification (LOGIN)
+    try:
+        from .recaptcha import verify_recaptcha, get_env_bool
+        enforce = get_env_bool("RECAPTCHA_ENFORCE", False)
+        if enforce:
+            token = request.data.get('recaptcha_token')
+            ok, score, reasons, err = verify_recaptcha(token, 'LOGIN')
+            if not ok or score < 0.1:
+                return Response({'error': 'reCAPTCHA verification failed', 'reasons': reasons, 'score': score}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception:
+        pass
+
     username = request.data.get('username')
     password = request.data.get('password')
     
