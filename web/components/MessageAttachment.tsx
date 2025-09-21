@@ -72,7 +72,7 @@ const getFileUrl = (url: string) => {
       const contentDisposition = response.headers['content-disposition'] || response.headers['Content-Disposition'];
       let filename = attachment.file_name || 'download';
       if (contentDisposition) {
-        const match = /filename\*=UTF-8''([^;]+)|filename="?([^";]+)"?/i.exec(contentDisposition);
+        const match = /filename\*=UTF-8''([^;]+)|filename=\"?([^\";]+)\"?/i.exec(contentDisposition);
         const encoded = match?.[1];
         const simple = match?.[2];
         if (encoded) filename = decodeURIComponent(encoded);
@@ -89,6 +89,13 @@ const getFileUrl = (url: string) => {
       document.body.removeChild(a);
     } catch (error) {
       console.error('Download failed:', error);
+      try {
+        // Fallback: open in a new tab (browser will handle auth via token header if same-domain or cookies)
+        const url = getFileUrl(attachment.file_url);
+        window.open(url, '_blank', 'noopener,noreferrer');
+      } catch (_) {
+        // ignore
+      }
     } finally {
       setIsLoading(false);
     }
@@ -129,7 +136,7 @@ const getFileUrl = (url: string) => {
                 </svg>
               </button>
               <Image
-                src={attachment.file_url}
+                src={getFileUrl(attachment.file_url)}
                 alt={attachment.file_name}
                 width={800}
                 height={600}

@@ -162,7 +162,7 @@ export default function CreateGigPage() {
         console.log(key, value);
       }
       
-      const response = await api.post('/gigs/create/', submitData);
+      const response = await api.post('/gigs/create/', submitData, { headers: { 'Content-Type': 'multipart/form-data' } });
       const myProfile = getProfile();
       const wasForcedInactive = response.data && response.data.is_active === false;
       toast.success(`Gig created successfully${wasForcedInactive ? ' (saved as Inactive because your freelancer profile is unpublished)' : ''}!`);
