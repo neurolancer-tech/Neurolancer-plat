@@ -1815,11 +1815,12 @@ ${aiResponse}`;
                               if (formData.description) fd.append('description', formData.description);
                               fd.append('is_public', 'true');
                               await api.post('/profile/documents/create/', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
-                              setMessages(prev => [...prev, {
+                              setAiMessages(prev => [...prev, {
                                 id: Date.now(),
                                 content: `✅ **Document uploaded successfully!**`,
-                                sender: 'ai',
-                                timestamp: new Date()
+                                sender: { id: -1, first_name: 'Neurolancer', last_name: 'AI', profile_picture: null, avatar_type: 'default', selected_avatar: 'ai' },
+                                created_at: new Date().toISOString(),
+                                is_read: true
                               }]);
                             } else if (activeForm.id === 'profile-update') {
                               const target = String(formData.target || 'user');
@@ -1835,11 +1836,12 @@ ${aiResponse}`;
                               } else if (target === 'client') {
                                 try { await api.put('/profiles/client/', payload); } catch { await api.post('/profiles/client/', payload); }
                               }
-                              setMessages(prev => [...prev, {
+                              setAiMessages(prev => [...prev, {
                                 id: Date.now(),
                                 content: `✅ **Profile updated!**`,
-                                sender: 'ai',
-                                timestamp: new Date()
+                                sender: { id: -1, first_name: 'Neurolancer', last_name: 'AI', profile_picture: null, avatar_type: 'default', selected_avatar: 'ai' },
+                                created_at: new Date().toISOString(),
+                                is_read: true
                               }]);
                             } else if (activeForm.type === 'job') {
                                           const payload: any = {
