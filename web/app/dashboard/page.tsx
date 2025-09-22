@@ -76,6 +76,19 @@ export default function DashboardPage() {
     
     setUser(currentUser);
     setProfile(currentProfile);
+
+    // Also fetch a fresh profile from API so avatar fields (google_photo_url, avatar_type) are up-to-date
+    (async () => {
+      try {
+        const res = await api.get('/auth/profile/');
+        const freshUser = res.data.user;
+        const freshProfile = res.data.profile || res.data;
+        setUser(freshUser);
+        setProfile(freshProfile);
+      } catch {
+        // ignore, keep cookie values
+      }
+    })();
     
     // Check if user needs role selection
     if (!currentProfile?.user_type) {
