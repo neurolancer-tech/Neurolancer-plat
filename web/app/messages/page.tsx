@@ -1010,12 +1010,22 @@ ${aiResponse}`;
     }
   };
 
+  const [isOnline, setIsOnline] = useState(true);
+  useEffect(() => {
+    try {
+      const { getOnlineStatus, subscribePresence } = require('../../lib/presence');
+      setIsOnline(getOnlineStatus());
+      const unsub = subscribePresence((on: boolean) => setIsOnline(on));
+      return () => { try { unsub(); } catch {} };
+    } catch {}
+  }, []);
+
   const getConnectionStatusColor = () => {
-    return 'text-green-500'; // Always show as connected
+    return isOnline ? 'text-green-500' : 'text-gray-400';
   };
 
   const getConnectionStatusText = () => {
-    return 'Online'; // Always show as online
+    return isOnline ? 'Online' : 'Offline';
   };
 
   const filteredConversations = conversations.filter(conv => {
@@ -2242,20 +2252,20 @@ ${aiResponse}`;
                               </svg>
                             </button>
                             
-                            {showEmojiPicker && (
-                              <div className="absolute bottom-12 right-0 card border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg w-80 z-50">
-                                <div className="p-3 border-b border-gray-200 dark:border-gray-600">
+{showEmojiPicker && (
+                              <div className="absolute bottom-14 right-0 sm:bottom-12 sm:right-0 card border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg w-[90vw] sm:w-80 max-w-sm z-50">
+                                <div className="p-2 sm:p-3 border-b border-gray-200 dark:border-gray-600">
                                   <input
                                     type="text"
                                     value={emojiSearch}
                                     onChange={(e) => setEmojiSearch(e.target.value)}
                                     placeholder="Search emojis..."
-                                    className="input-field text-sm mb-2"
+                                    className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-transparent mb-2"
                                   />
                                   <div className="flex gap-2">
                                     <button
                                       onClick={() => setShowAllEmojis(false)}
-                                      className={`px-3 py-1 text-xs rounded-full transition-colors ${
+                                      className={`px-2 sm:px-3 py-1 text-xs rounded-full transition-colors ${
                                         !showAllEmojis ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                       }`}
                                     >
@@ -2263,7 +2273,7 @@ ${aiResponse}`;
                                     </button>
                                     <button
                                       onClick={() => setShowAllEmojis(true)}
-                                      className={`px-3 py-1 text-xs rounded-full transition-colors ${
+                                      className={`px-2 sm:px-3 py-1 text-xs rounded-full transition-colors ${
                                         showAllEmojis ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                       }`}
                                     >
@@ -2272,7 +2282,7 @@ ${aiResponse}`;
                                   </div>
                                 </div>
                                 <div 
-                                  className="max-h-48 overflow-y-auto custom-scrollbar no-horizontal-scroll p-3"
+                                  className="max-h-64 sm:max-h-48 overflow-y-auto custom-scrollbar no-horizontal-scroll p-2 sm:p-3"
                                   onScroll={(e) => {
                                     const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
                                     if (scrollHeight - scrollTop - clientHeight < 50 && visibleEmojis < filteredEmojis.length) {
@@ -2280,12 +2290,12 @@ ${aiResponse}`;
                                     }
                                   }}
                                 >
-                                  <div className="grid grid-cols-6 gap-2">
+                                  <div className="grid grid-cols-8 sm:grid-cols-6 gap-1 sm:gap-2">
                                     {displayedEmojis.map((emoji, index) => (
                                       <button
                                         key={`${emoji.code}-${index}`}
                                         onClick={() => addEmoji(emoji.unicode)}
-                                        className="w-8 h-8 hover:bg-gray-100 dark:hover:bg-gray-600 rounded p-1 transition-colors flex items-center justify-center"
+                                        className="w-7 h-7 sm:w-8 sm:h-8 hover:bg-gray-100 dark:hover:bg-gray-600 rounded p-1 transition-colors flex items-center justify-center"
                                         title={emoji.name}
                                       >
                                         {emoji.unicode}

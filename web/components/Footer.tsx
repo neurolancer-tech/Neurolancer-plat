@@ -6,6 +6,8 @@ import toast from 'react-hot-toast';
 import { isAuthenticated, getUser, getProfile } from '../lib/auth';
 import { User, UserProfile } from '../types';
 import ReportModal from './ReportModal';
+import LanguageSwitcher from './LanguageSwitcher';
+import CurrencySwitcher from './CurrencySwitcher';
 
 
 
@@ -256,6 +258,14 @@ const Footer = () => {
               <a href="https://gurucrafts.agency" target="_blank" rel="noopener noreferrer" className="hover:text-teal-400 transition-colors duration-200">
                 Made with ❤️ by GuruCrafts Agency
               </a>
+              <div className="hidden sm:flex items-center space-x-2">
+                <span className="text-gray-500">Language:</span>
+                <LanguageSwitcher />
+              </div>
+              <div className="hidden sm:flex items-center space-x-2">
+                <span className="text-gray-500">Currency:</span>
+                <CurrencySwitcher />
+              </div>
             </div>
           </div>
         </div>

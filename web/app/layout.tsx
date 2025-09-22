@@ -3,9 +3,11 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/contexts/ThemeContext'
 import { CurrencyProvider } from '@/contexts/CurrencyContext'
+import { LanguageProvider } from '@/contexts/LanguageContext'
 import { Toaster } from 'react-hot-toast'
 import Footer from '@/components/Footer'
 import { Analytics } from '@vercel/analytics/next'
+import CookieConsent from '@/components/CookieConsent'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -85,10 +87,12 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <CurrencyProvider>
-          <ThemeProvider>
-            {children}
-            <Footer />
-            <Toaster 
+          <LanguageProvider>
+            <ThemeProvider>
+              {children}
+              <CookieConsent />
+              <Footer />
+              <Toaster 
               position="top-right"
               toastOptions={{
                 duration: 4000,
@@ -99,7 +103,8 @@ export default function RootLayout({
               }}
             />
             <Analytics />
-          </ThemeProvider>
+            </ThemeProvider>
+          </LanguageProvider>
         </CurrencyProvider>
       </body>
     </html>

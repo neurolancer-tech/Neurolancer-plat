@@ -10,6 +10,7 @@ import { User, UserProfile } from '../types';
 import { getUser, getProfile, logout, isAuthenticated } from '../lib/auth';
 import NotificationCenter from './NotificationCenter';
 import { useTheme } from '../contexts/ThemeContext';
+import { getOnlineStatus, subscribePresence } from '../lib/presence';
 
 // Load Marko One font
 if (typeof window !== 'undefined') {
@@ -36,6 +37,16 @@ export default function Navigation() {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [isGoogleUser, setIsGoogleUser] = useState(false);
+  const [isOnline, setIsOnline] = useState(true);
+
+  useEffect(() => {
+    // Presence subscription
+    try {
+      setIsOnline(getOnlineStatus());
+      const unsub = subscribePresence((on) => setIsOnline(on));
+      return () => { try { unsub(); } catch {} };
+    } catch {}
+  }, []);
 
   useEffect(() => {
     const init = async () => {
@@ -180,14 +191,20 @@ export default function Navigation() {
                     onClick={() => setShowUserMenu(!showUserMenu)}
                     className="flex items-center space-x-1 sm:space-x-2 text-white hover:text-gray-200 transition-colors"
                   >
-                    <Avatar
-                      src={profile?.profile_picture}
-                      avatarType={profile?.avatar_type as 'upload' | 'avatar' | 'google' | undefined}
-                      selectedAvatar={profile?.selected_avatar}
-                      googlePhotoUrl={profile?.google_photo_url}
-                      size="sm"
-                      alt="Profile"
-                    />
+                    <span className="relative inline-block">
+                      <Avatar
+                        src={profile?.profile_picture}
+                        avatarType={profile?.avatar_type as 'upload' | 'avatar' | 'google' | undefined}
+                        selectedAvatar={profile?.selected_avatar}
+                        googlePhotoUrl={profile?.google_photo_url}
+                        size="sm"
+                        alt="Profile"
+                      />
+                      <span
+                        className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border border-white ${isOnline ? 'bg-green-500' : 'bg-gray-400'}`}
+                        title={isOnline ? 'Online' : 'Offline'}
+                      />
+                    </span>
                     <span className="hidden sm:block">{user.first_name || user.username}</span>
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -201,6 +218,9 @@ export default function Navigation() {
                       </Link>
                       <Link href="/profile" className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                         Profile
+                      </Link>
+                      <Link href="/settings" className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                        Settings
                       </Link>
 {profile?.user_type === 'client' && (
                         <>
@@ -329,14 +349,20 @@ export default function Navigation() {
               {user && (
                 <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
                   <div className="flex items-center space-x-3">
-                    <Avatar
-                      src={profile?.profile_picture}
-                      avatarType={profile?.avatar_type as 'upload' | 'avatar' | 'google' | undefined}
-                      selectedAvatar={profile?.selected_avatar}
-                      googlePhotoUrl={profile?.google_photo_url}
-                      size="md"
-                      alt="Profile"
-                    />
+                    <span className="relative inline-block">
+                      <Avatar
+                        src={profile?.profile_picture}
+                        avatarType={profile?.avatar_type as 'upload' | 'avatar' | 'google' | undefined}
+                        selectedAvatar={profile?.selected_avatar}
+                        googlePhotoUrl={profile?.google_photo_url}
+                        size="md"
+                        alt="Profile"
+                      />
+                      <span
+                        className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border border-white ${isOnline ? 'bg-green-500' : 'bg-gray-400'}`}
+                        title={isOnline ? 'Online' : 'Offline'}
+                      />
+                    </span>
                     <div>
                       <p className="font-medium text-gray-900 dark:text-gray-100">{user.first_name || user.username}</p>
                       <p className="text-sm text-gray-500 dark:text-gray-400">{user.email}</p>
@@ -390,6 +416,12 @@ export default function Navigation() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
                         Profile
+                      </Link>
+                      <Link href="/settings" onClick={() => setShowMobileMenu(false)} className="flex items-center px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-[#0D9E86] rounded-md transition-colors">
+                        <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                        </svg>
+                        Settings
                       </Link>
                       <Link href="/messages" onClick={() => setShowMobileMenu(false)} className="flex items-center px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-[#0D9E86] rounded-md transition-colors">
                         <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
