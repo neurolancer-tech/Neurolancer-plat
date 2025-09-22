@@ -38,30 +38,38 @@ export default function Navigation() {
   const [isGoogleUser, setIsGoogleUser] = useState(false);
 
   useEffect(() => {
-    if (isAuthenticated()) {
-      const userData = getUser();
-      const profileData = getProfile();
-      setUser(userData);
-      setProfile(profileData);
-      
-      // More comprehensive Google user detection
-      const googleUser = !!(
-        (profileData as any)?.auth_provider === 'google' ||
-        (profileData as any)?.avatar_type === 'google' ||
-        (profileData as any)?.google_photo_url ||
-        (profileData as any)?.user?.auth_provider === 'google' ||
-        (userData as any)?.auth_provider === 'google' ||
-        (userData as any)?.google_photo_url
-      );
-      setIsGoogleUser(googleUser);
-      
-      // Debug log
-      console.log('Google user detection:', {
-        profileData: profileData,
-        userData: userData,
-        isGoogleUser: googleUser
-      });
-    }
+    const init = async () => {
+      if (isAuthenticated()) {
+        const userData = getUser();
+        const profileData = getProfile();
+        setUser(userData);
+        setProfile(profileData);
+
+        const detectGoogle = (u: any, p: any) => !!(
+          p?.auth_provider === 'google' ||
+          p?.avatar_type === 'google' ||
+          p?.google_photo_url ||
+          p?.user?.auth_provider === 'google' ||
+          u?.auth_provider === 'google' ||
+          u?.google_photo_url
+        );
+
+        setIsGoogleUser(detectGoogle(userData, profileData));
+
+        // Fetch fresh profile from API to ensure avatar fields (google_photo_url, avatar_type) are up-to-date
+        try {
+          const res = await (await import('../lib/api')).default.get('/auth/profile/');
+          const freshUser = res.data.user;
+          const freshProfile = res.data.profile || res.data;
+          setUser(freshUser);
+          setProfile(freshProfile);
+          setIsGoogleUser(detectGoogle(freshUser, freshProfile));
+        } catch (e) {
+          // Ignore; fall back to cookie values
+        }
+      }
+    };
+    init();
   }, []);
 
   const handleLogout = () => {

@@ -145,18 +145,18 @@ export default function ProfilePage() {
     const currentUser = getUser();
     const currentProfile = getProfile();
     
-    if (currentUser && currentProfile) {
-      setUserState(currentUser);
-      setProfileState(currentProfile);
-      const profileData = currentProfile as any;
+    const applyProfile = (u: any, p: any) => {
+      setUserState(u);
+      setProfileState(p);
+      const profileData = p as any;
       setFormData({
-        first_name: currentUser.first_name || '',
-        last_name: currentUser.last_name || '',
-        email: currentUser.email || '',
+        first_name: u?.first_name || '',
+        last_name: u?.last_name || '',
+        email: u?.email || '',
         gender: profileData.gender || '',
-        bio: currentProfile.bio || '',
-        skills: currentProfile.skills || '',
-        hourly_rate: currentProfile.hourly_rate?.toString() || '',
+        bio: p?.bio || '',
+        skills: p?.skills || '',
+        hourly_rate: p?.hourly_rate?.toString() || '',
         title: profileData.title || '',
         experience_years: profileData.experience_years?.toString() || '',
         education: profileData.education || '',
@@ -170,15 +170,31 @@ export default function ProfilePage() {
         linkedin: profileData.linkedin || '',
         github: profileData.github || ''
       });
-      
+    };
+
+    if (currentUser && currentProfile) {
+      applyProfile(currentUser, currentProfile);
+
+      // Fetch fresh profile to ensure avatar/google photo fields are current
+      (async () => {
+        try {
+          const res = await api.get('/auth/profile/');
+          const freshUser = res.data.user;
+          const freshProfile = res.data.profile || res.data;
+          setUser(freshUser);
+          setProfile(freshProfile);
+          applyProfile(freshUser, freshProfile);
+        } catch (e) {
+          // ignore fetch error and keep cookie values
+        }
+      })();
+
       // Load professional documents
       loadDocuments();
       
       // Fetch onboarding data
       fetchOnboardingData();
       
-
-
       // Load dashboard stats for role-based metrics
       loadDashboardStats();
 
@@ -430,11 +446,22 @@ export default function ProfilePage() {
       
       const profileResponse = await api.patch('/profile/update/', profileData);
 
-      // Update local storage
+      // Update local storage (patch returns merged profile + user)
       if (profileResponse.data.user) {
         setUser(profileResponse.data.user);
       }
-      setProfile(profileResponse.data);
+      setProfile(profileResponse.data as any);
+
+      // Refresh against canonical /auth/profile/ to ensure google_photo_url & avatar fields are up-to-date
+      try {
+        const fresh = await api.get('/auth/profile/');
+        const freshUser = fresh.data.user;
+        const freshProfile = fresh.data.profile || fresh.data;
+        setUser(freshUser);
+        setProfile(freshProfile);
+        setUserState(freshUser);
+        setProfileState(freshProfile);
+      } catch {}
       
       toast.success('Profile updated successfully!');
     } catch (error: any) {
