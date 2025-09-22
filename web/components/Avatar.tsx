@@ -30,8 +30,8 @@ export default function Avatar({
 }: AvatarProps) {
   
   const getAvatarSrc = () => {
-    // Prefer Google photo when provided
-    if (googlePhotoUrl && (avatarType === 'google' || (!src && googlePhotoUrl))) {
+    // Prefer Google photo when provided (always takes precedence)
+    if (googlePhotoUrl && googlePhotoUrl.trim().length > 0) {
       return googlePhotoUrl;
     }
 
