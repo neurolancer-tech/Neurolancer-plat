@@ -8,7 +8,7 @@ import { NextRequest, NextResponse } from 'next/server';
 const PRIMARY_LT = process.env.LT_API_URL || 'https://libretranslate.com/translate';
 const FALLBACK_LT = 'https://libretranslate.de/translate';
 
-export const runtime = 'node';
+export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 interface TranslateBody {
