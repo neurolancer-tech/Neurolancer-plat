@@ -104,12 +104,12 @@ export default function SettingsPage() {
           {/* Sidebar */}
           <aside className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 h-max">
             <nav className="space-y-1">
-              <button className={`w-full text-left px-3 py-2 rounded ${activeTab==='general'?'bg-gray-100 dark:bg-gray-700':''}`} onClick={() => setActiveTab('general')}>General</button>
-              <button className={`w-full text-left px-3 py-2 rounded ${activeTab==='language'?'bg-gray-100 dark:bg-gray-700':''}`} onClick={() => setActiveTab('language')}>Language</button>
-              <button className={`w-full text-left px-3 py-2 rounded ${activeTab==='currency'?'bg-gray-100 dark:bg-gray-700':''}`} onClick={() => setActiveTab('currency')}>Currency</button>
-              <button className={`w-full text-left px-3 py-2 rounded ${activeTab==='status'?'bg-gray-100 dark:bg-gray-700':''}`} onClick={() => setActiveTab('status')}>Online Status</button>
-              <button className={`w-full text-left px-3 py-2 rounded ${activeTab==='privacy'?'bg-gray-100 dark:bg-gray-700':''}`} onClick={() => setActiveTab('privacy')}>Privacy</button>
-              <button className={`w-full text-left px-3 py-2 rounded ${activeTab==='notifications'?'bg-gray-100 dark:bg-gray-700':''}`} onClick={() => setActiveTab('notifications')}>Notifications</button>
+<button className={`w-full text-left px-3 py-2 rounded transition-colors ${activeTab==='general'?'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-semibold':'text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50'}`} onClick={() => setActiveTab('general')}>General</button>
+<button className={`w-full text-left px-3 py-2 rounded transition-colors ${activeTab==='language'?'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-semibold':'text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50'}`} onClick={() => setActiveTab('language')}>Language</button>
+<button className={`w-full text-left px-3 py-2 rounded transition-colors ${activeTab==='currency'?'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-semibold':'text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50'}`} onClick={() => setActiveTab('currency')}>Currency</button>
+<button className={`w-full text-left px-3 py-2 rounded transition-colors ${activeTab==='status'?'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-semibold':'text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50'}`} onClick={() => setActiveTab('status')}>Online Status</button>
+<button className={`w-full text-left px-3 py-2 rounded transition-colors ${activeTab==='privacy'?'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-semibold':'text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50'}`} onClick={() => setActiveTab('privacy')}>Privacy</button>
+<button className={`w-full text-left px-3 py-2 rounded transition-colors ${activeTab==='notifications'?'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-semibold':'text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50'}`} onClick={() => setActiveTab('notifications')}>Notifications</button>
             </nav>
           </aside>
 

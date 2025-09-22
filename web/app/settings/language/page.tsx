@@ -3,7 +3,7 @@
 import Navigation from '@/components/Navigation';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { LANGUAGES, findLanguageName } from '@/lib/languages';
-import { useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { translatePreview } from '@/lib/translate';
 
 export default function LanguageSettingsPage() {
@@ -27,6 +27,13 @@ export default function LanguageSettingsPage() {
       setLoading(false);
     }
   };
+
+  // Auto-translate preview when language or text changes
+  // This is preview-only and cached by the browser; it does not impact app-wide UI yet
+  // (requires full i18n to translate entire app)
+  
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  React.useEffect(() => { doTranslate(language); }, [language, previewText]);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">

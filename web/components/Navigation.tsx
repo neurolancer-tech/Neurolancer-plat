@@ -417,9 +417,9 @@ export default function Navigation() {
                         </svg>
                         Profile
                       </Link>
-                      <Link href="/settings" onClick={() => setShowMobileMenu(false)} className="flex items-center px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-[#0D9E86] rounded-md transition-colors">
+<Link href="/settings" onClick={() => setShowMobileMenu(false)} className="flex items-center px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-[#0D9E86] rounded-md transition-colors">
                         <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.983 2a1 1 0 01.972.757l.332 1.325a8.02 8.02 0 012.004.833l1.238-.714a1 1 0 011.28.2l1.414 1.414a1 1 0 01.2 1.28l-.714 1.238c.33.64.59 1.316.77 2.013l1.326.332a1 1 0 01.757.972v2a1 1 0 01-.757.972l-1.326.332a7.96 7.96 0 01-.77 2.013l.714 1.238a1 1 0 01-.2 1.28l-1.414 1.414a1 1 0 01-1.28.2l-1.238-.714a8.02 8.02 0 01-2.004.833l-.332 1.325a1 1 0 01-.972.757h-2a1 1 0 01-.972-.757l-.332-1.325a8.02 8.02 0 01-2.004-.833l-1.238.714a1 1 0 01-1.28-.2L4.21 19.79a1 1 0 01-.2-1.28l.714-1.238a7.96 7.96 0 01-.77-2.013l-1.326-.332A1 1 0 012 13.017v-2a1 1 0 01.757-.972l1.326-.332a7.96 7.96 0 01.77-2.013l-.714-1.238a1 1 0 01.2-1.28L6.753 3.2a1 1 0 011.28-.2l1.238.714c.64-.33 1.316-.59 2.013-.77l.332-1.326A1 1 0 0110.983 2h1zM12 9a3 3 0 100 6 3 3 0 000-6z" />
                         </svg>
                         Settings
                       </Link>
