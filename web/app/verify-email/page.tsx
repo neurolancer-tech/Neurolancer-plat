@@ -19,33 +19,62 @@ function VerifyEmailContent() {
 
   useEffect(() => {
     // Check if user is Google user and redirect them immediately
-    if (isAuthenticated()) {
-      const profile = getProfile();
-      const isGoogleUser = !!(
-        (profile as any)?.auth_provider === 'google' ||
-        (profile as any)?.avatar_type === 'google' ||
-        (profile as any)?.google_photo_url ||
-        (profile as any)?.user?.auth_provider === 'google'
-      );
-      
-      if (isGoogleUser) {
-        setIsRedirecting(true);
-        // Google users don't need email verification
-        if (!(profile as any)?.user_type) {
-          router.replace('/role-selection');
-        } else {
-          router.replace('/dashboard');
+    const init = async () => {
+      if (isAuthenticated()) {
+        const profile = getProfile();
+        const isGoogleUser = !!(
+          (profile as any)?.auth_provider === 'google' ||
+          (profile as any)?.avatar_type === 'google' ||
+          (profile as any)?.google_photo_url ||
+          (profile as any)?.user?.auth_provider === 'google'
+        );
+        
+        if (isGoogleUser) {
+          setIsRedirecting(true);
+          // Google users don't need email verification
+          if (!(profile as any)?.user_type) {
+            router.replace('/role-selection');
+          } else {
+            router.replace('/dashboard');
+          }
+          return;
         }
-        return;
+
+        // Double-check with backend in case local cookie is stale
+        try {
+          const res = await api.get('/auth/profile/');
+          const rprof = (res.data as any)?.profile || res.data;
+          const ruser = (res.data as any)?.user;
+          const isGoogleRemote = !!(
+            rprof?.auth_provider === 'google' ||
+            rprof?.avatar_type === 'google' ||
+            rprof?.google_photo_url ||
+            rprof?.google_id ||
+            ruser?.auth_provider === 'google'
+          );
+          if (isGoogleRemote) {
+            setIsRedirecting(true);
+            if (!rprof?.user_type) router.replace('/role-selection');
+            else router.replace('/dashboard');
+            return;
+          }
+          if (rprof?.email_verified === true) {
+            setIsRedirecting(true);
+            router.replace('/dashboard');
+            return;
+          }
+        } catch {}
       }
-    }
-    
-    if (token) {
-      verifyEmail(token);
-    } else {
-      setStatus('expired');
-      setMessage('Please verify your email. A verification email was sent to your inbox.');
-    }
+      
+      if (token) {
+        verifyEmail(token);
+      } else {
+        setStatus('expired');
+        setMessage('Please verify your email. A verification email was sent to your inbox.');
+      }
+    };
+
+    init();
   }, [token, router]);
 
   // Show loading if redirecting Google user
