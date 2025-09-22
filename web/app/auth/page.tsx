@@ -313,27 +313,13 @@ function AuthContent() {
 
       const { user, token, profile, requires_completion, is_new_user } = response.data;
       
-      // Update profile with selected role
-      const updatedProfile = { ...profile, user_type: loginRole };
-      
       setAuthToken(token);
       setUser(user);
-      setProfile(updatedProfile);
+      setProfile(profile);
       
-      // Update role on backend
-      try {
-        await api.patch('/profile/update/', {
-          user_type: loginRole
-        });
-      } catch (roleError) {
-        console.log('Role update failed, but continuing with login');
-      }
-      
-      toast.success(`Welcome back! Signed in as ${loginRole}.`);
-      
-      // All logins go to dashboard
-      console.log('Login successful, going to dashboard');
-      router.push('/dashboard');
+      // After login, always send user to role selection so they can choose their role for this session
+      toast.success('Please select your role to continue.');
+      router.push('/role-selection');
     } catch (error: any) {
       toast.error((error as any).response?.data?.error || 'Login failed');
     } finally {

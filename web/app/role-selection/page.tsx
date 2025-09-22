@@ -27,13 +27,7 @@ export default function RoleSelectionPage() {
     setUser(currentUser);
     setUserProfile(currentProfile);
 
-    // Skip profile completion check - users go directly to dashboard after role selection
-    
-    // If user already has a role, redirect to dashboard
-    if (currentProfile?.user_type) {
-      router.push('/dashboard');
-      return;
-    }
+    // Allow role re-selection even if user already has a role — do not auto-redirect
   }, [router]);
 
   const handleRoleSelection = async (selectedType: 'client' | 'freelancer') => {
