@@ -8,6 +8,7 @@ import { Toaster } from 'react-hot-toast'
 import Footer from '@/components/Footer'
 import { Analytics } from '@vercel/analytics/next'
 import CookieConsent from '@/components/CookieConsent'
+import AppTranslator from '@/components/AppTranslator'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -91,6 +92,7 @@ export default function RootLayout({
             <ThemeProvider>
               {children}
               <CookieConsent />
+              <AppTranslator />
               <Footer />
               <Toaster 
               position="top-right"
