@@ -40,10 +40,11 @@ export const metadata: Metadata = {
     description: 'Connect with skilled AI professionals and freelancers specializing in artificial intelligence, machine learning, and cutting-edge technology solutions.',
     images: [
       {
-        url: '/assets/Neurolancer-logo/vector/default-monochrome.svg',
+        url: '/opengraph-image',
         width: 1200,
         height: 630,
         alt: 'Neurolancer - AI Freelance Marketplace',
+        type: 'image/png',
       },
     ],
   },
@@ -51,7 +52,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Neurolancer - AI Freelance Marketplace',
     description: 'Connect with skilled AI professionals and freelancers specializing in artificial intelligence, machine learning, and cutting-edge technology solutions.',
-    images: ['/assets/Neurolancer-logo/vector/default-monochrome.svg'],
+    images: ['/twitter-image'],
   },
   robots: {
     index: true,

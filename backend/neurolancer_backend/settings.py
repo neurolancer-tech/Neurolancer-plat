@@ -158,6 +158,10 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+# Retention policies
+# Number of days to retain message attachments before automatic cleanup
+MESSAGE_ATTACHMENT_RETENTION_DAYS = int(config('MESSAGE_ATTACHMENT_RETENTION_DAYS', default='2'))
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
