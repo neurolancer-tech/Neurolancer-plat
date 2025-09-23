@@ -160,7 +160,7 @@ export default function NotificationCenter() {
           <div className="fixed inset-0 z-40 md:hidden" onClick={() => setIsOpen(false)} />
           
           {/* Notification panel */}
-          <div className="absolute right-0 mt-2 w-80 sm:w-96 md:w-80 max-w-[calc(100vw-2rem)] card rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 z-50">
+          <div className="fixed inset-x-3 top-20 w-auto md:absolute md:inset-auto md:right-0 md:top-auto md:mt-2 md:w-80 sm:w-96 max-w-[calc(100vw-1.5rem)] card rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 z-[70]">
             {/* Header */}
             <div className="p-4 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between">
@@ -194,7 +194,7 @@ export default function NotificationCenter() {
             </div>
 
             {/* Notifications list */}
-            <div className="max-h-80 sm:max-h-96 overflow-y-auto">
+            <div className="max-h-[60vh] md:max-h-80 overflow-y-auto">
               {notifications.length === 0 ? (
                 <div className="p-6 text-center text-gray-500 dark:text-gray-400">
                   <svg className="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
