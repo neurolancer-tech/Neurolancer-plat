@@ -73,7 +73,7 @@ export default function SupportPage() {
               </div>
               <div>
                 <h4 className="font-semibold text-gray-900 dark:text-white">Email Support</h4>
-                <p className="text-gray-600 dark:text-gray-300">neurolancermail@gmail.com</p>
+                <p className="text-gray-600 dark:text-gray-300">support@neurolancer.work</p>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Response within 24 hours</p>
               </div>
             </div>

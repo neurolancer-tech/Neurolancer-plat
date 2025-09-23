@@ -3693,7 +3693,8 @@ def get_onboarding_data(request):
         onboarding = OnboardingResponse.objects.get(user=request.user)
         return Response(OnboardingResponseSerializer(onboarding).data)
     except OnboardingResponse.DoesNotExist:
-        return Response({'error': 'No onboarding data found'}, status=404)
+        # Don't fail with 404 on first-time users; return an empty payload
+        return Response({'completed': False, 'data': None}, status=200)
 
 # Learning & Development Views
 class CourseListView(generics.ListCreateAPIView):

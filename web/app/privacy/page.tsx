@@ -146,8 +146,8 @@ export default function PrivacyPage() {
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Contact Us</h2>
               <p className="text-gray-700 dark:text-gray-300">
                 For privacy questions or to exercise your rights, contact us at{' '}
-                <a href="mailto:neurolancermail@gmail.com" className="text-[#0D9E86] hover:underline">
-                  neurolancermail@gmail.com
+                <a href="mailto:support@neurolancer.work" className="text-[#0D9E86] hover:underline">
+                  support@neurolancer.work
                 </a>
               </p>
             </section>

@@ -42,7 +42,8 @@ urlpatterns = [
     path('api/', include('api.newsletter_urls')),
 ]
 
-# Serve media and static files during development
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+# Serve media files in all environments (temporary for Render);
+# consider moving to S3 or a persistent disk in production.
+urpatterns_media = static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+urpatterns_static = static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) if settings.DEBUG else []
+urlpatterns += urpatterns_media + urpatterns_static

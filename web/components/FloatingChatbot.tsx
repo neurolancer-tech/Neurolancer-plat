@@ -429,7 +429,7 @@ export default function FloatingChatbot() {
       console.error('Chatbot error:', error);
       const errorMessage: ChatMessage = {
         id: Date.now() + 2,
-        content: "I apologize, but I'm experiencing technical difficulties. Please try again or contact support at neurolancermail@gmail.com",
+        content: "I apologize, but I'm experiencing technical difficulties. Please try again or contact support at support@neurolancer.work",
         sender: 'ai',
         timestamp: new Date()
       };

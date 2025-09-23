@@ -146,7 +146,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h4 className="font-semibold text-gray-900 dark:text-white">Email</h4>
-                    <p className="text-gray-600 dark:text-gray-300">neurolancermail@gmail.com</p>
+                    <p className="text-gray-600 dark:text-gray-300">support@neurolancer.work</p>
                   </div>
                 </div>
 

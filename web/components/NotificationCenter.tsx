@@ -155,83 +155,109 @@ export default function NotificationCenter() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 card rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 z-50">
-          <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Notifications</h3>
-              {unreadCount > 0 && (
-                <button
-                  onClick={markAllAsRead}
-                  className="text-sm text-[#0D9E86] hover:underline"
-                >
-                  Mark all read
-                </button>
-              )}
-            </div>
-          </div>
-
-          <div className="max-h-96 overflow-y-auto">
-            {notifications.length === 0 ? (
-              <div className="p-6 text-center text-gray-500 dark:text-gray-400">
-                <svg className="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5v-5zM11 19H6a2 2 0 01-2-2V7a2 2 0 012-2h5m5 0v5" />
-                </svg>
-                <p>No notifications yet</p>
+        <>
+          {/* Mobile backdrop */}
+          <div className="fixed inset-0 z-40 md:hidden" onClick={() => setIsOpen(false)} />
+          
+          {/* Notification panel */}
+          <div className="absolute right-0 mt-2 w-80 sm:w-96 md:w-80 max-w-[calc(100vw-2rem)] card rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 z-50">
+            {/* Header */}
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Notifications</h3>
+                  {unreadCount > 0 && (
+                    <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
+                      {unreadCount}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center space-x-2">
+                  {unreadCount > 0 && (
+                    <button
+                      onClick={markAllAsRead}
+                      className="text-sm text-[#0D9E86] hover:underline whitespace-nowrap"
+                    >
+                      Mark all read
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setIsOpen(false)}
+                    className="p-1 rounded-md text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 md:hidden"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
               </div>
-            ) : (
-              notifications.map(notification => (
-                <div
-                  key={notification.id}
-                  onClick={() => handleNotificationClick(notification)}
-                  className={`p-4 border-b border-gray-100 dark:border-gray-700 cursor-pointer transition-colors ${
-                    !notification.is_read 
-                      ? 'border-l-4 border-l-[#0D9E86] hover:opacity-80' 
-                      : 'hover:bg-gray-50 dark:hover:bg-gray-700'
-                  }`}
-                  style={!notification.is_read ? {
-                    backgroundColor: 'rgba(13, 158, 134, 0.1)'
-                  } : {}}
-                >
-                  <div className="flex items-start space-x-3">
-                    <div className="text-2xl">
-                      {getNotificationIcon(notification.notification_type)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <p className={`text-sm font-medium ${!notification.is_read ? 'text-gray-900 dark:text-gray-100' : 'text-gray-700 dark:text-gray-300'}`}>
-                          {notification.title}
-                        </p>
-                        {!notification.is_read && (
-                          <div className="w-2 h-2 bg-[#0D9E86] rounded-full"></div>
-                        )}
+            </div>
+
+            {/* Notifications list */}
+            <div className="max-h-80 sm:max-h-96 overflow-y-auto">
+              {notifications.length === 0 ? (
+                <div className="p-6 text-center text-gray-500 dark:text-gray-400">
+                  <svg className="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5v-5zM11 19H6a2 2 0 01-2-2V7a2 2 0 012-2h5m5 0v5" />
+                  </svg>
+                  <p className="text-sm">No notifications yet</p>
+                </div>
+              ) : (
+                notifications.map(notification => (
+                  <div
+                    key={notification.id}
+                    onClick={() => handleNotificationClick(notification)}
+                    className={`p-3 sm:p-4 border-b border-gray-100 dark:border-gray-700 cursor-pointer transition-colors ${
+                      !notification.is_read 
+                        ? 'border-l-4 border-l-[#0D9E86] hover:opacity-80' 
+                        : 'hover:bg-gray-50 dark:hover:bg-gray-700'
+                    }`}
+                    style={!notification.is_read ? {
+                      backgroundColor: 'rgba(13, 158, 134, 0.1)'
+                    } : {}}
+                  >
+                    <div className="flex items-start space-x-3">
+                      <div className="text-xl sm:text-2xl flex-shrink-0">
+                        {getNotificationIcon(notification.notification_type)}
                       </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
-                        {notification.message}
-                      </p>
-                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
-                        {formatTime(notification.created_at)}
-                      </p>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className={`text-sm font-medium leading-tight ${!notification.is_read ? 'text-gray-900 dark:text-gray-100' : 'text-gray-700 dark:text-gray-300'}`}>
+                            {notification.title}
+                          </p>
+                          {!notification.is_read && (
+                            <div className="w-2 h-2 bg-[#0D9E86] rounded-full flex-shrink-0 mt-1"></div>
+                          )}
+                        </div>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-2 break-words">
+                          {notification.message}
+                        </p>
+                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
+                          {formatTime(notification.created_at)}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))
+                ))
+              )}
+            </div>
+
+            {/* Footer */}
+            {notifications.length > 0 && (
+              <div className="p-3 border-t border-gray-200 dark:border-gray-700">
+                <button
+                  onClick={() => {
+                    router.push('/notifications');
+                    setIsOpen(false);
+                  }}
+                  className="w-full text-center text-sm text-[#0D9E86] hover:underline font-medium py-1"
+                >
+                  View all notifications
+                </button>
+              </div>
             )}
           </div>
-
-          {notifications.length > 0 && (
-            <div className="p-3 border-t border-gray-200 dark:border-gray-700">
-              <button
-                onClick={() => {
-                  router.push('/notifications');
-                  setIsOpen(false);
-                }}
-                className="w-full text-center text-sm text-[#0D9E86] hover:underline"
-              >
-                View all notifications
-              </button>
-            </div>
-          )}
-        </div>
+        </>
       )}
     </div>
   );
