@@ -38,7 +38,7 @@ export default function TwitterImage() {
         <div style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
           <div
             style={{
-              display: 'inline-flex',
+              display: 'flex',
               alignItems: 'center',
               gap: 16,
               padding: '10px 20px',
