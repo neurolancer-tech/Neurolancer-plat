@@ -160,7 +160,7 @@ export default function NotificationCenter() {
           <div className="fixed inset-0 z-40 md:hidden" onClick={() => setIsOpen(false)} />
           
           {/* Notification panel */}
-          <div className="fixed inset-x-3 top-20 w-auto md:absolute md:inset-auto md:right-0 md:top-auto md:mt-2 md:w-80 sm:w-96 max-w-[calc(100vw-1.5rem)] card rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 z-[70]">
+          <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 md:w-80 max-w-[calc(100vw-1rem)] card rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 z-[70]">
             {/* Header */}
             <div className="p-4 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between">

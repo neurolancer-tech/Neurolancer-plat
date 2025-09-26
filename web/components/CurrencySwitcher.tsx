@@ -26,7 +26,7 @@ export default function CurrencySwitcher() {
         {currency}
       </button>
       {open && (
-        <div className="absolute right-0 mt-2 w-28 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-md z-50">
+        <div className="absolute right-0 bottom-full mb-2 w-28 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-md z-50">
           {OPTIONS.map(opt => (
             <button
               key={opt}
