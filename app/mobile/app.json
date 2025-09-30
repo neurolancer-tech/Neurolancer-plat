@@ -1,0 +1,32 @@
+{
+  "expo": {
+    "name": "Neurolancer",
+    "slug": "neurolancer-mobile",
+    "scheme": "neurolancer",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "updates": {
+      "url": ""
+    },
+    "runtimeVersion": {
+      "policy": "sdkVersion"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "android": {
+      "package": "work.neurolancer.app",
+      "permissions": []
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "work.neurolancer.app"
+    },
+    "extra": {
+      "eas": {
+        "projectId": ""
+      },
+      "EXPO_PUBLIC_API_URL": "https://neurolancer-plat.onrender.com/api"
+    }
+  }
+}

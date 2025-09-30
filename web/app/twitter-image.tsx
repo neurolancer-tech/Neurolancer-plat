@@ -35,7 +35,7 @@ export default function TwitterImage() {
           }}
         />
 
-        <div style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
+        <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <div
             style={{
               display: 'flex',
