@@ -259,6 +259,8 @@ export default function FreelancersPage() {
           subcategory_names: userInfo.subcategory_names,
           categories: userInfo.categories || [],
           subcategories: userInfo.subcategories || [],
+          // Add verification status from user_info
+          is_verified: userInfo.is_verified || false,
           professionalProfile: profile
         };
       });
