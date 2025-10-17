@@ -79,12 +79,12 @@ export default function LikeButton({
   };
 
   return (
-    <div className={`flex items-center space-x-2 ${sizeClasses[size]}`}>
+    <div className={`flex items-center space-x-1 ${sizeClasses[size]} flex-shrink-0`}>
       {/* Like Button */}
       <button
         onClick={() => handleLike(true)}
         disabled={loading}
-        className={`flex items-center space-x-1 px-2 py-1 rounded transition-colors ${
+        className={`flex items-center space-x-1 px-1.5 py-1 rounded transition-colors flex-shrink-0 ${
           userLike === true
             ? 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400'
             : 'text-gray-500 hover:text-green-600 hover:bg-green-50 dark:text-gray-400 dark:hover:text-green-400 dark:hover:bg-green-900'
@@ -93,14 +93,14 @@ export default function LikeButton({
         <svg className={iconSizes[size]} fill="currentColor" viewBox="0 0 20 20">
           <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
         </svg>
-        {showCounts && <span>{likesCount}</span>}
+        {showCounts && <span className="text-xs font-medium min-w-[1rem] text-center">{likesCount}</span>}
       </button>
 
       {/* Dislike Button */}
       <button
         onClick={() => handleLike(false)}
         disabled={loading}
-        className={`flex items-center space-x-1 px-2 py-1 rounded transition-colors ${
+        className={`flex items-center space-x-1 px-1.5 py-1 rounded transition-colors flex-shrink-0 ${
           userLike === false
             ? 'bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-400'
             : 'text-gray-500 hover:text-red-600 hover:bg-red-50 dark:text-gray-400 dark:hover:text-red-400 dark:hover:bg-red-900'
@@ -109,7 +109,7 @@ export default function LikeButton({
         <svg className={iconSizes[size]} fill="currentColor" viewBox="0 0 20 20" transform="rotate(180)">
           <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
         </svg>
-        {showCounts && <span>{dislikesCount}</span>}
+        {showCounts && <span className="text-xs font-medium min-w-[1rem] text-center">{dislikesCount}</span>}
       </button>
     </div>
   );

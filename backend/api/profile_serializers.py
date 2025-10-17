@@ -37,6 +37,14 @@ class FreelancerProfileSerializer(serializers.ModelSerializer):
                 'subcategories': [{'id': sub.id, 'name': sub.name} for sub in obj.user_profile.subcategories.all()] if obj.user_profile.subcategories.exists() else []
             })
         
+        # Add verification badge status
+        try:
+            from .verification_models import VerificationBadge
+            badge = VerificationBadge.objects.filter(user=obj.user).first()
+            user_info['is_verified'] = badge.is_verified if badge else False
+        except Exception:
+            user_info['is_verified'] = False
+        
         return user_info
 
 class ClientProfileSerializer(serializers.ModelSerializer):

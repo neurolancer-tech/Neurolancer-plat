@@ -259,6 +259,8 @@ export default function FreelancersPage() {
           subcategory_names: userInfo.subcategory_names,
           categories: userInfo.categories || [],
           subcategories: userInfo.subcategories || [],
+          // Add verification status from user_info
+          is_verified: userInfo.is_verified || false,
           professionalProfile: profile
         };
       });
@@ -652,7 +654,7 @@ export default function FreelancersPage() {
                     {paginatedFreelancers.map(freelancer => (
                       <div key={freelancer.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col h-full relative">
                         {/* Three Dots Menu */}
-                        <div className="absolute top-2 right-2 z-10">
+                        <div className="absolute top-3 right-3 z-20">
                           <ThreeDotsMenu
                             onReport={() => {
                               setReportData({
@@ -668,7 +670,7 @@ export default function FreelancersPage() {
                             size="sm"
                           />
                         </div>
-                        <div className="p-4">
+                        <div className="p-4 pr-12">
                           <div className="flex items-start space-x-3">
                             <Avatar
                               src={freelancer.profile_picture}
@@ -679,11 +681,13 @@ export default function FreelancersPage() {
                               className="flex-shrink-0"
                             />
                             <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-1">
-                                <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 truncate">
+                              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 truncate flex-shrink">
                                   {freelancer.user.first_name || freelancer.user.username} {freelancer.user.last_name}
                                 </h3>
-                                <VerificationBadge isVerified={(freelancer as any).is_verified || false} size="sm" />
+                                <div className="flex-shrink-0">
+                                  <VerificationBadge isVerified={(freelancer as any).is_verified || false} size="sm" />
+                                </div>
                               </div>
                               {(freelancer as any).title && (
                                 <p className="text-sm text-blue-600 dark:text-blue-400 font-medium truncate mb-2">{(freelancer as any).title}</p>
@@ -693,20 +697,20 @@ export default function FreelancersPage() {
                         </div>
                         
                         <div className="px-4 pb-3">
-                          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                            <div className="flex items-center justify-between w-full sm:w-auto">
-                              <div className="flex items-center">
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                              <div className="flex items-center flex-shrink-0">
                                 <span className="text-yellow-400 text-sm">★</span>
-                                <span className="text-sm font-medium ml-1">{freelancer.rating}</span>
+                                <span className="text-sm font-medium ml-1 text-gray-900 dark:text-white">{freelancer.rating}</span>
                                 <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">({freelancer.total_reviews})</span>
                               </div>
                               {(freelancer.hourly_rate || 0) > 0 && (
-                                <div className="text-sm sm:text-base font-bold text-primary">
+                                <div className="text-sm font-bold text-primary flex-shrink-0">
                                   ${freelancer.hourly_rate}/hr
                                 </div>
                               )}
                             </div>
-                            <div className="w-full sm:w-auto flex justify-center sm:justify-end">
+                            <div className="flex-shrink-0">
                               <LikeButton
                                 contentType="freelancer"
                                 objectId={freelancer.user.id}
@@ -720,7 +724,7 @@ export default function FreelancersPage() {
 
                         <div className="px-4 pb-3 flex-1">
                           {(freelancer as any).professionalProfile?.availability_status && (
-                            <div className="mb-2">
+                            <div className="mb-3">
                               <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                                 (freelancer as any).professionalProfile.availability_status === 'available' 
                                   ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
@@ -733,17 +737,17 @@ export default function FreelancersPage() {
                               </span>
                             </div>
                           )}
-                          <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-2 leading-relaxed mb-3">
+                          <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-2 leading-relaxed mb-4">
                             {freelancer.bio || 'No bio available'}
                           </p>
                         </div>
 
-                        <div className="px-4 pb-3 space-y-2">
+                        <div className="px-4 pb-4 space-y-3">
                           <div>
-                            <div className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Skills</div>
-                            <div className="flex flex-wrap gap-1">
+                            <div className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Skills</div>
+                            <div className="flex flex-wrap gap-1.5">
                               {(freelancer.skills || '').split(',').filter(skill => skill.trim()).slice(0, 3).map((skill: string, index: number) => (
-                                <span key={index} className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs rounded-md">
+                                <span key={index} className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs rounded-md font-medium">
                                   {skill.trim()}
                                 </span>
                               ))}
@@ -757,19 +761,19 @@ export default function FreelancersPage() {
 
                           {(freelancer as any).onboarding_response?.specialization && (
                             <div>
-                              <div className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Categories</div>
-                              <div className="flex flex-wrap gap-1">
+                              <div className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Specialization</div>
+                              <div className="flex flex-wrap gap-1.5">
                                 {(() => {
                                   try {
                                     const specs = JSON.parse((freelancer as any).onboarding_response.specialization);
                                     return specs.slice(0, 2).map((spec: string, index: number) => (
-                                      <span key={index} className="px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 text-xs rounded-md">
+                                      <span key={index} className="px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 text-xs rounded-md font-medium">
                                         {formatText(spec)}
                                       </span>
                                     ));
                                   } catch {
                                     return (
-                                      <span className="px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 text-xs rounded-md">
+                                      <span className="px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 text-xs rounded-md font-medium">
                                         {formatText((freelancer as any).onboarding_response.specialization)}
                                       </span>
                                     );
@@ -782,23 +786,23 @@ export default function FreelancersPage() {
                           {/* Categories */}
                           {(freelancer.category_names || freelancer.categories) && (
                             <div>
-                              <div className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Categories</div>
-                              <div className="flex flex-wrap gap-1">
+                              <div className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Categories</div>
+                              <div className="flex flex-wrap gap-1.5">
                                 {freelancer.category_names ? (
                                   freelancer.category_names.split(', ').slice(0, 2).map((name: string, index: number) => (
-                                    <span key={index} className="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-xs rounded-md">
-                                      {name.length > 15 ? name.substring(0, 15) + '...' : name}
+                                    <span key={index} className="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-xs rounded-md font-medium">
+                                      {name.length > 12 ? name.substring(0, 12) + '...' : name}
                                     </span>
                                   ))
                                 ) : (
                                   freelancer.categories?.slice(0, 2).map((cat: any) => (
-                                    <span key={cat.id} className="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-xs rounded-md">
-                                      {cat.name.length > 15 ? cat.name.substring(0, 15) + '...' : cat.name}
+                                    <span key={cat.id} className="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-xs rounded-md font-medium">
+                                      {cat.name.length > 12 ? cat.name.substring(0, 12) + '...' : cat.name}
                                     </span>
                                   ))
                                 )}
                                 {(freelancer.category_names ? freelancer.category_names.split(', ').length : (freelancer.categories?.length || 0)) > 2 && (
-                                  <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-xs rounded-md">
+                                  <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-xs rounded-md font-medium">
                                     +{(freelancer.category_names ? freelancer.category_names.split(', ').length : (freelancer.categories?.length || 0)) - 2}
                                   </span>
                                 )}
@@ -809,27 +813,27 @@ export default function FreelancersPage() {
                           {/* Subcategories */}
                           {(freelancer.subcategory_names || freelancer.subcategories || (freelancer as any).onboarding_response?.interested_subcategories) && (
                             <div>
-                              <div className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Expertise</div>
-                              <div className="flex flex-wrap gap-1">
+                              <div className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Expertise</div>
+                              <div className="flex flex-wrap gap-1.5">
                                 {freelancer.subcategory_names ? (
                                   // Use stored subcategory names
                                   freelancer.subcategory_names.split(', ').slice(0, 2).map((name: string, index: number) => (
-                                    <span key={index} className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs rounded-md">
-                                      {name.length > 15 ? name.substring(0, 15) + '...' : name}
+                                    <span key={index} className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs rounded-md font-medium">
+                                      {name.length > 12 ? name.substring(0, 12) + '...' : name}
                                     </span>
                                   ))
                                 ) : freelancer.subcategories ? (
                                   // Use subcategory objects
                                   freelancer.subcategories.slice(0, 2).map((sub: any) => (
-                                    <span key={sub.id} className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs rounded-md">
-                                      {sub.name.length > 15 ? sub.name.substring(0, 15) + '...' : sub.name}
+                                    <span key={sub.id} className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs rounded-md font-medium">
+                                      {sub.name.length > 12 ? sub.name.substring(0, 12) + '...' : sub.name}
                                     </span>
                                   ))
                                 ) : (
                                   // Fallback to onboarding data
                                   (freelancer as any).onboarding_response?.interested_subcategories?.slice(0, 2).map((sub: any) => (
-                                    <span key={sub.id} className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs rounded-md">
-                                      {sub.name.length > 15 ? sub.name.substring(0, 15) + '...' : sub.name}
+                                    <span key={sub.id} className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs rounded-md font-medium">
+                                      {sub.name.length > 12 ? sub.name.substring(0, 12) + '...' : sub.name}
                                     </span>
                                   ))
                                 )}
@@ -840,7 +844,7 @@ export default function FreelancersPage() {
                                     || (freelancer as any).onboarding_response?.interested_subcategories?.length 
                                     || 0;
                                   return count > 2 && (
-                                    <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-xs rounded-md">
+                                    <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-xs rounded-md font-medium">
                                       +{count - 2}
                                     </span>
                                   );
@@ -849,38 +853,43 @@ export default function FreelancersPage() {
                             </div>
                           )}
 
-                          {/* Location Information */}
-                          {(freelancer.country || freelancer.city) && (
-                            <div className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
-                              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                              </svg>
-                              {(() => {
-                                const countryData = countries.find(c => c.name.toLowerCase() === (freelancer.country || '').toLowerCase());
-                                return (
-                                  <span className="flex items-center gap-1">
-                                    {countryData && <CountryFlag countryCode={countryData.code} className="w-3 h-2" />}
-                                    {freelancer.city && `${freelancer.city}, `}
-                                    {freelancer.country}
-                                  </span>
-                                );
-                              })()}
-                            </div>
-                          )}
+                          {/* Location and Experience */}
+                          <div className="space-y-2">
+                            {(freelancer.country || freelancer.city) && (
+                              <div className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
+                                <svg className="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                                </svg>
+                                {(() => {
+                                  const countryData = countries.find(c => c.name.toLowerCase() === (freelancer.country || '').toLowerCase());
+                                  return (
+                                    <span className="flex items-center gap-1 truncate">
+                                      {countryData && <CountryFlag countryCode={countryData.code} className="w-3 h-2 flex-shrink-0" />}
+                                      <span className="truncate">
+                                        {freelancer.city && `${freelancer.city}, `}
+                                        {freelancer.country}
+                                      </span>
+                                    </span>
+                                  );
+                                })()}
+                              </div>
+                            )}
 
-                          {(freelancer as any).professionalProfile?.experience_years > 0 && (
-                            <div className="text-xs text-gray-600 dark:text-gray-400">
-                              💼 {(freelancer as any).professionalProfile.experience_years} years experience
-                            </div>
-                          )}
+                            {(freelancer as any).professionalProfile?.experience_years > 0 && (
+                              <div className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
+                                <span className="flex-shrink-0">💼</span>
+                                <span>{(freelancer as any).professionalProfile.experience_years} years experience</span>
+                              </div>
+                            )}
+                          </div>
                         </div>
 
                         <div className="px-4 py-3 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-600 mt-auto">
-                          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-                            <Link href={`/freelancer/${freelancer.user.id}`} className="flex-1 bg-primary text-white text-center text-sm py-2 px-2 sm:px-3 rounded-lg hover:bg-primary/90 transition-colors font-medium">
+                          <div className="flex gap-2">
+                            <Link href={`/freelancer/${freelancer.user.id}`} className="flex-1 bg-primary text-white text-center text-sm py-2.5 px-3 rounded-lg hover:bg-primary/90 transition-colors font-medium">
                               View Profile
                             </Link>
-                            <button onClick={() => startDirectConversation(freelancer.user.id)} className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-center text-sm py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors font-medium">
+                            <button onClick={() => startDirectConversation(freelancer.user.id)} className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-center text-sm py-2.5 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors font-medium">
                               Message
                             </button>
                           </div>

@@ -3,8 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { FaCheckCircle, FaExclamationTriangle, FaSpinner, FaHome, FaHeart, FaSadTear } from 'react-icons/fa';
-import { BiSupport } from 'react-icons/bi';
+import { FaCheckCircle, FaExclamationTriangle, FaSpinner, FaHome, FaHeart } from 'react-icons/fa';
 import { newsletterService } from '../../../../lib/newsletter';
 
 const NewsletterUnsubscribePage: React.FC = () => {
