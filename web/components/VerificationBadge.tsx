@@ -20,9 +20,9 @@ export default function VerificationBadge({
   if (!isVerified) return null;
 
   const sizeClasses = {
-    sm: 'w-4 h-4',
-    md: 'w-5 h-5',
-    lg: 'w-6 h-6'
+    sm: 'w-6 h-6',
+    md: 'w-7 h-7',
+    lg: 'w-8 h-8'
   };
 
   const textSizeClasses = {
