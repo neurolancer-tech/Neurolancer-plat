@@ -37,25 +37,24 @@ export default function VerificationBadge({
         className={`${sizeClasses[size]} flex items-center justify-center relative`}
         title="Verified User"
       >
-        {/* Curly verification badge with star-like shape */}
+        {/* Professional verification badge */}
         <svg 
           className="w-full h-full" 
           viewBox="0 0 24 24" 
           fill="none"
         >
-          {/* Curly star background */}
+          {/* Shield background */}
           <path
-            d="M12 2L13.09 8.26L19 7L14.74 11.26L21 12L14.74 12.74L19 17L13.09 15.74L12 22L10.91 15.74L5 17L9.26 12.74L3 12L9.26 11.26L5 7L10.91 8.26L12 2Z"
-            fill="#0D9E86"
-            stroke="#0D9E86"
-            strokeWidth="0.5"
+            d="M12 1L3 5V11C3 16.55 6.84 21.74 12 23C17.16 21.74 21 16.55 21 11V5L12 1Z"
+            fill={theme === 'dark' ? '#3B82F6' : '#1D4ED8'}
+            className="drop-shadow-sm"
           />
           
           {/* Check mark */}
           <path 
-            d="M8 12L10.5 14.5L16 9"
-            stroke={theme === 'dark' ? '#ffffff' : '#000000'}
-            strokeWidth="2"
+            d="M9 12L11 14L15 10"
+            stroke="white"
+            strokeWidth="2.5"
             strokeLinecap="round"
             strokeLinejoin="round"
             fill="none"
@@ -65,8 +64,7 @@ export default function VerificationBadge({
       
       {showText && (
         <span 
-          className={`${textSizeClasses[size]} font-medium`}
-          style={{ color: '#0D9E86' }}
+          className={`${textSizeClasses[size]} font-medium text-blue-600 dark:text-blue-400`}
         >
           Verified
         </span>
