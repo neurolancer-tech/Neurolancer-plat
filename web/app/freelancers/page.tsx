@@ -685,9 +685,6 @@ export default function FreelancersPage() {
                                 <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 truncate flex-shrink">
                                   {freelancer.user.first_name || freelancer.user.username} {freelancer.user.last_name}
                                 </h3>
-                                <div className="flex-shrink-0">
-                                  <VerificationBadge isVerified={(freelancer as any).is_verified || false} size="sm" />
-                                </div>
                               </div>
                               {(freelancer as any).title && (
                                 <p className="text-sm text-blue-600 dark:text-blue-400 font-medium truncate mb-2">{(freelancer as any).title}</p>
@@ -711,13 +708,7 @@ export default function FreelancersPage() {
                               )}
                             </div>
                             <div className="flex-shrink-0">
-                              <LikeButton
-                                contentType="freelancer"
-                                objectId={freelancer.user.id}
-                                initialLikes={freelancer.likes_count || 0}
-                                initialDislikes={freelancer.dislikes_count || 0}
-                                size="sm"
-                              />
+                              <VerificationBadge isVerified={(freelancer as any).is_verified || false} size="sm" />
                             </div>
                           </div>
                         </div>
@@ -876,9 +867,32 @@ export default function FreelancersPage() {
                             )}
 
                             {(freelancer as any).professionalProfile?.experience_years > 0 && (
-                              <div className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
-                                <span className="flex-shrink-0">💼</span>
-                                <span>{(freelancer as any).professionalProfile.experience_years} years experience</span>
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
+                                  <span className="flex-shrink-0">💼</span>
+                                  <span>{(freelancer as any).professionalProfile.experience_years} years experience</span>
+                                </div>
+                                <div className="flex-shrink-0">
+                                  <LikeButton
+                                    contentType="freelancer"
+                                    objectId={freelancer.user.id}
+                                    initialLikes={freelancer.likes_count || 0}
+                                    initialDislikes={freelancer.dislikes_count || 0}
+                                    size="sm"
+                                  />
+                                </div>
+                              </div>
+                            )}
+                            {/* Show like button even if no experience years */}
+                            {!(freelancer as any).professionalProfile?.experience_years && (
+                              <div className="flex justify-end">
+                                <LikeButton
+                                  contentType="freelancer"
+                                  objectId={freelancer.user.id}
+                                  initialLikes={freelancer.likes_count || 0}
+                                  initialDislikes={freelancer.dislikes_count || 0}
+                                  size="sm"
+                                />
                               </div>
                             )}
                           </div>
