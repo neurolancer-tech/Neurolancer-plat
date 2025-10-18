@@ -46,7 +46,7 @@ export default function VerificationBadge({
           {/* Shield background */}
           <path
             d="M12 1L3 5V11C3 16.55 6.84 21.74 12 23C17.16 21.74 21 16.55 21 11V5L12 1Z"
-            fill={theme === 'dark' ? '#3B82F6' : '#1D4ED8'}
+            fill={theme === 'dark' ? '#0D9E86' : '#0d7377'}
             className="drop-shadow-sm"
           />
           
@@ -64,7 +64,7 @@ export default function VerificationBadge({
       
       {showText && (
         <span 
-          className={`${textSizeClasses[size]} font-medium text-blue-600 dark:text-blue-400`}
+          className={`${textSizeClasses[size]} font-medium text-teal-600 dark:text-teal-400`}
         >
           Verified
         </span>
