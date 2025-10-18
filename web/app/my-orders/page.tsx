@@ -142,26 +142,30 @@ export default function MyOrdersPage() {
 
                     <p className="text-gray-700 dark:text-gray-300 mb-4">{order.description}</p>
 
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-1 sm:space-y-0 text-sm text-gray-600 dark:text-gray-400">
                         <span>Package: {order.package_type}</span>
-                        <span>• Delivery: {order.delivery_time} days</span>
+                        <span className="hidden sm:inline">•</span>
+                        <span>Delivery: {order.delivery_time} days</span>
                         {order.delivered_at && (
-                          <span>• Delivered: {new Date(order.delivered_at).toLocaleDateString()}</span>
+                          <>
+                            <span className="hidden sm:inline">•</span>
+                            <span>Delivered: {new Date(order.delivered_at).toLocaleDateString()}</span>
+                          </>
                         )}
                       </div>
-                      <div className="flex space-x-2">
+                      <div className="flex flex-col sm:flex-row gap-2 sm:space-x-2">
                         <Link 
                           href={`/orders/${order.id}`}
-                          className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                          className="px-3 sm:px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 text-center text-sm"
                         >
                           View Details
                         </Link>
                         <Link 
                           href={`/messages?user=${order.freelancer.id}`}
-                          className="px-4 py-2 bg-primary text-white rounded-lg hover:opacity-90"
+                          className="px-3 sm:px-4 py-2 bg-primary text-white rounded-lg hover:opacity-90 text-center text-sm"
                         >
-                          Message
+                          Message Freelancer
                         </Link>
                       </div>
                     </div>

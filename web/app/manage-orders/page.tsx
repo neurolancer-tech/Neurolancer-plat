@@ -203,16 +203,23 @@ export default function ManageOrdersPage() {
                           setSelectedOrder(order);
                           setShowModal(true);
                         }}
-                        className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm"
+                        className="px-3 sm:px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm"
                       >
                         View Details
                       </button>
+                      
+                      <a
+                        href={`/messages?user=${order.client.id}`}
+                        className="px-3 sm:px-4 py-2 bg-primary text-white rounded-lg hover:opacity-90 text-center text-sm"
+                      >
+                        Message Client
+                      </a>
                       
                       {getAvailableActions(order.status).map((action) => (
                         <button
                           key={action.action}
                           onClick={() => updateOrderStatus(order.id, action.action)}
-                          className={`px-4 py-2 text-white rounded-lg text-sm ${action.color}`}
+                          className={`px-3 sm:px-4 py-2 text-white rounded-lg text-sm ${action.color}`}
                         >
                           {action.label}
                         </button>
