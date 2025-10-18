@@ -682,12 +682,24 @@ export default function FreelancersPage() {
                             />
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 mb-1 flex-wrap">
-                                <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 truncate flex-shrink">
+                                <h3 className={`font-semibold text-gray-900 dark:text-gray-100 leading-tight ${
+                                  ((freelancer.user.first_name || freelancer.user.username) + ' ' + (freelancer.user.last_name || '')).length > 20 
+                                    ? 'text-sm' 
+                                    : ((freelancer.user.first_name || freelancer.user.username) + ' ' + (freelancer.user.last_name || '')).length > 15 
+                                    ? 'text-base' 
+                                    : 'text-lg'
+                                }`}>
                                   {freelancer.user.first_name || freelancer.user.username} {freelancer.user.last_name}
                                 </h3>
                               </div>
                               {(freelancer as any).title && (
-                                <p className="text-sm text-blue-600 dark:text-blue-400 font-medium truncate mb-2">{(freelancer as any).title}</p>
+                                <p className={`text-blue-600 dark:text-blue-400 font-medium leading-tight mb-2 ${
+                                  ((freelancer as any).title || '').length > 30 
+                                    ? 'text-xs' 
+                                    : ((freelancer as any).title || '').length > 20 
+                                    ? 'text-sm' 
+                                    : 'text-base'
+                                }`}>{(freelancer as any).title}</p>
                               )}
                             </div>
                           </div>
