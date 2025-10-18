@@ -6,9 +6,9 @@ The backend is now configured with your Twilio credentials and ready to send rea
 ## Configuration: ✅ COMPLETE
 
 ### 1. Twilio Account: ✅ CONFIGURED
-- Account SID: AC465354************
-- Auth Token: 60555d5f************
-- Verify Service: VAff7eb4************
+- Account SID: <TWILIO_ACCOUNT_SID>
+- Auth Token: <TWILIO_AUTH_TOKEN>
+- Verify Service: <TWILIO_VERIFY_SERVICE_SID>
 
 ### 2. Twilio Library: ✅ INSTALLED
 ```bash

@@ -6,9 +6,9 @@ Add these environment variables to your Render deployment:
 
 | Variable Name | Value |
 |---------------|-------|
-| `TWILIO_ACCOUNT_SID` | `AC4653544a6db70c90d9924d7b506b0864` |
-| `TWILIO_AUTH_TOKEN` | `60555d5f93c94c2c50bc6f78a9b5f1ec` |
-| `TWILIO_VERIFY_SERVICE_SID` | `VAff7eb489cf64e2df684b828bc8a1a2e3` |
+| `TWILIO_ACCOUNT_SID` | `<your_twilio_account_sid>` |
+| `TWILIO_AUTH_TOKEN` | `<your_twilio_auth_token>` |
+| `TWILIO_VERIFY_SERVICE_SID` | `<your_twilio_verify_service_sid>` |
 
 ## How to Add in Render:
 
