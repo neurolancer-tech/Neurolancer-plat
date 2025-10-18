@@ -324,8 +324,11 @@ export default function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-gradient-to-br from-teal-100 via-teal-50 to-teal-100 dark:from-teal-900 dark:via-slate-900 dark:to-blue-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-gray-900 dark:text-white">
+      <section className="relative text-white py-16 overflow-hidden" style={{backgroundImage: 'url(/assets/images/get started-min.png)', backgroundSize: 'cover', backgroundPosition: 'center'}}>
+        {/* Overlay */}
+        <div className="absolute inset-0 bg-black bg-opacity-60 z-10"></div>
+        
+        <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
           <p className="text-xl mb-8">Join thousands of clients and freelancers in the AI marketplace</p>
           <div className="flex justify-center space-x-4">
