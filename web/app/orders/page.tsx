@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Navigation from '@/components/Navigation';
 import { api } from '@/lib/api';
-import { getUser } from '@/lib/auth';
+import { getUser, getUserProfile } from '@/lib/auth';
 import toast from 'react-hot-toast';
 
 interface Order {
@@ -39,8 +39,14 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('');
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [userRole, setUserRole] = useState<string>('');
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   useEffect(() => {
+    const user = getUser();
+    const profile = getUserProfile();
+    setCurrentUser(user);
+    setUserRole(profile?.user_type || 'client');
     loadOrders();
     
     // Auto-refresh every 30 seconds to get status updates
@@ -237,7 +243,9 @@ export default function OrdersPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">My Orders</h1>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              {userRole === 'freelancer' ? 'Freelancer Orders' : 'My Orders'}
+            </h1>
             <div className="text-sm text-gray-500 dark:text-gray-400">
               {lastRefresh && (
                 <p>Last updated: {lastRefresh.toLocaleTimeString()}</p>
@@ -304,7 +312,9 @@ export default function OrdersPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Client</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      {userRole === 'freelancer' ? 'Client' : 'Freelancer'}
+                    </p>
                     <p className="font-medium dark:text-white">
                       {order.client.first_name} {order.client.last_name}
                     </p>
@@ -335,7 +345,7 @@ export default function OrdersPage() {
                       onClick={() => window.open(`/messages?order=${order.id}`, '_blank')}
                       className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm"
                     >
-                      Message Client
+                      {userRole === 'freelancer' ? 'Message Client' : 'Message Freelancer'}
                     </button>
                     <button
                       onClick={() => checkOrderStatus(order.id)}
@@ -346,7 +356,7 @@ export default function OrdersPage() {
                   </div>
                   
                   <div className="flex space-x-2">
-                    {order.status === 'pending' && (
+                    {order.status === 'pending' && userRole === 'freelancer' && (
                       <>
                         <button
                           onClick={() => acceptOrder(order.id)}
@@ -363,7 +373,7 @@ export default function OrdersPage() {
                       </>
                     )}
                     
-                    {!['completed', 'cancelled'].includes(order.status) && (
+                    {!['completed', 'cancelled'].includes(order.status) && userRole === 'freelancer' && (
                       <select
                         onChange={(e) => {
                           if (e.target.value) {
@@ -387,7 +397,7 @@ export default function OrdersPage() {
                       </select>
                     )}
                     
-                    {order.status === 'in_progress' && (
+                    {order.status === 'in_progress' && userRole === 'freelancer' && (
                       <button
                         onClick={() => {
                           const message = prompt('Enter a progress update message for the client:');
@@ -401,7 +411,7 @@ export default function OrdersPage() {
                       </button>
                     )}
                     
-                    {order.status === 'delivered' && order.client.id === getUser()?.id && (
+                    {order.status === 'delivered' && userRole === 'client' && (
                       <>
                         <button
                           onClick={async () => {
@@ -448,7 +458,7 @@ export default function OrdersPage() {
                       </span>
                     )}
                     
-                    {order.status === 'completed' && order.client.id !== getUser()?.id && (
+                    {order.status === 'completed' && userRole === 'freelancer' && (
                       <button
                         onClick={() => handleRequestPayment(order.id)}
                         className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm flex items-center"
