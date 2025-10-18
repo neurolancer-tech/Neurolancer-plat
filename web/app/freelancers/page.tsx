@@ -652,7 +652,7 @@ export default function FreelancersPage() {
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
                     {paginatedFreelancers.map(freelancer => (
-                      <div key={freelancer.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col h-full relative">
+                      <div key={freelancer.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-xl hover:scale-105 transition-all duration-300 border border-gray-200 dark:border-gray-700 hover:border-primary/30 overflow-hidden flex flex-col h-full relative group cursor-pointer">
                         {/* Three Dots Menu */}
                         <div className="absolute top-3 right-3 z-20">
                           <ThreeDotsMenu
@@ -678,7 +678,7 @@ export default function FreelancersPage() {
                               selectedAvatar={freelancer.selected_avatar}
                               googlePhotoUrl={freelancer.google_photo_url}
                               size="md"
-                              className="flex-shrink-0"
+                              className="flex-shrink-0 group-hover:scale-110 transition-transform duration-300"
                             />
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 mb-1 flex-wrap">
@@ -708,8 +708,8 @@ export default function FreelancersPage() {
                         <div className="px-4 pb-3">
                           <div className="flex items-center justify-between gap-3">
                             <div className="flex items-center gap-3 flex-1 min-w-0">
-                              <div className="flex items-center flex-shrink-0">
-                                <span className="text-yellow-400 text-sm">★</span>
+                              <div className="flex items-center flex-shrink-0 group-hover:scale-105 transition-transform duration-200">
+                                <span className="text-yellow-400 text-sm group-hover:text-yellow-500">★</span>
                                 <span className="text-sm font-medium ml-1 text-gray-900 dark:text-white">{freelancer.rating}</span>
                                 <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">({freelancer.total_reviews})</span>
                               </div>
@@ -750,7 +750,7 @@ export default function FreelancersPage() {
                             <div className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Skills</div>
                             <div className="flex flex-wrap gap-1.5">
                               {(freelancer.skills || '').split(',').filter(skill => skill.trim()).slice(0, 3).map((skill: string, index: number) => (
-                                <span key={index} className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs rounded-md font-medium">
+                                <span key={index} className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs rounded-md font-medium hover:bg-primary/10 hover:text-primary transition-colors duration-200">
                                   {skill.trim()}
                                 </span>
                               ))}
@@ -910,12 +910,12 @@ export default function FreelancersPage() {
                           </div>
                         </div>
 
-                        <div className="px-4 py-3 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-600 mt-auto">
+                        <div className="px-4 py-3 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-600 mt-auto group-hover:bg-gray-100 dark:group-hover:bg-gray-600/50 transition-colors duration-300">
                           <div className="flex gap-2">
-                            <Link href={`/freelancer/${freelancer.user.id}`} className="flex-1 bg-primary text-white text-center text-sm py-2.5 px-3 rounded-lg hover:bg-primary/90 transition-colors font-medium">
+                            <Link href={`/freelancer/${freelancer.user.id}`} className="flex-1 bg-primary text-white text-center text-sm py-2.5 px-3 rounded-lg hover:bg-primary/90 hover:scale-105 transition-all duration-200 font-medium shadow-sm hover:shadow-md">
                               View Profile
                             </Link>
-                            <button onClick={() => startDirectConversation(freelancer.user.id)} className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-center text-sm py-2.5 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors font-medium">
+                            <button onClick={() => startDirectConversation(freelancer.user.id)} className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-center text-sm py-2.5 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 hover:scale-105 hover:border-primary/50 transition-all duration-200 font-medium shadow-sm hover:shadow-md">
                               Message
                             </button>
                           </div>
