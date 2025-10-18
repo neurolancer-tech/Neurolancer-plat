@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Navigation from '@/components/Navigation';
 import { api } from '@/lib/api';
-import { getUser, getUserProfile } from '@/lib/auth';
+import { getUser, getProfile } from '@/lib/auth';
 import toast from 'react-hot-toast';
 
 interface Order {
@@ -44,7 +44,7 @@ export default function OrdersPage() {
 
   useEffect(() => {
     const user = getUser();
-    const profile = getUserProfile();
+    const profile = getProfile();
     setCurrentUser(user);
     setUserRole(profile?.user_type || 'client');
     loadOrders();
