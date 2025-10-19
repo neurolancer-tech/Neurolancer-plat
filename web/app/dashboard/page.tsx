@@ -718,10 +718,10 @@ export default function DashboardPage() {
                 </div>
                 <div className="text-right">
                   <p className="text-lg font-bold text-blue-600 dark:text-blue-400">
-                    {stats?.active_orders > 5 ? '< 1h' : stats?.active_orders > 2 ? '2h' : '4h'}
+                    {(stats?.active_orders || 0) > 5 ? '< 1h' : (stats?.active_orders || 0) > 2 ? '2h' : '4h'}
                   </p>
                   <p className="text-xs text-blue-600 dark:text-blue-400">
-                    {stats?.active_orders > 5 ? 'Excellent' : stats?.active_orders > 2 ? 'Good' : 'Average'}
+                    {(stats?.active_orders || 0) > 5 ? 'Excellent' : (stats?.active_orders || 0) > 2 ? 'Good' : 'Average'}
                   </p>
                 </div>
               </div>
