@@ -639,13 +639,32 @@ export default function DashboardPage() {
             </div>
             <div className="space-y-4">
               {notifications.length > 0 ? notifications.map((notification: any, index) => (
-                <div key={index} className="flex items-start space-x-3 p-4 bg-gradient-to-r from-gray-500/5 to-gray-500/10 dark:from-gray-500/10 dark:to-gray-500/20 rounded-lg hover:from-teal-500/10 hover:to-teal-500/20 dark:hover:from-teal-500/20 dark:hover:to-teal-500/30 transition-all duration-300 notification-pulse animate-slide-in border border-gray-200/50 dark:border-gray-700/50" style={{animationDelay: `${index * 0.1}s`}}>
+                <div 
+                  key={index} 
+                  onClick={() => {
+                    if (notification.action_url) {
+                      router.push(notification.action_url);
+                    }
+                  }}
+                  className={`flex items-start space-x-3 p-4 bg-gradient-to-r from-gray-500/5 to-gray-500/10 dark:from-gray-500/10 dark:to-gray-500/20 rounded-lg hover:from-teal-500/10 hover:to-teal-500/20 dark:hover:from-teal-500/20 dark:hover:to-teal-500/30 transition-all duration-300 notification-pulse animate-slide-in border border-gray-200/50 dark:border-gray-700/50 ${notification.action_url ? 'cursor-pointer' : ''}`} 
+                  style={{animationDelay: `${index * 0.1}s`}}
+                >
                   <div className="w-3 h-3 bg-gradient-to-r from-teal-400 to-teal-600 rounded-full mt-2 flex-shrink-0 animate-pulse shadow-lg"></div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate mb-1">{notification.title}</p>
                     <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">{notification.message}</p>
                     <div className="flex items-center justify-between mt-2">
-                      <p className="text-xs text-teal-600 dark:text-teal-400 font-medium">Just now</p>
+                      <p className="text-xs text-teal-600 dark:text-teal-400 font-medium">
+                      {(() => {
+                        const date = new Date(notification.created_at);
+                        const now = new Date();
+                        const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+                        if (diffInMinutes < 1) return 'Just now';
+                        if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+                        if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
+                        return `${Math.floor(diffInMinutes / 1440)}d ago`;
+                      })()
+                    }</p>
                       <div className="w-1.5 h-1.5 bg-teal-500 rounded-full animate-pulse"></div>
                     </div>
                   </div>
@@ -675,9 +694,14 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-lg font-bold text-green-600 dark:text-green-400 gradient-text">98%</p>
+                  <p className="text-lg font-bold text-green-600 dark:text-green-400 gradient-text">
+                    {stats?.completed_orders && stats?.total_orders ? 
+                      Math.round((stats.completed_orders / stats.total_orders) * 100) : 0}%
+                  </p>
                   <div className="w-full bg-green-300 dark:bg-green-600 rounded-full h-1 mt-1">
-                    <div className="bg-green-700 dark:bg-green-400 h-1 rounded-full" style={{width: '98%'}}></div>
+                    <div className="bg-green-700 dark:bg-green-400 h-1 rounded-full" 
+                         style={{width: `${stats?.completed_orders && stats?.total_orders ? 
+                           Math.round((stats.completed_orders / stats.total_orders) * 100) : 0}%`}}></div>
                   </div>
                 </div>
               </div>
@@ -693,8 +717,12 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-lg font-bold text-blue-600 dark:text-blue-400">2h</p>
-                  <p className="text-xs text-blue-600 dark:text-blue-400">Excellent</p>
+                  <p className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                    {stats?.active_orders > 5 ? '< 1h' : stats?.active_orders > 2 ? '2h' : '4h'}
+                  </p>
+                  <p className="text-xs text-blue-600 dark:text-blue-400">
+                    {stats?.active_orders > 5 ? 'Excellent' : stats?.active_orders > 2 ? 'Good' : 'Average'}
+                  </p>
                 </div>
               </div>
 
