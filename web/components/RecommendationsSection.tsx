@@ -13,6 +13,7 @@ interface Recommendation {
   category: { name: string };
   subcategories?: { id: number; name: string }[];
   price?: number;
+  basic_price?: number;
   budget_min?: number;
   budget_max?: number;
   rating?: number;
@@ -213,7 +214,8 @@ export default function RecommendationsSection({ userProfile }: RecommendationsS
                       ? (item.budget_min && item.budget_max 
                           ? `$${item.budget_min}-$${item.budget_max}`
                           : 'Budget TBD')
-                      : (item.price && item.price > 0 ? `$${item.price}` : 'Price TBD')
+                      : (item.basic_price && item.basic_price > 0 ? `From $${item.basic_price}` : 
+                         item.price && item.price > 0 ? `$${item.price}` : 'Price TBD')
                     }
                   </span>
                 </div>
